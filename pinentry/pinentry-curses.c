@@ -74,6 +74,46 @@ struct dialog
 typedef struct dialog *dialog_t;
 
 
+/* Return the next line up to MAXLEN columns wide in START and LEN.
+   The first invocation should have 0 as *LEN.  If the line ends with
+   a \n, it is a normal line that will be continued.  If it is a '\0'
+   the end of the text is reached after this line.  In all other cases
+   there is a forced line break.  A full line is returned and will be
+   continued in the next line.  */
+static void
+collect_line (int maxlen, char **start_p, int *len_p)
+{
+  int last_space = 0;
+  int len = *len_p;
+  char *end;
+
+  /* Skip to next line.  */
+  *start_p += len;
+  /* Skip leading space.  */
+  while (**start_p == ' ')
+    (*start_p)++;
+
+  end = *start_p;
+  len = 0;
+
+  while (len < maxlen - 1 && *end && *end != '\n')
+    {
+      len++;
+      end++;
+      if (*end == ' ')
+	last_space = len;
+    }
+
+  if (*end && *end != '\n' && last_space != 0)
+    {
+      /* We reached the end of the available space, but still have
+	 characters to go in this line.  We can break the line into
+	 two parts at a space.  */
+      len = last_space;
+      (*start_p)[len] = '\n';
+    }
+  *len_p = len + 1;
+}
 
 
 static int
@@ -91,102 +131,74 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   char *description = NULL;
   char *error = NULL;
   char *prompt = NULL;
-  char *ok = NULL;
-  char *cancel = NULL;
 
-  if (pinentry->description)
-    {
-      description = pinentry_utf8_to_local (pinentry->lc_ctype,
-					 pinentry->description);
-      if (!description)
-	{
-	  err = 1;
-	  goto out;
-	}
-    }
-  if (pinentry->error)
-    {
-      error = pinentry_utf8_to_local (pinentry->lc_ctype,
-				   pinentry->error);
-      if (!error)
-	{
-	  err = 1;
-	  goto out;
-	}
-    }
-  if (pinentry->prompt)
-    {
-      prompt = pinentry_utf8_to_local (pinentry->lc_ctype,
-				    pinentry->prompt);
-      if (!prompt)
-	{
-	  err = 1;
-	  goto out;
-	}
-    }
-  if (pinentry->ok)
-    {
-      int len = strlen (pinentry->ok);
-      ok = malloc (len + 3);
-      if (!ok)
-	{
-	  err = 1;
-	  goto out;
-	}
-      ok[0] = '<';
-      memcpy (&ok[1], pinentry->ok, len);
-      ok[len + 1] = '>';
-      ok[len + 2] = '\0';
-    }
-  if (pinentry->cancel)
-    {
-      int len = strlen (pinentry->cancel);
-      cancel = malloc (len + 3);
-      if (!cancel)
-	{
-	  err = 1;
-	  goto out;
-	}
-      cancel[0] = '<';
-      memcpy (&cancel[1], pinentry->cancel, len);
-      cancel[len + 1] = '>';
-      cancel[len + 2] = '\0';
-    }
+#define COPY_OUT(what)							\
+  do									\
+    if (pinentry->what)							\
+      {									\
+        what = pinentry_utf8_to_local (pinentry->lc_ctype,		\
+				       pinentry->what);			\
+        if (!what)							\
+	  {								\
+	    err = 1;							\
+	    goto out;							\
+	  }								\
+      }									\
+  while (0)
+    
+  COPY_OUT (description);
+  COPY_OUT (error);
+  COPY_OUT (prompt);
 
-  dialog->ok = pinentry_utf8_to_local (pinentry->lc_ctype,
-				    ok ? ok : STRING_OK);
-  dialog->cancel = pinentry_utf8_to_local (pinentry->lc_ctype,
-					cancel ? cancel : STRING_CANCEL);
-  if (!dialog->ok || !dialog->cancel)
-    {
-      err = 1;
-      goto out;
-    }
+#define MAKE_BUTTON(which,default)					\
+  do									\
+    {									\
+      char *new = NULL;							\
+      if (pinentry->which)						\
+        {								\
+          int len = strlen (pinentry->which);				\
+          new = malloc (len + 3);				       	\
+	  if (!new)							\
+	    {								\
+	      err = 1;							\
+	      goto out;							\
+	    }								\
+	  new[0] = '<';							\
+	  memcpy (&new[1], pinentry->which, len);			\
+          new[len + 1] = '>';						\
+	  new[len + 2] = '\0';						\
+        }								\
+      dialog->which = pinentry_utf8_to_local (pinentry->lc_ctype,	\
+					      new ? new : default);	\
+      if (!dialog->which)						\
+        {								\
+	  err = 1;							\
+	  goto out;							\
+	}								\
+    }									\
+  while (0)
+
+  MAKE_BUTTON (ok, STRING_OK);
+  MAKE_BUTTON (cancel, STRING_CANCEL);
+
   getmaxyx (stdscr, size_y, size_x);
 
   /* Check if all required lines fit on the screen.  */
   y = 1;		/* Top frame.  */
   if (description)
     {
-      char *p = description;
-      int desc_x = 0;
+      char *start = description;
+      int len = 0;
 
-      /* fixme: Implement autowrap so that we don't need to truncate lines. */
-      while (*p)
+      do
 	{
-	  if (*(p++) == '\n')
-	    {
-	      if (desc_x > description_x)
-		description_x = desc_x;
-	      y++;
-	      desc_x = 0;
-	    }
-	  else
-	    desc_x++;
+	  collect_line (size_x - 4, &start, &len);
+	  if (len > description_x)
+	    description_x = len;
+	  y++;
 	}
-      if (desc_x > description_x)
-	description_x = desc_x;
-      y += 2;		/* Description.  */
+      while (start[len - 1]);
+      y++;
     }
       
   if (pinentry->pin)
@@ -292,25 +304,24 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   ypos++;
   if (description)
     {
-      char *p = description;
-      int i = 0;
+      char *start = description;
+      int len = 0;
 
-      while (*p)
+      do
 	{
+	  int i;
+
 	  move (ypos, xpos);
 	  addch (ACS_VLINE);
 	  addch (' ');
-	  for (;*p && *p != '\n'; p++)
-	    if (i < x - 4)
-	      {
-		i++;
-		addch ((unsigned char) *p);
-	      }
-	  if (*p == '\n')
-	    p++;
-	  i = 0;
+	  collect_line (size_x - 4, &start, &len);
+	  for (i = 0; i < len - 1; i++)
+	    addch ((unsigned char) start[i]);
+	  if (start[len - 1] && start[len - 1] != '\n')
+	    addch ((unsigned char) start[len - 1]);
 	  ypos++;
 	}
+      while (start[len - 1]);
       move (ypos, xpos);
       addch (ACS_VLINE);
       ypos++;
@@ -393,10 +404,6 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   addstr (dialog->cancel);
 
  out:
-  if (ok)
-    free (ok);
-  if (cancel)
-    free (cancel);
   if (description)
     free (description);
   if (error)
