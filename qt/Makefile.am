@@ -19,6 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = Manifest
+
 bin_PROGRAMS = pinentry-qt
 
 if FALLBACK_CURSES

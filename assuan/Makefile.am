@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = mkerrors
+EXTRA_DIST = mkerrors Manifest
 INCLUDES = -I.. -I$(top_srcdir)/include
 BUILT_SOURCES = assuan-errors.c
 MOSTLYCLEANFILES = assuan-errors.c

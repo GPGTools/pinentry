@@ -21,7 +21,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = autogen.sh README.CVS
+EXTRA_DIST = autogen.sh README.CVS Manifest
 
 if BUILD_PINENTRY_CURSES
 pinentry_curses = curses

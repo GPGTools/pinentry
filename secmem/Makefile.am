@@ -19,6 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = Manifest
+
 noinst_LIBRARIES = libsecmem.a
 
 libsecmem_a_SOURCES = \

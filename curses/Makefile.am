@@ -19,6 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = Manifest
+
 bin_PROGRAMS = pinentry-curses
 
 AM_CPPFLAGS = $(NCURSES_INCLUDE) -I$(top_srcdir)/pinentry

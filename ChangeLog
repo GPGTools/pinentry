@@ -1,3 +1,7 @@
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	Added Manifest files to all directories.
+
 2003-12-22  Werner Koch  <wk@gnupg.org>
 
 	* qt/main.cpp: Include errno.h.

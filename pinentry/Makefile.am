@@ -19,6 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = Manifest
+
 if BUILD_LIBPINENTRY_CURSES
 pinentry_curses = libpinentry-curses.a
 else

@@ -1,3 +1,8 @@
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (EXTRA_DIST): Added Manifest.
+	* Manifest: Added.
+
 2003-12-22  Werner Koch  <wk@gnupg.org>
 
 	* assuan.h (ASSUAN_Locale_Problem): Added.
@@ -199,10 +204,9 @@
 	* assuan-defs.h: Add space in the context for this.
 
 	
-     ***********************************************************
-     * Please note that Assuan is maintained as part of GnuPG. *
-     * You may find it source-copied in other packages.        *
-     ***********************************************************	
+     *************************************************************
+     * Please note that Assuan is source copied from liibassuan. *
+     *************************************************************	
 	
  Copyright 2001, 2002 Free Software Foundation, Inc.
 
