@@ -204,9 +204,9 @@
 	* assuan-defs.h: Add space in the context for this.
 
 	
-     *************************************************************
-     * Please note that Assuan is source copied from liibassuan. *
-     *************************************************************	
+     ************************************************************
+     * Please note that Assuan is source copied from libassuan. *
+     ************************************************************	
 	
  Copyright 2001, 2002 Free Software Foundation, Inc.
 
