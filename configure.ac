@@ -51,6 +51,7 @@ AC_PROG_RANLIB
 # We need to check for cplusplus here becuase we may not do the test
 # for Qt and autoconf does does not allow that.
 AC_PROG_CXX
+AC_PROG_LN_S
 
 dnl Checks for compiler features.
 if test "$GCC" = yes; then
@@ -274,6 +275,25 @@ dnl dnl Additional checks for Qt pinentry.
 dnl dnl End of checks for Qt pinentry.
 dnl fi
 
+if test "$pinentry_gtk" = "yes"; then
+   PINENTRY_DEFAULT=pinentry-gtk
+else
+  if test "$pinentry_qt" = "yes"; then
+    PINENTRY_DEFAULT=pinentry-qt
+  else
+    if test "$pinentry_gtk_2" = "yes"; then
+      PINENTRY_DEFAULT=pinentry-gtk-2
+    else
+      if test "$pinentry_curses" = "yes"; then
+        PINENTRY_DEFAULT=pinentry-curses
+      else
+        AC_MSG_ERROR([[No pinentry enabled.]])
+      fi
+    fi
+  fi
+fi
+AC_SUBST(PINENTRY_DEFAULT)
+
 
 AC_CONFIG_FILES([
 assuan/Makefile
@@ -298,4 +318,6 @@ AC_MSG_NOTICE([
 	Qt Pinentry: $pinentry_qt
 
 	Fallback to Curses: $fallback_curses
+
+	Default Pinentry: $PINENTRY_DEFAULT
 ])

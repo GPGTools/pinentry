@@ -1,5 +1,10 @@
 2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Invoke AC_PROG_LN_S.
+	(PINENTRY_DEFAULT): New variable.  Substitute it.  Fail if no
+	default can be determined.
+	* Makefile.am (install-exec-local): Install pinentry default link.
+
 	* configure.ac: Check for Gtk+-2.
 	* gtk+-2: New directory with gtk+-2 pinentry.
 	* gtk+-2/Makefile.am, gtk+-2/gtksecentry.h, gtk+-2/gtksecentry.c,

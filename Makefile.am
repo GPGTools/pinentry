@@ -60,3 +60,7 @@ install-exec-local:
 	  echo "  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
 	  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'` || true; \
 	done
+
+	(cd $(DESTDIR)$(bindir); \
+	rm -f pinentry; \
+	$(LN_S) $(PINENTRY_DEFAULT) pinentry)

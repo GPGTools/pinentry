@@ -6,6 +6,10 @@ Noteworthy changes in version 0.7.2 (unreleased)
 
  * Add GTK+-2 pinentry.
 
+ * Install a symbolic link under the name "pinentry" that defaults to
+   pinentry-gtk, pinentry-qt, pinentry-gtk-2, or pinentry-curses, in
+   that order.
+
 Noteworthy changes in version 0.7.1 (2004-04-21)
 ------------------------------------------------
 
