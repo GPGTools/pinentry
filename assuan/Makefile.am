@@ -26,8 +26,6 @@ MOSTLYCLEANFILES = assuan-errors.c
 
 noinst_LIBRARIES = libassuan.a
 
-
-#libassuan_a_LDFLAGS =
 libassuan_a_SOURCES = \
 	assuan.h \
 	assuan-defs.h \

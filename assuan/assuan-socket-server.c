@@ -25,6 +25,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#ifdef USE_GNU_PTH
+# include <pth.h>
+#endif
 
 #include "assuan-defs.h"
 
@@ -35,12 +38,27 @@ accept_connection (ASSUAN_CONTEXT ctx)
   struct sockaddr_un clnt_addr;
   size_t len = sizeof clnt_addr;
 
+  ctx->client_pid = (pid_t)-1;
+#ifdef USE_GNU_PTH
+  fd = pth_accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
+#else
   fd = accept (ctx->listen_fd, (struct sockaddr*)&clnt_addr, &len );
+#endif
   if (fd == -1)
     {
       ctx->os_errno = errno;
       return ASSUAN_Accept_Failed;
     }
+
+#ifdef HAVE_SO_PEERCRED
+  {
+    struct ucred cr; 
+    int cl = sizeof cr;
+
+    if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl) ) 
+      ctx->client_pid = cr.pid;
+  }
+#endif
 
   ctx->inbound.fd = fd;
   ctx->inbound.eof = 0;
