@@ -30,6 +30,23 @@ extern "C"
 #endif
 
 #include <stdlib.h>
+#include <util.h>
+
+static void strcpy_escaped (char *d, const char *s)
+{
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        {
+          s++;
+          *d++ = xtoi_2 ( s);
+          s += 2;
+        }
+      else
+        *d++ = *s++;
+    }
+  *d = 0;
+}
 
 PinEntryController::PinEntryController() : _pinentry( 0 )
 {
@@ -104,8 +121,14 @@ int PinEntryController::assuanDesc( ASSUAN_CONTEXT ctx, char* line )
 {
   //qDebug("PinEntryController::assuanDesc( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
-  that->_desc = QString::fromUtf8(line);
+
+  char* newl = new char[strlen (line) + 1];
+  strcpy_escaped( newl, line );
+
+  that->_desc = QString::fromUtf8(newl);
   that->_error = QString::null;
+
+  delete[] newl;
   return 0;
 }
 
@@ -113,8 +136,14 @@ int PinEntryController::assuanPrompt( ASSUAN_CONTEXT ctx, char* line )
 {
   //qDebug("PinEntryController::assuanPrompt( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
-  that->_prompt = QString::fromUtf8(line);
+
+  char* newl = new char[strlen (line) + 1];
+  strcpy_escaped( newl, line );
+
+  that->_prompt = QString::fromUtf8(newl);
   that->_error = QString::null;
+
+  delete[] newl;
   return 0;
 }
 
@@ -122,7 +151,13 @@ int PinEntryController::assuanError( ASSUAN_CONTEXT ctx, char* line )
 {
   //qDebug("PinEntryController::assuanError( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
-  that->_error = QString::fromUtf8(line);
+
+  char* newl = new char[strlen (line) + 1];
+  strcpy_escaped( newl, line );
+
+  that->_error = QString::fromUtf8(newl);
+
+  delete[] newl;
   return 0;
 }
 
@@ -130,7 +165,13 @@ int PinEntryController::assuanOk ( ASSUAN_CONTEXT ctx, char* line )
 {
   //qDebug("PinEntryController::assuanOk( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
+
+  char* newl = new char[strlen (line) + 1];
+  strcpy_escaped( newl, line );
+
   that->_ok = QString::fromUtf8(line);
+
+  delete[] newl;
   return 0;
 }
 
@@ -138,7 +179,13 @@ int PinEntryController::assuanCancel( ASSUAN_CONTEXT ctx, char* line )
 {
   //qDebug("PinEntryController::assuanCancel( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
+
+  char* newl = new char[strlen (line) + 1];
+  strcpy_escaped( newl, line );
+
   that->_cancel = QString::fromUtf8(line);
+
+  delete[] newl;
   return 0;
 }
 
