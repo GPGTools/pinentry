@@ -19,9 +19,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  
 # (Process this file with autoconf to produce a configure script.)
-AC_REVISION($Revision$)
+AC_PREREQ(2.57)
+min_automake_version="1.7.6"
 
-AC_PREREQ(2.52)
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
 AC_INIT(pinentry, 0.6.10-cvs, [gpa-dev@gnupg.org])

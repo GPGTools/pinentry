@@ -1,3 +1,8 @@
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Added min_automake_versions.
+	* autogen.sh: Revamped.
+
 2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
 	* configure.ac: Version 0.6.10-cvs
