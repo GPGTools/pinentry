@@ -11,6 +11,3 @@
 * The KDE PIN entry needs to use libpinentry (maybe).
 
 * Configure checks for KDE libs and features are needed.
-
-* libcap has a local install target in the GTK+ pinentry, needs to be
-  made top level.
