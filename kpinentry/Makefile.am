@@ -1,4 +1,4 @@
-CXXFLAGS += $(USE_EXCEPTIONS)
+KDE_CXXFLAGS = $(USE_EXCEPTIONS)
 bin_PROGRAMS = kpinentry
 kpinentry_SOURCES = pinentrydialog.cpp pinentrycontroller.cpp secmem.cpp cppmemory.cpp util.cpp main.cpp 
 kpinentry_LDADD   =  $(LIB_QT) $(LIB_KDECORE) $(LIB_KDEUI)
@@ -10,15 +10,9 @@ EXTRA_DIST = main.cpp pinentrydialog.cpp pinentrydialog.h \
 install-data-local:
 	$(mkinstalldirs) $(kde_appsdir)/Applications/
 	$(INSTALL_DATA) $(srcdir)/pinentry.desktop $(kde_appsdir)/Applications/pinentry.desktop
-	#$(mkinstalldirs) $(kde_icondir)/locolor/32x32/apps/
-	#$(INSTALL_DATA) $(srcdir)/lo32-app-pinentry.png $(kde_icondir)/locolor/32x32/apps/pinentry.png
-	#$(mkinstalldirs) $(kde_icondir)/locolor/16x16/apps/
-	#$(INSTALL_DATA) $(srcdir)/lo16-app-pinentry.png $(kde_icondir)/locolor/16x16/apps/pinentry.png
 
 uninstall-local:
 	-rm -f $(kde_appsdir)/Applications/pinentry.desktop
-	#-rm -f $(kde_icondir)/locolor/32x32/apps/pinentry.png
-	#-rm -f $(kde_icondir)/locolor/16x16/apps/pinentry.png
 
 ####### kdevelop will overwrite this part!!! (end)############
 # this 10 paths are KDE specific. Use them:
