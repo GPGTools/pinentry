@@ -22,7 +22,7 @@ PinEntryController::PinEntryController() : _pinentry( 0 )
 
 PinEntryController::~PinEntryController()
 {
-  assuan_deinit_pipe_server( _ctx );
+  assuan_deinit_server( _ctx );
 }
 
 void PinEntryController::exec()

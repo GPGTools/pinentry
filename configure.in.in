@@ -49,7 +49,8 @@ AC_DEFUN(AC_PATH_ASSUAN,
 	ac_assuan_libraries="$assuan_libdir"
 
 	if test "$ac_assuan_includes" = "NO" || test "$ac_assuan_libraries" = "NO"; then
-		AC_MSG_RESULT([Could not find assuan])
+		AC_MSG_RESULT([Could not find assuan.
+	Please use --with-assuan-dir=DIR to point configure to the assuan library.])
 		exit -1
 	else
 	    ASSUAN_INCLUDES="-I$ac_assuan_includes "
