@@ -2,6 +2,8 @@
 
 	Released 0.7.2.
 	
+	* gtk+-2/Makefile.am: Removed padlock-keyhole.xpm.
+
 	* configure.ac: Use AC_GNU_SOURCE instead of the custom define.
 	Prefer gtk2 pinentry over qt.
 
