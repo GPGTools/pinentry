@@ -19,18 +19,19 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = pinentry-kde
+bin_PROGRAMS = pinentry-qt
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(all_includes)
-pinentry_kde_LDADD = $(top_builddir)/assuan/libassuan.a \
+AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) 
+AM_CXXFLAGS = $(QT_CXXFLAGS)
+pinentry_qt_LDADD = $(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
-	$(LIB_QT) # $(LIB_KDECORE) $(LIB_KDEUI)
-pinentry_kde_LDFLAGS = $(all_libraries) $(KDE_RPATH) 
+	$(QT_LIBS)
+pinentry_qt_LDFLAGS = $(QT_LDFLAGS)
 
-pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp \
+pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	pinentrycontroller.h pinentrycontroller.cpp \
 	cppmemory.cpp main.cpp 
-nodist_pinentry_kde_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
+nodist_pinentry_qt_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
 
 %.moc.cpp: $(srcdir)/%.h
 	$(MOC) $< -o $@

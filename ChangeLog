@@ -1,5 +1,25 @@
 2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
 
+	* qt: New directory.
+	* qt/Makefile.am, qt/cppmemory.cpp, qt/main.cpp,
+	pinentrycontroller.cpp, qt/pinentrycontroller.h,
+	qt/pinentrydialog.cpp, qt/pinentrydialog.h: New file, copied from
+	kde/.
+	* kde: Directory removed.
+	* kde/Makefile.am, kde/cppmemory.cpp, kde/main.cpp,
+	kde/pinentry.desktop, kde/pinentrycontroller.cpp,
+	kde/pinentrycontroller.h, kde/pinentrydialog.cpp,
+	kde/pinentrydialog.h: Files removed.
+	* acinclude.m4: Removed the KE checks and completely overhauled
+	the Qt checks, putting all Qt checks in their own namespace QT_,
+	and make it declare QT_-prefixed variables for linking and
+	compilation.
+	* configure.ac: Use the new Qt checks instead the KDE checks.
+	Replace "kde" with "qt" everywhere.
+	* Makefile.am: Replace "kde" with "qt" everywhere.
+	
+2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
 	* acinclude.m4: Reworked the Qt and KDE checks, cutting out a lot
 	of dead and not-so-dead wood.  Gave all KDE checks proper names.
 	* configure.ac: Use the new names for the KDE checks.

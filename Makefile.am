@@ -33,14 +33,14 @@ else
 pinentry_gtk = 
 endif
 
-if BUILD_PINENTRY_KDE
-pinentry_kde = kde
+if BUILD_PINENTRY_QT
+pinentry_qt = qt
 else
-pinentry_kde = 
+pinentry_qt = 
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_kde}
+	${pinentry_gtk} ${pinentry_qt}
 
 signed-dist: $(distdir).tar.gz.sig
 

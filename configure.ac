@@ -150,28 +150,28 @@ fi
 
 
 dnl
-dnl Check for KDE pinentry program.
+dnl Check for Qt pinentry program.
 dnl
-AC_ARG_ENABLE(pinentry-kde,
-            AC_HELP_STRING([--enable-pinentry-kde], [build KDE pinentry]),
-            pinentry_kde=$enableval, pinentry_kde=no)
+AC_ARG_ENABLE(pinentry-qt,
+            AC_HELP_STRING([--enable-pinentry-qt], [build Qt pinentry]),
+            pinentry_qt=$enableval, pinentry_qt=no)
 dnl
-dnl Checks for KDE libraries.  Deal correctly with $pinentry_kde = maybe.
+dnl Checks for Qt libraries.  Deal correctly with $pinentry_qt = maybe.
 dnl
-if test "$pinentry_kde" != "no"; then
-KDE_CHECK_COMPILERS
-KDE_PATH_KDE
+if test "$pinentry_qt" != "no"; then
+QT_CHECK_COMPILERS
+QT_PATH
 fi
 
-dnl If we have come so far, KDE pinentry can probably be build.
-if test "$pinentry_kde" != "no"; then
-    pinentry_kde=yes
+dnl If we have come so far, Qt pinentry can probably be build.
+if test "$pinentry_qt" != "no"; then
+    pinentry_qt=yes
 fi
-AM_CONDITIONAL(BUILD_PINENTRY_KDE, test "$pinentry_kde" = "yes")
+AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
 
-dnl if test "$pinentry_kde" = "yes"; then
-dnl dnl Additional checks for KDE pinentry.
-dnl dnl End of checks for KDE pinentry.
+dnl if test "$pinentry_qt" = "yes"; then
+dnl dnl Additional checks for Qt pinentry.
+dnl dnl End of checks for Qt pinentry.
 dnl fi
 
 
@@ -181,7 +181,7 @@ secmem/Makefile
 pinentry/Makefile
 curses/Makefile
 gtk/Makefile
-kde/Makefile
+qt/Makefile
 Makefile
 ])
 
@@ -192,5 +192,5 @@ AC_MSG_NOTICE([
 
 	Curses Pinentry: $pinentry_curses
 	GTK+ Pinentry: $pinentry_gtk
-	KDE Pinentry: $pinentry_kde
+	Qt Pinentry: $pinentry_qt
 ])

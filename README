@@ -7,13 +7,13 @@ http://www.gnupg.org/aegypten/ for details.
 
 There are programs for different toolkits available.  For the Curses
 and GTK+ GUIs it is automatically detected which modules can be built,
-but it can also be requested explicitely.  For the KDE GUI it MUST be
+but it can also be requested explicitely.  For the Qt GUI it MUST be
 requested explicitely, as an automatic check is not yet implemented.
 
 GUI	OPTION			 DEPENDENCIES
 Curses	--enable-pinentry-curses Curses library, for example ncurses
 GTK+	--enable-pinentry-gtk	 Gimp Toolkit Library, eg libgtk and libglib
-KDE	--enable-pinentry-kde	 KDE, eg libqt, libkdecore and libkdeui
+Qt	--enable-pinentry-qt	 Qt, eg libqt-mt
 
 Some of the is taken from Robert Bihlmeyer's Quituple-Agent.  For
 security reasons all internationalization has been removed as the

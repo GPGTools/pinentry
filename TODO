@@ -5,8 +5,8 @@
 * The DISPLAY setting should be honoured by the pinentry applications using XFree86.
   This implies reconfiguring the underlying toolkit, is this always possible?
 
-* The KDE and curses PIN entry need enhanced mode.
+* The Qt and curses PIN entry need enhanced mode.
 
-* The KDE PIN entry needs to use libpinentry (maybe).
+* The Qt PIN entry needs to use libpinentry (maybe).
 
-* Configure checks for KDE libs and features could be improved.
+* Configure checks for Qt libs and features could be improved.
