@@ -29,12 +29,12 @@ uninstall-local:
 # kde_wallpaperdir  Where general wallpapers should go to.
 
 # set the include path for X, qt and KDE
-INCLUDES= $(all_includes) $(ASSUAN_INCLUDES)
+INCLUDES= $(all_includes) -I$(srcdir)/../assuan -I$(srcdir)/../jnlib
 
 METASOURCES = AUTO
 
 # the library search path. 
-kpinentry_LDFLAGS = $(all_libraries) $(ASSUAN_LDFLAGS) $(KDE_RPATH)
+kpinentry_LDFLAGS = $(all_libraries) $(KDE_RPATH) ../assuan/libassuan.a ../jnlib/libjnlib.a
 
 # Uncomment the following two lines if you add a ui.rc file for your application to make use of
 # KDE´s XML GUI builing

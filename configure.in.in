@@ -63,9 +63,32 @@ AC_SUBST(ASSUAN_LDFLAGS)
 AC_SUBST(LIBASSUAN)
 ])
 
-AC_PATH_ASSUAN
+dnl AC_PATH_ASSUAN
+AC_SUBST(ASSUAN_INCLUDES)
+AC_SUBST(ASSUAN_LDFLAGS)
+AC_SUBST(LIBASSUAN)
 
-AC_CHECK_FUNCS(getdelim seteuid strsignal vsnprintf)
+AC_CHECK_GNU_EXTENSIONS
+
+
+AC_CHECK_FUNCS(asprintf,,[
+    AC_MSG_ERROR([[
+***
+*** asprintf(3) is needed to build this package.
+*** We will provide an replacement in a later release.
+***]])])
+AC_CHECK_FUNCS(fopencookie,,[
+    AC_MSG_ERROR([[
+***
+*** fopencookie(3) is needed to build this package.
+*** We will provide an replacement in a later release.
+***]])])
+
+# We use jnlib, so tell other modules about it
+AC_DEFINE(HAVE_JNLIB_LOGGING, 1,
+        [Defined if jnlib style logging fucntions are available])
+
+AC_CHECK_FUNCS(getdelim seteuid strsignal vsnprintf memicmp stpcpy strlwr strtoul memmove stricmp strtol)
 AC_REPLACE_FUNCS(asprintf getline setenv strdup)
 
 dnl this one stolen from GnuPG

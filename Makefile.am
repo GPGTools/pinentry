@@ -1,6 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-SUBDIRS = kpinentry po doc 
+SUBDIRS = jnlib assuan kpinentry po doc 
 
 EXTRA_DIST = pinentry.kdevprj AUTHORS COPYING ChangeLog INSTALL README TODO pinentry.lsm 
 
