@@ -21,6 +21,7 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
+#include <qmessagebox.h>
 
 #include "pinentrydialog.h"
 
@@ -28,11 +29,19 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   : QDialog( parent, name, modal ), _grabbed( false )
 {
   QBoxLayout* top = new QVBoxLayout( this, 6 );
+  QBoxLayout* upperLayout = new QHBoxLayout( top );
+
+  _icon = new QLabel( this );
+  _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Information ) );
+  upperLayout->addWidget( _icon );
+
+  QBoxLayout* labelLayout = new QVBoxLayout( upperLayout );
+
   _error = new QLabel( this );
-  top->addWidget( _error );
+  labelLayout->addWidget( _error );
 
   _desc = new QLabel( this );
-  top->addWidget( _desc );
+  labelLayout->addWidget( _desc );
 
   QBoxLayout* l = new QHBoxLayout( top );
   _prompt = new QLabel( this );
@@ -90,6 +99,7 @@ void PinEntryDialog::keyPressEvent( QKeyEvent* e )
 void PinEntryDialog::setDescription( const QString& txt ) 
 {
   _desc->setText( txt );
+  _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Information ) );
   setError( QString::null );
 }
 
@@ -100,6 +110,7 @@ QString PinEntryDialog::description() const
 
 void PinEntryDialog::setError( const QString& txt ) 
 {
+  if( !txt.isNull() )_icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Critical ) );
   _error->setText( txt );
 }
 

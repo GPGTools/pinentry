@@ -62,6 +62,7 @@ protected:
   virtual void paintEvent( QPaintEvent* );
 
 private:
+  QLabel*    _icon;
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;

@@ -1,3 +1,8 @@
+2003-02-15  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* qt/pinentrydialog.h, qt/pinentrydialog.cpp: Added icons 
+	  for error/non-error messages.
+
 2003-02-07  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.6.8.
