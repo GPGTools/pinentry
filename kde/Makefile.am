@@ -27,9 +27,10 @@ pinentry_kde_LDADD = $(top_builddir)/assuan/libassuan.a \
 	$(LIB_QT) $(LIB_KDECORE) $(LIB_KDEUI)
 pinentry_kde_LDFLAGS = $(all_libraries) $(KDE_RPATH) 
 
-pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp pinentrydialog.moc.cpp \
-	pinentrycontroller.h pinentrycontroller.cpp pinentrycontroller.moc.cpp \
+pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp \
+	pinentrycontroller.h pinentrycontroller.cpp \
 	cppmemory.cpp main.cpp 
+nodist_pinentry_kde_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
 
 EXTRA_DIST = pinentry.desktop  
 

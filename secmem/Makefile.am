@@ -22,7 +22,7 @@
 noinst_LIBRARIES = libsecmem.a
 
 libsecmem_a_SOURCES = \
-	secmem.h \
+	memory.h \
 	secmem-util.h \
 	util.h \
 	secmem.c \

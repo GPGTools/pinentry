@@ -1,5 +1,16 @@
 2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
 
+	Released 0.6.0.
+	
+	* configure.ac: Set version number to 0.6.
+	* NEWS: Add information for 0.6.0.
+	* secmem/Makefile.am (libsecmem_a_SOURCES): Replace secmem.h with memory.
+	* kde/Makefile.am (pinentry_kde_SOURCES): Move
+	pinentrydialog.moc.cpp and pinentrycontroller.moc.cpp to ...
+	(nodist_pinentry_kde_SOURCES): ... this new target.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
 	* acinclude.m4: A lot of new checks more or less straight from KDE's
 	admin/acinclude.m4.in.
 	* configure.ac (AC_CANONICAL_HOST): Call that macro.

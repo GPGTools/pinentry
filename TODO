@@ -9,4 +9,4 @@
 
 * The KDE PIN entry needs to use libpinentry (maybe).
 
-* Configure checks for KDE libs and features are needed.
+* Configure checks for KDE libs and features could be improved.

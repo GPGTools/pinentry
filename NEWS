@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.6.0 (2002-04-05)
+------------------------------------------------
 
   * Merged all pinentry frontends into a single module.
 
