@@ -80,6 +80,8 @@ int PinEntryController::registerCommands()
     { "SETDESC",      0,  PinEntryController::assuanDesc },
     { "SETPROMPT",    0,  PinEntryController::assuanPrompt },
     { "SETERROR",     0,  PinEntryController::assuanError },
+    { "SETOK",        0,  PinEntryController::assuanOk },
+    { "SETCANCEL",    0,  PinEntryController::assuanCancel },
     { "GETPIN",       0,  PinEntryController::assuanGetpin },
     { "CONFIRM",      0,  PinEntryController::assuanConfirm },
     { 0,0,0 }
@@ -119,6 +121,22 @@ int PinEntryController::assuanError( ASSUAN_CONTEXT ctx, char* line )
   //qDebug("PinEntryController::assuanError( %s )", line );
   PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
   that->_error = QString::fromUtf8(line);
+  return 0;
+}
+
+int PinEntryController::assuanOk ( ASSUAN_CONTEXT ctx, char* line )
+{
+  //qDebug("PinEntryController::assuanOk( %s )", line );
+  PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
+  that->_ok = QString::fromUtf8(line);
+  return 0;
+}
+
+int PinEntryController::assuanCancel( ASSUAN_CONTEXT ctx, char* line )
+{
+  //qDebug("PinEntryController::assuanCancel( %s )", line );
+  PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
+  that->_cancel = QString::fromUtf8(line);
   return 0;
 }
 

@@ -56,6 +56,8 @@ private:
   QString _desc;
   QString _prompt;
   QString _error;
+  QString _ok;
+  QString _cancel;
 };
 
 #endif // __PINENTRYCONTROLLER_H__
