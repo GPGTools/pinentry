@@ -1,3 +1,7 @@
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* mkerrors: Add missing last LF.
+
 2004-01-30  Werner Koch  <wk@gnupg.org>
 
 	* assuan-inquire.c, assuan-connect.c, assuan-client.c
