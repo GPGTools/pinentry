@@ -6,3 +6,7 @@
   implemented in gpg-agent).
 
 * The Qt PIN entry needs to use libpinentry (maybe).
+
+* A heartbeat status message should be send every few seconds, so that
+  the gpg-agent is better able to cope with jammed pinentries.
+
