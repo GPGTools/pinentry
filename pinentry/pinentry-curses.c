@@ -171,6 +171,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       char *p = description;
       int desc_x = 0;
 
+      /* fixme: Implement autowrap so that we don't need to truncate lines. */
       while (*p)
 	{
 	  if (*(p++) == '\n')
@@ -299,11 +300,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  move (ypos, xpos);
 	  addch (ACS_VLINE);
 	  addch (' ');
-	  while (*p && *p != '\n')
+	  for (;*p && *p != '\n'; p++)
 	    if (i < x - 4)
 	      {
 		i++;
-		addch ((unsigned char) *(p++));
+		addch ((unsigned char) *p);
 	      }
 	  if (*p == '\n')
 	    p++;
@@ -332,11 +333,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 		attron (COLOR_PAIR(1) | A_BOLD);
 	      else
 		standout ();
-	      while (*p && *p != '\n')
+	      for (;*p && *p != '\n'; p++)
 		if (i < x - 4)
 		  {
 		    i++;
-		    addch ((unsigned char) *(p++));
+		    addch ((unsigned char) *p);
 		  }
 	      if (has_colors () && COLOR_PAIRS >= 1)
 		attroff (COLOR_PAIR(1) | A_BOLD);
@@ -656,6 +657,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	    case DIALOG_POS_CANCEL:
 	      done = -2;
 	      break;
+            case DIALOG_POS_NONE:
+              break;
 	    }
 	  break;
 

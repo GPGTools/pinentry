@@ -1,6 +1,8 @@
-Noteworthy changes in version 0.6.7 (unreleased)
+Noteworthy changes in version 0.6.7 (2002-11-20)
 ------------------------------------------------
 
+ * Workaround for a bug in the curses version which led to an infinite
+   loop.
 
 Noteworthy changes in version 0.6.6 (2002-11-09)
 ------------------------------------------------
