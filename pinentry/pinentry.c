@@ -38,6 +38,8 @@ struct pinentry pinentry =
     NULL,	/* Description.  */
     NULL,	/* Error.  */
     NULL,	/* Prompt.  */
+    NULL,	/* Ok button.  */
+    NULL,	/* Cancel button.  */
     NULL,	/* PIN.  */
     2048,	/* PIN length.  */
     0,		/* Display.  */
@@ -330,6 +332,40 @@ cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
 
 
 static int
+cmd_setok (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *newo;
+  newo = malloc (strlen (line) + 1);
+
+  if (!newo)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy (newo, line);
+  if (pinentry.ok)
+    free (pinentry.ok);
+  pinentry.ok = newo;
+  return 0;
+}
+
+
+static int
+cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *newc;
+  newc = malloc (strlen (line) + 1);
+
+  if (!newc)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy (newc, line);
+  if (pinentry.cancel)
+    free (pinentry.cancel);
+  pinentry.cancel = newc;
+  return 0;
+}
+
+
+static int
 cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 {
   int result;
@@ -398,6 +434,8 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "SETDESC",    0,  cmd_setdesc },
       { "SETPROMPT",  0,  cmd_setprompt },
       { "SETERROR",   0,  cmd_seterror },
+      { "SETOK",      0,  cmd_setok },
+      { "SETCANCEL",  0,  cmd_setcancel },
       { "GETPIN",     0,  cmd_getpin },
       { "CONFIRM",    0,  cmd_confirm },
       { NULL }

@@ -26,6 +26,10 @@ struct pinentry
   char *error;
   /* The prompt to display, or NULL.  */
   char *prompt;
+  /* The OK button text to display, or NULL.  */
+  char *ok;
+  /* The Cancel button text to display, or NULL.  */
+  char *cancel;
   /* The buffer to store the secret into.  */
   char *pin;
   /* The length of the buffer.  */

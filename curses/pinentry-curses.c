@@ -162,57 +162,47 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
   if (pinentry->prompt)
     {
-      if (pinentry->pin)
+      prompt = convert_utf8_string (pinentry->lc_ctype,
+				    pinentry->prompt);
+      if (!prompt)
 	{
-	  prompt = convert_utf8_string (pinentry->lc_ctype,
-					pinentry->prompt);
-	  if (!prompt)
-	    {
-	      err = 1;
-	      goto out;
-	    }
-	}
-      else
-	{
-	  char *split;
-	  split = strchr (pinentry->prompt, '|');
-	  if (split)
-	    {
-	      int len = split - pinentry->prompt;
-
-	      ok = malloc (len + 3);
-	      if (!ok)
-		{
-		  err = 1;
-		  goto out;
-		}
-	      ok[0] = '<';
-	      memcpy (&ok[1], pinentry->prompt, len);
-	      ok[len + 1] = '>';
-	      ok[len + 2] = '\0';
-
-	      len = strlen (++split);
-	      cancel = malloc (len + 3);
-	      if (!cancel)
-		{
-		  err = 1;
-		  goto out;
-		}
-	      cancel[0] = '<';
-	      memcpy (&cancel[1], split, len);
-	      cancel[len + 1] = '>';
-	      cancel[len + 2] = '\0';
-	    }
+	  err = 1;
+	  goto out;
 	}
     }
+  if (pinentry->ok)
+    {
+      int len = strlen (pinentry->ok);
+      ok = malloc (len + 3);
+      if (!ok)
+	{
+	  err = 1;
+	  goto out;
+	}
+      ok[0] = '<';
+      memcpy (&ok[1], pinentry->ok, len);
+      ok[len + 1] = '>';
+      ok[len + 2] = '\0';
+    }
+  if (pinentry->cancel)
+    {
+      int len = strlen (pinentry->cancel);
+      cancel = malloc (len + 3);
+      if (!cancel)
+	{
+	  err = 1;
+	  goto out;
+	}
+      cancel[0] = '<';
+      memcpy (&cancel[1], pinentry->cancel, len);
+      cancel[len + 1] = '>';
+      cancel[len + 2] = '\0';
+    }
+
   dialog->ok = convert_utf8_string (pinentry->lc_ctype,
 				    ok ? ok : STRING_OK);
   dialog->cancel = convert_utf8_string (pinentry->lc_ctype,
 					cancel ? cancel : STRING_CANCEL);
-  if (ok)
-    free (ok);
-  if (cancel)
-    free (cancel);
   if (!dialog->ok || !dialog->cancel)
     {
       err = 1;
@@ -420,6 +410,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   addstr (dialog->cancel);
 
  out:
+  if (ok)
+    free (ok);
+  if (cancel)
+    free (cancel);
   if (description)
     free (description);
   if (error)
