@@ -60,7 +60,8 @@ struct pinentry pinentry =
     0,		/* Enhanced mode.  */
     1,		/* Global grab.  */
     0,		/* Parent Window ID.  */
-    0		/* Result.  */
+    0,		/* Result.  */
+    0           /* Locale error flag. */
   };
 
 
@@ -78,7 +79,11 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
   /* If no locale setting could be determined, simply copy the
      string.  */
   if (!lc_ctype)
-    return strdup (text);
+    {
+      fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+               this_pgmname);
+      return strdup (text);
+    }
 
   /* This is overkill, but simplifies the iconv invocation greatly.  */
   output_len = input_len * MB_LEN_MAX;
@@ -89,20 +94,24 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
   cd = iconv_open (lc_ctype, "UTF-8");
   if (cd == (iconv_t) -1)
     {
-      free (output);
+      fprintf (stderr, "%s: can't convert from UTF-8 to local code set: %s\n",
+               this_pgmname, strerror (errno));
+      free (output_buf);
       return NULL;
     }
   processed = iconv (cd, &input, &input_len, &output, &output_len);
   iconv_close (cd);
   if (processed == (size_t) -1 || input_len)
     {
+      fprintf (stderr, "%s: error converting from UTF-8 to local code set: %s\n"
+               , this_pgmname, strerror (errno));
       free (output_buf);
       return NULL;
     }
   return output_buf;
 }
 
-/* Convert TEXT whcih is encoded according to LC_CTYPE to UTF-8.  With
+/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
    SECURE set to true, use secure memory for the returned buffer.
    Return NULL on error. */
 char *
@@ -122,6 +131,8 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
      string.  */
   if (!lc_ctype)
     {
+      fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+               this_pgmname);
       output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
       if (output_buf)
         strcpy (output_buf, input);
@@ -145,18 +156,24 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
   cd = iconv_open ("UTF-8", source_encoding);
   if (cd == (iconv_t) -1)
     {
+      fprintf (stderr, "%s: can't convert from %s to UTF-8: %s\n",
+               this_pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
       if (secure)
-        secmem_free (output);
+        secmem_free (output_buf);
       else
-        free (output);
+        free (output_buf);
       return NULL;
     }
   processed = iconv (cd, &input, &input_len, &output, &output_len);
   iconv_close (cd);
   if (processed == (size_t) -1 || input_len)
     {
+      fprintf (stderr, "%s: error converting from %s to UTF-8: %s\n",
+               this_pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
       if (secure)
-        secmem_free (output);
+        secmem_free (output_buf);
       else
         free (output_buf);
       return NULL;
@@ -231,7 +248,6 @@ pinentry_have_display (int argc, char **argv)
 static void 
 usage (void)
 {
-  /* FIXME: replace the "?" by the real program name. */
   fprintf (stderr, "Usage: %s [OPTION]...\n\
 Ask securely for a secret and print it to stdout.\n\
 \n\
@@ -523,6 +539,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       pinentry.prompt = "PIN:";
       set_prompt = 1;
     }
+  pinentry.locale_err = 0;
 
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -540,7 +557,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 	  secmem_free (pinentry.pin);
 	  pinentry.pin = NULL;
 	}
-      return ASSUAN_Canceled;
+      return pinentry.locale_err? ASSUAN_Locale_Problem: ASSUAN_Canceled;
     }
 
   if (result)
@@ -565,6 +582,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 {
   int result;
 
+  pinentry.locale_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
@@ -572,7 +590,9 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
       pinentry.error = NULL;
     }
 
-  return result ? 0 : ASSUAN_Not_Confirmed;
+  return result ? 0
+                : (pinentry.locale_err? ASSUAN_Locale_Problem
+                                      : ASSUAN_Not_Confirmed);
 }
 
 

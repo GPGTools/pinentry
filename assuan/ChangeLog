@@ -1,3 +1,7 @@
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* assuan.h (ASSUAN_Locale_Problem): Added.
+
 2002-04-04  Werner Koch  <wk@gnupg.org>
 
 	* assuan-buffer.c (my_log_prefix): New.  Use it for all i/o debug

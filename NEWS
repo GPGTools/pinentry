@@ -13,6 +13,9 @@ Noteworthy changes in version 0.7.0 (unreleased)
 
  * Disabled undo/redo in Qt pinentry.
 
+ * Print diagnostics for locale problems and return a new error code
+   instead of Canceled or Not Confirmed. 
+
 
 Noteworthy changes in version 0.6.8 (2003-02-07)
 ------------------------------------------------

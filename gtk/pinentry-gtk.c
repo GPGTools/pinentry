@@ -131,9 +131,10 @@ static void
 button_clicked (GtkWidget *widget, gpointer data)
 {
   if (data)
-    { /* okay button or enter used inntext field */
+    { /* Okay button hit or Enter used in the text field. */
       const char *s;
       char *s_utf8;
+      char *s_buffer;
 
       if (pinentry->enhanced)
         {
@@ -144,18 +145,26 @@ button_clicked (GtkWidget *widget, gpointer data)
                  gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(time_out)));
         }
 
+      pinentry->locale_err = 1;
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY(entry));
       if (!s)
         s = "";
-      s_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
-      if (s_utf8)
-	{
-	  passphrase_ok = 1;
-	  pinentry_setbufferlen (pinentry, strlen (s_utf8) + 1);
-	  if (pinentry->pin)
-	    strcpy (pinentry->pin, s_utf8);
-	  secmem_free (s_utf8);
-	}
+      s_buffer = secmem_malloc (strlen (s) + 1);
+      if (s_buffer)
+        {
+          strcpy (s_buffer, s);
+          s_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, s_buffer, 1);
+          secmem_free (s_buffer);
+          if (s_utf8)
+            {
+              passphrase_ok = 1;
+              pinentry_setbufferlen (pinentry, strlen (s_utf8) + 1);
+              if (pinentry->pin)
+                strcpy (pinentry->pin, s_utf8);
+              secmem_free (s_utf8);
+              pinentry->locale_err = 0;
+            }
+        }
     }
   gtk_main_quit ();
 }

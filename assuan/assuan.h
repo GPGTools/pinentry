@@ -77,7 +77,7 @@ typedef enum {
   ASSUAN_Unexpected_Status = 124,
   ASSUAN_Unexpected_Data = 125,
   ASSUAN_Invalid_Status = 126,
-
+  ASSUAN_Locale_Problem = 127,
   ASSUAN_Not_Confirmed = 128,
 
   ASSUAN_Bad_Certificate = 201,

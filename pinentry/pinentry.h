@@ -1,5 +1,5 @@
 /* pinentry.h - The interface for the PIN entry support library.
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2003 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -66,6 +66,11 @@ struct pinentry
   /* The user should set this to -1 if the user canceled the request,
      and to the length of the PIN stored in pin otherwise.  */
   int result;
+
+  /* The user should set this to true if an error with the local
+     conversion occured. */
+  int locale_err;
+
 };
 typedef struct pinentry *pinentry_t;
 

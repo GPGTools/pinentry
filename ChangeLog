@@ -1,5 +1,16 @@
 2003-12-22  Werner Koch  <wk@gnupg.org>
 
+	* pinentry/pinentry.h (struct pinentry): Added LOCALE_ERR.
+	* gtk/pinentry-gtk.c (button_clicked): Set the LOCAE_ERR flag.
+	* pinentry/pinentry-curses.c (dialog_run): Ditto.
+	* pinentry/pinentry.c (cmd_getpin, cms_confirm): Check this flag.
+	(pinentry_local_to_utf8): Release the correct buffer in the error
+	case. Print diagnostics.
+	(pinentry_utf8_to_local): Print diagnostics.
+
+	* gtk/pinentry-gtk.c (button_clicked): Use the right value as
+	input for the conversion.
+
 	* pinentry/pinentry.c: New variable THIS_PGMNAME.
 	(pinentry_init): Add arg PGMNAME and store it.  Use it at all
 	marked placed instead of the constant "pinentry".
