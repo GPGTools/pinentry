@@ -9,4 +9,8 @@
 
 * The Qt PIN entry needs to use libpinentry (maybe).
 
-* Configure checks for Qt libs and features could be improved.
+* The curses pinentry doesn't put user provided button texts into <>.
+
+* The curses pinentry doesn't grok \n in error message.
+
+* No pinentry groks %-escaped and +-escaped strings.
