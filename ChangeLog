@@ -1,3 +1,9 @@
+2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kde/Makefile.am (EXTRA_DIST): Remove variable.
+	(install-data-local): Remove target.
+	(uninstall-local): Likewise.
+
 2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.6.0.
