@@ -1,3 +1,8 @@
+2003-02-04  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* qt/main.cpp: Work around '--display' option. This fixes 
+	  the pinentry-qt problem reported by several people lately.
+
 2003-01-24  Werner Koch  <wk@gnupg.org>
 
 	* autogen.sh: Print a hint to use maintainer mode.
