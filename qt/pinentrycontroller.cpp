@@ -285,13 +285,14 @@ int PinEntryController::confirm( char* line )
     ret = QMessageBox::information( _parent, "", _desc, QMessageBox::Yes, QMessageBox::No );
   }    
   FILE* fp = assuan_get_data_fp( _ctx );
-  if( ret == 0 ) {
+  if( ret == QMessageBox::Yes ) {
 #endif // USE_KDE
-    fputs( "YES", fp );    
+    //fputs( "YES", fp );    
+    return ASSUAN_No_Error;
   } else {
-    fputs( "NO", fp );
+    //fputs( "NO", fp );
+    return ASSUAN_Not_Confirmed;
   }
-  return 0;
 }
 
 void PinEntryController::slotAccepted()
