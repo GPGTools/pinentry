@@ -6,5 +6,3 @@
   implemented in gpg-agent).
 
 * The Qt PIN entry needs to use libpinentry (maybe).
-
-* The Qt PIN entry needs to support fallback to curses.

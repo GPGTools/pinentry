@@ -1,8 +1,11 @@
+Noteworthy changes in version 0.6.2 (2002-05-13)
+------------------------------------------------
+
   * Error texts can now be percent-escaped.
 
   * The Curses pinentry supports multi-line error texts.
 
-  * The GTK+ pinentry can fall back to curses if no display is
+  * The GTK+ and Qt pinentry can fall back to curses if no display is
     available.
 
 Noteworthy changes in version 0.6.1 (2002-04-25)

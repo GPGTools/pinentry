@@ -22,7 +22,7 @@
 AC_REVISION($Revision$)
 
 AC_PREREQ(2.52)
-AC_INIT(pinentry, 0.6, [gpa-dev@gnupg.org])
+AC_INIT(pinentry, 0.6.2, [gpa-dev@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)

@@ -14,8 +14,8 @@ Curses	--enable-pinentry-curses Curses library, for example ncurses
 GTK+	--enable-pinentry-gtk	 Gimp Toolkit Library, eg libgtk and libglib
 Qt	--enable-pinentry-qt	 Qt, eg libqt-mt
 
-The GTK+ pinentry can fall back to the curses mode.  The option to
-enable this is --enable-fallback-curses, but this is also detected
+The GTK+ and Qt pinentry can fall back to the curses mode.  The option
+to enable this is --enable-fallback-curses, but this is also detected
 automatically in the same way --enable-pinentry-curses is.  The
 fallback to curses also works if --disable-pinentry-curses is
 specified.  So to disable linking to curses completely you have to
