@@ -1,8 +1,8 @@
 Noteworthy changes in version 0.7.2 (unreleased)
 ------------------------------------------------
 
-
-
+ * Remove bug in configure script that would use installed version of
+   Qt even if another path was explicitely specified with QTDIR.
 
 Noteworthy changes in version 0.7.1 (2004-04-21)
 ------------------------------------------------
