@@ -94,3 +94,7 @@ automake --gnu -a
 echo "Running autoconf..."
 autoconf
 
+echo "** "
+echo "** When you run ./configure, please remember to use the option"
+echo "**   --enable-maintainer-mode"
+echo "** "
