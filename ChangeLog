@@ -1,3 +1,7 @@
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	Released 0.7.1.
+
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
 	* secmem/secmem.c [!ORIGINAL_GPG_VERSION]: Include util.h for some

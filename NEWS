@@ -1,7 +1,7 @@
-Noteworthy changes in version 0.7.1 (unreleased)
+Noteworthy changes in version 0.7.1 (2004-04-21)
 ------------------------------------------------
 
- * Removed not needed Assuan cruft.
+ * Removed unneeded Assuan cruft.
 
  * Fixes for *BSD.
 
