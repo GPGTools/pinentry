@@ -1,3 +1,49 @@
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add option --enable-fallback-curses and bind it to
+	the ncurses check.  Add automake conditional
+	BUILD_LIBPINENTRY_CURSES and FALLBACK_CURSES. Add preprocessor
+	symbol FALLBACK_CURSES.
+
+	* curses/Makefile.am (AM_CPPFLAGS): Add $(NCURSES_INCLUDE).
+	(LDADD): Add ../pinentry/libpinentry-curses.a.
+	* curses/pinentry-curses.c: Include "pinentry-curses.h".
+	Moved most of the meat to ...
+	* pinentry/pinentry-curses.c: ... here.  New file.  Make all
+	functions and global variables static.
+	(dialog_cmd_handler): Rename to ...
+	(curses_cmd_handler): ... this.
+	* pinentry/pinentry-curses.h: New file.
+	* pinentry/Makefile.am (noinst_LIBRARIES)
+	[BUILD_LIBPINENTRY_CURSES]: Add libpinentry-curses.a.
+	(libpinentry_curses_a_SOURCES): New target.
+
+	* gtk/Makefile.am (INCLUDES): Moved all to ...
+	(AM_CPPFLAGS): ... here.
+	[CURSES_FALLBACK]: Define ncurses_include and libcurses.
+	(AM_CPPFLAGS): Add $(ncurses_include).
+	(LDADD): Add $(libcurses).
+	* gtk/pinentry-gtk.c: Rename TIMEOUT to TIME_OUT to avoid conflict
+	with curses.h.
+	[CURSES_FALLBACK]: Include "pinentry-curses.h".
+	(button_clicked): Likewise.
+	(create_window): Likewise.
+	(cmd_handler): Renamed to ...
+	(gtk_cmd_handler): ... this.
+	(pinentry_cmd_handler): Set to gtk_cmd_handler.
+	(main) [CURSES_FALLBACK]: Initialize GTK+ only if environment
+	variable DISPLAY is set, otherwise fall back to curses dialog.
+
+	* pinentry/pinentry.h: Protect against multiple inclusion.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_create): Allow multi-line error
+	texts.
+
+	* pinentry/pinentry.c (cmd_seterror): Call strcpy_escaped, rather
+	than strcpy, to allow percent-escaping the error text.
+
 2002-04-25  Steffen Hansen  <steffen@hrhansen.dk>
 
 	* pinentry-qt: Use ok and cancel value if

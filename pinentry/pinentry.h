@@ -18,6 +18,9 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
+#ifndef PINENTRY_H
+#define PINENTRY_H
+
 struct pinentry
 {
   /* The description to display, or NULL.  */
@@ -80,3 +83,5 @@ char *pinentry_setbufferlen (pinentry_t pin, int len);
 
 /* The caller must define this variable to process assuan commands.  */
 extern pinentry_cmd_handler_t pinentry_cmd_handler;
+
+#endif	/* PINENTRY_H */

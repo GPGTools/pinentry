@@ -14,6 +14,25 @@ Curses	--enable-pinentry-curses Curses library, for example ncurses
 GTK+	--enable-pinentry-gtk	 Gimp Toolkit Library, eg libgtk and libglib
 Qt	--enable-pinentry-qt	 Qt, eg libqt-mt
 
+The GTK+ pinentry can fall back to the curses mode.  The option to
+enable this is --enable-fallback-curses, but this is also detected
+automatically in the same way --enable-pinentry-curses is.  The
+fallback to curses also works if --disable-pinentry-curses is
+specified.  So to disable linking to curses completely you have to
+pass --disable-fallback-curses to the configure script as well.
+
+Examples:
+* To only build the GTK+ pinentry with curses support:
+./configure --enable-pinentry-gtk --enable-fallback-curses \
+	--disable-pinentry-curses --disable-pinentry-qt
+
+* To build the Qt pinentry, and the other pinentries if they are
+  supported:
+./configure --enable-pinentry-qt
+
+* To build everything that is supported (complete auto-detection):
+./configure
+
 Some of the code is taken from Robert Bihlmeyer's Quituple-Agent.  For
 security reasons, all internationalization has been removed.  The
 client is expected to tell the PIN entry the text strings to be

@@ -21,11 +21,18 @@
 
 bin_PROGRAMS = pinentry-gtk
 
-INCLUDES = $(GLIB_CFLAGS) $(GTK_CFLAGS)
+if FALLBACK_CURSES
+ncurses_include = $(NCURSES_INCLUDE)
+libcurses = ../pinentry/libpinentry-curses.a $(LIBCURSES) $(LIBICONV)
+else
+ncurses_include =
+libcurses =
+endif
 
-AM_CPPFLAGS = -I$(top_srcdir)/secmem -I$(top_srcdir)/pinentry
+AM_CPPFLAGS = $(GLIB_CFLAGS) $(GTK_CFLAGS) $(ncurses_include) \
+	-I$(top_srcdir)/secmem -I$(top_srcdir)/pinentry
 LDADD = ../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a \
-	$(LIBCAP) $(GTK_LIBS)
+	$(LIBCAP) $(GTK_LIBS) $(libcurses)
 
 pinentry_gtk_SOURCES = pinentry-gtk.c \
 	gtksecentry.c gtksecentry.h

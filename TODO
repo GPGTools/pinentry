@@ -3,8 +3,8 @@
   (This is not so important, as pinentry is always restarted.)
 
 * The Qt and curses PIN entry should support enhanced mode (when it is
-  implemented).
+  implemented in gpg-agent).
 
 * The Qt PIN entry needs to use libpinentry (maybe).
 
-* The curses pinentry doesn't grok \n in error message.
+* The Qt PIN entry needs to support fallback to curses.

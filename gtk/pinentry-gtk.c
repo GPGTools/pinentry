@@ -40,13 +40,17 @@
 #include "gtksecentry.h"
 #include "pinentry.h"
 
+#ifdef FALLBACK_CURSES
+#include "pinentry-curses.h"
+#endif
+
 #define PGMNAME "pinentry-gtk"
 
 static pinentry_t pinentry;
 static int passphrase_ok = 0;
 static int confirm_yes = 0;
 
-static GtkWidget *entry, *insure, *timeout;
+static GtkWidget *entry, *insure, *time_out;
 
 /* ok - Return to the command handler routine.  */
 static void 
@@ -133,7 +137,7 @@ button_clicked (GtkWidget *widget, gpointer data)
                  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(insure)) ?
                  "insure"
                  : "",
-                 gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(timeout)));
+                 gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(time_out)));
         }
 
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY(entry));
@@ -263,11 +267,11 @@ create_window (int confirm_mode)
           gtk_box_pack_start(GTK_BOX(sbox), w, FALSE, FALSE, 0);
           gtk_widget_show(w);
           
-          timeout = gtk_spin_button_new
+          time_out = gtk_spin_button_new
             (GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, HUGE_VAL,
                                                1, 60, 60)),2,0);
-          gtk_box_pack_start (GTK_BOX(sbox), timeout, FALSE, FALSE, 0);
-          gtk_widget_show (timeout);
+          gtk_box_pack_start (GTK_BOX(sbox), time_out, FALSE, FALSE, 0);
+          gtk_widget_show (time_out);
 	
           w = gtk_label_new ("seconds");
           gtk_box_pack_start (GTK_BOX(sbox), w, FALSE, FALSE, 0); 
@@ -324,7 +328,7 @@ create_window (int confirm_mode)
 
 
 static int
-cmd_handler (pinentry_t pe)
+gtk_cmd_handler (pinentry_t pe)
 {
   GtkWidget *w;
   int want_pass = !!pe->pin;
@@ -350,16 +354,21 @@ cmd_handler (pinentry_t pe)
     return confirm_yes;
 }
 
-pinentry_cmd_handler_t pinentry_cmd_handler = cmd_handler;
+pinentry_cmd_handler_t pinentry_cmd_handler = gtk_cmd_handler;
 
 int 
 main (int argc, char *argv[])
 {
   pinentry_init ();
 
-  /* FIXME: Initialize gtk_init only if DISPLAY is set, if it is not
-     set, a curses based dialog should be used.  */
+#ifdef FALLBACK_CURSES
+  if (getenv ("DISPLAY"))
+    gtk_init (&argc, &argv);
+  else
+    pinentry_cmd_handler = curses_cmd_handler;
+#else
   gtk_init (&argc, &argv);
+#endif
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))

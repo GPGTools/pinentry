@@ -323,7 +323,7 @@ cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
   if (!newe)
     return ASSUAN_Out_Of_Core;
 
-  strcpy (newe, line);
+  strcpy_escaped (newe, line);
   if (pinentry.error)
     free (pinentry.error);
   pinentry.error = newe;

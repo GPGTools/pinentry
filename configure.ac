@@ -75,27 +75,41 @@ dnl
 AC_ARG_ENABLE(pinentry-curses,
             AC_HELP_STRING([--enable-pinentry-curses], [build curses pinentry]),
             pinentry_curses=$enableval, pinentry_curses=maybe)
+AC_ARG_ENABLE(fallback-curses,
+            AC_HELP_STRING([--enable-fallback-curses], [include curses fallback]),
+            fallback_curses=$enableval, fallback_curses=maybe)
 
 dnl
-dnl Checks for curses libraries.  Deal correctly with $pinentry_curses = maybe.
+dnl Checks for curses libraries.  Deal correctly with $pinentry_curses = maybe
+dnl and $fallback_curses = maybe.
 dnl
-if test "$pinentry_curses" != "no"; then
+if test "$pinentry_curses" != "no" -o "$fallback_curses" != "no"; then
   IU_LIB_CURSES
 fi
-if test "$pinentry_curses" != no -a "$LIBCURSES"; then
-  pinentry_curses=yes
+if test "$LIBCURSES"; then
+  if test "$pinentry_curses" != "no"; then
+    pinentry_curses=yes
+  fi
+  if test "$fallback_curses" != "no"; then
+    fallback_curses=yes
+    AC_DEFINE(FALLBACK_CURSES, 1,
+	      [The GUI pinentries should fall back to curses if X is not available.])
+  fi
 else
-  if test "$pinentry_curses" = yes; then
+  if test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes"; then
     AC_MSG_ERROR([[
 *** The curses library is required. The latest version of
 *** ncurses is always available from ftp://ftp.gnu.org/gnu/ncurses/.
 ]])
   fi
   pinentry_curses=no
+  fallback_curses=no
 fi
+AM_CONDITIONAL(BUILD_LIBPINENTRY_CURSES, test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes")
 AM_CONDITIONAL(BUILD_PINENTRY_CURSES, test "$pinentry_curses" = "yes")
+AM_CONDITIONAL(FALLBACK_CURSES, test "$fallback_curses" = "yes")
 
-if test "$pinentry_curses" = "yes"; then
+if test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes"; then
 dnl Additional checks for Curses pinentry.
 AM_ICONV
 fi
@@ -213,4 +227,6 @@ AC_MSG_NOTICE([
 	Curses Pinentry: $pinentry_curses
 	GTK+ Pinentry: $pinentry_gtk
 	Qt Pinentry: $pinentry_qt
+
+	Fallback to Curses: $fallback_curses
 ])
