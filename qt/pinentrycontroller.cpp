@@ -135,6 +135,7 @@ int PinEntryController::getPin( char* line ) {
   }
   _pinentry->setPrompt( _prompt );
   _pinentry->setDescription( _desc );
+  _pinentry->setText(QString::null);
   if( !_error.isNull() ) _pinentry->setError( _error );
   connect( _pinentry, SIGNAL( accepted() ),
 	   this, SLOT( slotAccepted() ) );

@@ -20,8 +20,6 @@
 #include <qlayout.h>
 #include "pinentrydialog.h"
 
-#include <X11/Xlib.h>
-
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   : QDialog( parent, name, modal ), _grabbed( false )
 {
@@ -63,8 +61,7 @@ void PinEntryDialog::paintEvent( QPaintEvent* ev )
   // Grab keyboard when widget is mapped to screen
   // It might be a little weird to do it here, but it works!
   if( !_grabbed ) {
-    XGrabKeyboard( x11Display(), winId(), 
-		   TRUE, GrabModeAsync, GrabModeAsync, CurrentTime );
+    _edit->grabKeyboard();
     _grabbed = true;
   }
   QDialog::paintEvent( ev );
@@ -72,7 +69,7 @@ void PinEntryDialog::paintEvent( QPaintEvent* ev )
 
 void PinEntryDialog::hideEvent( QHideEvent* ev )
 {
-  XUngrabKeyboard( x11Display(), CurrentTime );
+  _edit->releaseKeyboard();
   _grabbed = false;
   QDialog::hideEvent( ev );
 }

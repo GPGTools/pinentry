@@ -1,3 +1,8 @@
+2002-04-21  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Removed X11 dependency and use Qt for grabbing the keyboard.
+	* Clear the lineedit before asking the user for the PIN.
+
 2002-04-12  Steffen Hansen  <steffen@hrhansen.dk>
 
 	* Enable pinentry-qt if Qt is found
