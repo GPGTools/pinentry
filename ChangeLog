@@ -1,3 +1,7 @@
+2004-08-04  Werner Koch  <wk@g10code.de>
+
+	* pinentry/pinentry.c (usage): Print help to stdout.
+
 2004-07-30  Moritz Schulte  <moritz@g10code.com>
 
 	* qt/Makefile.am (ncurses_include): Removed

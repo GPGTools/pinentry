@@ -266,7 +266,7 @@ pinentry_have_display (int argc, char **argv)
 static void 
 usage (void)
 {
-  fprintf (stderr, "Usage: %s [OPTION]...\n"
+  fprintf (stdout, "Usage: %s [OPTION]...\n"
 "Ask securely for a secret and print it to stdout.\n"
 "\n"
 "      --display DISPLAY Set the X display\n"
