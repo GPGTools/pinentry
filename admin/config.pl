@@ -10,24 +10,28 @@
 # this script does better. It changes all Makefile.ins in one process.
 # in kdelibs the time for building Makefile went down from 2:59 min to 13 sec!
 #
-# written by Michael Matz <matz@ifh.de>
+# written by Michael Matz <matz@kde.org>
+# adapted by Dirk Mueller <mueller@kde.org>
 #
 # the first part was done by looking at the config.status files generated
 # by configure.
 # 
-my $ac_cs_root=$ARGV[0];
-my $ac_given_srcdir=$ARGV[1];
-my $ac_given_INSTALL=$ARGV[2];
 
-# print "ac_cs_root=$ac_cs_root\n";
-# print "ac_given_srcdir=$ac_given_srcdir\n";
-# print "ac_given_INSTALL=$ac_given_INSTALL\n";
+my $ac_subs=$ARGV[0];
+my $ac_sacfiles = $ARGV[1];
+my $ac_given_srcdir=$ARGV[2];
+my $ac_given_INSTALL=$ARGV[3];
+
+#print "ac_subs=$ac_subs\n";
+#print "ac_sacfiles=$ac_sacfiles\n";
+#print "ac_given_srcdir=$ac_given_srcdir\n";
+#print "ac_given_INSTALL=$ac_given_INSTALL\n";
 
 my ($srcdir, $top_srcdir);
 my $INSTALL;
 my $bad_perl = ($] < 5.005);
 
-open(CF, "< $ac_cs_root.subs") || die "can't open $ac_cs_root.subs: $!";
+open(CF, "< $ac_subs") || die "can't open $ac_subs: $!";
 my @subs = <CF>;
 close(CF);
 chomp @subs;
@@ -41,39 +45,47 @@ if ($bad_perl) {
 	   || ($pat =~ m%/([^/]*)/([^/]*)/g% )
 	   || ($pat =~ /s%([^%]*)%([^%]*)%;t/ )
 	   || ($pat =~ m%/([^/]*)/([^/]*)/;t% )
+           || ($pat =~ /s,([^,]*),(.*),;t/)
 	   ) {
             # form : s%bla%blubb%g
-	    # or     s%bla%blubb%;t t   (newer autoconf)
-	    push @comp_subs, make_closure($1, $2);
+            # or     s%bla%blubb%;t t   (autoconf > 2.13 and < 2.52 ?)
+            # or     s,bla,blubb,;t t   (autoconf 2.52)
+            my $srch = $1;
+            my $repl = $2;
+            $repl =~ s/\\(.)/$1/g;
+	    push @comp_subs, make_closure($srch, $repl);
+
 	} elsif ( ($pat =~ /%([^%]*)%d/ )
 	   || ($pat =~ m%/([^/]*)/d% )
 	   ) {
 	    push @comp_subs, make_closure($1, "");
 	} else {
-	    die "Uhh. Malformed pattern in $ac_cs_root.subs ($pat)"
+	    die "Uhh. Malformed pattern in $ac_subs ($pat)"
 		unless ( $pat =~ /^\s*$/ );   # ignore white lines
 	}
     }
 } else {
     foreach my $pat (@subs) {
-	if (  ($pat =~ /s%([^%]*)%([^%]*)%g/ )
-	   || ($pat =~ m%/([^/]*)/([^/]*)/g% )
-	   || ($pat =~ /s%([^%]*)%([^%]*)%;t/ )
-	   || ($pat =~ m%/([^/]*)/([^/]*)/;t% )
-	   ) {
-            # form : s%bla%blubb%g
-	    # or     s%bla%blubb%;t t   (newer autoconf)
-	    push @comp_match, eval "qr/\Q$1\E/";  # compile match pattern
-	    push @comp_subs, $2;
-	} elsif ( ($pat =~ /%([^%]*)%d/ )
-	   || ($pat =~ m%/([^/]*)/d% )
-	   ) {
-	    push @comp_match, eval "qr/\Q$1\E/";
-	    push @comp_subs, "";
-	} else {
-	    die "Uhh. Malformed pattern in $ac_cs_root.subs ($pat)"
-		unless ( $pat =~ /^\s*$/ );   # ignore white lines
-	}
+       if ( ($pat =~ /s%([^%]*)%([^%]*)%g/ ) ||
+            ($pat =~ /s%([^%]*)%([^%]*)%;t/ ) ||
+            ($pat =~ /s,([^,]*),(.*),;t/) ) {
+         # form : s%bla%blubb%g
+         # or     s%bla%blubb%;t t   (autoconf > 2.13 and < 2.52 ?)
+         # or     s,bla,blubb,;t t   (autoconf 2.52)
+         my $srch = $1;
+         my $repl = $2;
+         push @comp_match, eval "qr/\Q$srch\E/";  # compile match pattern
+         $repl =~ s/\\(.)/$1/g;
+         push @comp_subs, $repl;
+      } elsif ( ($pat =~ /%([^%]*)%d/ )
+                || ($pat =~ m%/([^/]*)/d% )
+              ) {
+        push @comp_match, eval "qr/\Q$1\E/";
+        push @comp_subs, "";
+      } else {
+          die "Uhh. Malformed pattern in $ac_cs_root.subs ($pat)"
+          unless ( $pat =~ /^\s*$/ );   # ignore white lines
+      }
     }
 }
 undef @subs;
@@ -81,10 +93,11 @@ undef @subs;
 # read the list of files to be patched, form:
 # ./Makefile arts/Makefile arts/examples/Makefile arts/flow/Makefile
 
-open(CF, "< $ac_cs_root.sacfiles") || die "can't open $ac_cs_root.sacfiles: $!";
+open(CF, "< $ac_sacfiles") || die "can't open $ac_sacfiles: $!";
 my @ac_files = <CF>;
 close(CF);
 chomp @ac_files;
+
 
 my $ac_file;
 foreach $ac_file (@ac_files) {

@@ -4,7 +4,8 @@
 # in the main loop
 # we do it this way to circumvent hacking (and thereby including)
 # autoconf function (which are GPL) into our LGPL acinclude.m4.in
-# written by Michael Matz <matz@ifh.de>
+# written by Michael Matz <matz@kde.org>
+# adapted by Dirk Mueller <mueller@kde.org>
 
 # we have to change two places
 # 1. the splitting of the substitutions into chunks of 90 (or even 48 in
@@ -14,7 +15,7 @@ use File::Basename;
 
 my $ac_aux_dir = dirname($0);
 my ($flag);
-my $ac_version = 0;
+local $ac_version = 0;
 my $vpath_seen = 0;
 $flag = 0;
 
@@ -69,17 +70,17 @@ while (<>) {
     } elsif ($flag == 3) {
         if (/^\s*rm\s+-f\s+conftest/ ) {
 	    $flag = 4;
-	    insert_main_loop();
+	    &insert_main_loop();
 	} elsif (/^\s*rm\s+-f\s+.*ac_cs_root/ ) {
 	    $flag = 4;
-	    insert_main_loop();
+	    &insert_main_loop();
 	    #die "hhhhhhh";
 	    if ($ac_version != 2141) {
 	        print STDERR "hmm, don't know autoconf version\n";
 	    }
         } elsif (/^\#\s*CONFIG_HEADER section.*/) {
           $flag = 4;
-          insert_main_loop();
+          &insert_main_loop();
           if($ac_version != 250) {
             print STDERR "hmm, something went wrong :-(\n";
           }
@@ -91,9 +92,46 @@ while (<>) {
 
 die "wrong input (flag != 4)" unless $flag == 4;
 print STDERR "hmm, don't know autoconf version\n" unless $ac_version;
-die "autoconf 2.50 is currently not supported" if  $ac_version == 250;
 
 sub insert_main_loop {
+
+  if ($ac_version == 250) {
+    &insert_main_loop_250();
+  }
+  else {
+    &insert_main_loop_213();
+  }
+}
+
+sub insert_main_loop_250 {
+
+  print <<EOF;
+  #echo Doing the fast build of Makefiles -- autoconf $ac_version
+EOF
+    if ($vpath_seen) {
+        print <<EOF;
+        # VPATH subst was seen in original config.status main loop
+  echo '/^[ 	]*VPATH[ 	]*=[^:]*\$/d' >>\$tmp/subs.sed
+EOF
+      }
+  print <<EOF;
+  rm -f \$tmp/subs.files
+  for ac_file in .. \$CONFIG_FILES ; do
+      if test "x\$ac_file" != x..; then
+          echo \$ac_file >> \$tmp/subs.files
+      fi
+  done
+  if test -f \$tmp/subs.files ; then
+      perl $ac_aux_dir/config.pl "\$tmp/subs.sed" "\$tmp/subs.files" "\$srcdir" "\$INSTALL"
+  fi
+  rm -f \$tmp/subs.files
+
+fi
+EOF
+  return;
+}
+
+sub insert_main_loop_213 {
     print <<EOF;
 #echo Doing the fast build of Makefiles -- autoconf $ac_version
 if test "x\$ac_cs_root" = "x" ; then
@@ -101,7 +139,7 @@ if test "x\$ac_cs_root" = "x" ; then
 fi
 EOF
     if ($vpath_seen) {
-        print <<EOF;
+      print <<EOF;
 # VPATH subst was seen in original config.status main loop
 echo '/^[ 	]*VPATH[ 	]*=[^:]*\$/d' >> \$ac_cs_root.subs
 EOF
@@ -114,7 +152,7 @@ for ac_file in .. \$CONFIG_FILES ; do
     fi
 done
 if test -f \$ac_cs_root.sacfiles ; then
-    perl $ac_aux_dir/config.pl "\$ac_cs_root" "\$ac_given_srcdir" "\$ac_given_INSTALL"
+    perl $ac_aux_dir/config.pl "\$ac_cs_root.subs" "\$ac_cs_root.sacfiles" "\$ac_given_srcdir" "\$ac_given_INSTALL"
 fi
 rm -f \$ac_cs_root.s*
 

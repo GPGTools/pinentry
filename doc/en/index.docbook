@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.1-Based Variant V1.0//EN" "dtd/kdex.dtd" [
-  <!ENTITY kappname "&kapp;"><!-- replace kapp here -->
+  <!ENTITY kappname "&kpinentry;"><!-- replace kapp here -->
   <!ENTITY % addindex "IGNORE">
   <!ENTITY % English "INCLUDE"><!-- change language only here -->
   
@@ -78,7 +78,7 @@ Do NOT change these in the translation. -->
 
 <abstract>
 <para>
-&kapp; is an application specially designed to do nothing you would
+&kpinentry; is an application specially designed to do nothing you would
 ever want.
 </para>
 </abstract>
@@ -115,7 +115,7 @@ problems. Basically a long version of the abstract.  Don't include a
 revision history. (see installation appendix comment) -->
 
 <para>
-&kapp; is a program that lets you do absolutely nothing. Please report
+&kpinentry; is a program that lets you do absolutely nothing. Please report
 any problems or feature requests to the KDE mailing lists.
 </para>
 </chapter>
@@ -133,7 +133,7 @@ your application. -->
 patent issues. -->
 
 <screenshot>
-<screeninfo>Here's a screenshot of &kapp;</screeninfo>
+<screeninfo>Here's a screenshot of &kpinentry;</screeninfo>
 	<mediaobject>
 	  <imageobject>
 	    <imagedata fileref="screenshot.png" format="PNG"/>
@@ -165,7 +165,7 @@ The Squiggle Tool <guiicon><inlinemediaobject>
 	    <phrase>Squiggle</phrase>
 	  </textobject>
 </inlinemediaobject></guiicon> is used to draw squiggly lines all over
-the &kapp; main window. It's not a bug, it's a feature!
+the &kpinentry; main window. It's not a bug, it's a feature!
 </para>
 
 </sect1>
@@ -216,7 +216,7 @@ or menu bars. -->
 <guimenu>File</guimenu>
 <guimenuitem>Quit</guimenuitem>
 </menuchoice></term>
-<listitem><para><action>Quits</action> &kapp;</para></listitem>
+<listitem><para><action>Quits</action> &kpinentry;</para></listitem>
 </varlistentry>
 </variablelist>
 </para>
@@ -234,7 +234,7 @@ used for apps that use plugins or that provide their own scripting hooks
 and/or development libraries. -->
 
 <para>
-Programming &kapp; plugins is a joy to behold. Just read through the next
+Programming &kpinentry; plugins is a joy to behold. Just read through the next
 66 pages of API's to learn how!
 </para>
 
@@ -387,7 +387,7 @@ application work. -->
 <qandaset id="faqlist">
 <qandaentry>
 <question>
-<para>My Mouse doesn't work. How do I quit &kapp;?</para>
+<para>My Mouse doesn't work. How do I quit &kpinentry;?</para>
 </question>
 <answer>
 <para>You silly goose! Check out the <link linkend="commands">Commands
@@ -416,7 +416,7 @@ distribution. -->
 <title>Credits and License</title>
 
 <para>
-&kapp;
+&kpinentry;
 </para>
 <para>
 Program copyright 1997 John Q. Hacker <email>jqh@kde.org</email>
@@ -465,9 +465,9 @@ Translations done by:
 <title>How to obtain Kapp</title>
 
 <para>
-&kapp; is part of the KDE project
+&kpinentry; is part of the KDE project
 <ulink url="http://www.kde.org">http://www.kde.org</ulink>.
-&kapp; can be found in the kdeutils package on
+&kpinentry; can be found in the kdeutils package on
 <ulink url="ftp://ftp.kde.org/pub/kde/">ftp://ftp.kde.org/pub/kde/</ulink>, the
 main ftp site of the KDE project. </para>
 </sect1>
@@ -487,15 +487,15 @@ information here.
 -->
 
 <para>
-In order to successfully use &kapp;, you need KDE 1.1. Foobar.lib is required
-in order to support the advanced &kapp; features. &kapp; uses about 5 megs of
+In order to successfully use &kpinentry;, you need KDE 1.1. Foobar.lib is required
+in order to support the advanced &kpinentry; features. &kpinentry; uses about 5 megs of
 memory to run, but this may vary depending on your platform and
 configuration.
 </para>
 
 <para>
-All required libraries as well as &kapp; itself can be found
-on <ulink url="ftp://ftp.kapp.org">The &kapp; home page</ulink>.
+All required libraries as well as &kpinentry; itself can be found
+on <ulink url="ftp://ftp.kapp.org">The &kpinentry; home page</ulink>.
 </para>
 
 <!-- For a list of updates, you may refer to the application web site
