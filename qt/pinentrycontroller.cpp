@@ -29,6 +29,8 @@ extern "C"
 # include <qmessagebox.h>
 #endif
 
+#include <stdlib.h>
+
 PinEntryController::PinEntryController() : _pinentry( 0 )
 {
   int fds[2];
