@@ -1,6 +1,8 @@
 /* main.cpp - Secure KDE dialog for PIN entry.
    Copyright (C) 2002 Klarälvdalens Datakonsult AB
+   Copyright (C) 2003 g10 Code GmbH
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
+   Modified by Marcus Brinkmann <marcus@g10code.de>.
    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,45 +23,118 @@
 #include "config.h"
 #endif
 
-
-extern "C"
-{
-#include "memory.h"
-#include "secmem-util.h"
-}
-
-#include <new>
-
 #include <stdlib.h>
 
-#ifdef USE_KDE
-# include <kapp.h>
-# include <kcmdlineargs.h>
-# include <kaboutdata.h>
-# include <klocale.h>
-#else
-# include <qapplication.h>
-#endif // USE_KDE
+#include <qapplication.h>
+#include <qwidget.h>
+#include <qmessagebox.h>
+#include "secqstring.h"
 
 #include "pinentrydialog.h"
-#include "pinentrycontroller.h"
 
-
+#include <pinentry.h>
 
 #ifdef FALLBACK_CURSES
-#include <pinentry.h>
 #include <pinentry-curses.h>
+#endif
 
-pinentry_cmd_handler_t pinentry_cmd_handler = curses_cmd_handler;
+/* Hack for creating a QWidget with a "foreign" window ID */
+class ForeignWidget : public QWidget
+{
+public:
+  ForeignWidget( WId wid ) : QWidget( 0 )
+  {
+    QWidget::destroy();
+    create( wid, false, false );
+  }
+ 
+  ~ForeignWidget()
+  {
+    destroy( false, false );
+  }
+};
 
-int curses_main (int argc, char *argv[])
+static int
+qt_cmd_handler (pinentry_t pe)
+{
+  QWidget *parent = 0;
+
+  int want_pass = !!pe->pin;
+
+  if (want_pass)
+    {
+      /* FIXME: Add parent window ID to pinentry and GTK.  */
+      if (pe->parent_wid)
+	parent = new ForeignWidget (pe->parent_wid);
+
+      PinEntryDialog pinentry (parent, 0, true);
+
+      pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
+      pinentry.setDescription (QString::fromUtf8 (pe->description));
+      /* If we reuse the same dialog window.  */
+#if 0
+      pinentry.setText (SecQString::null);
+#endif
+
+      if (pe->ok)
+	pinentry.setOkText (QString::fromUtf8 (pe->ok));
+      if (pe->cancel)
+	pinentry.setCancelText (QString::fromUtf8 (pe->cancel));
+      if (pe->error)
+	pinentry.setError (QString::fromUtf8 (pe->error));
+
+      bool ret = pinentry.exec ();
+      if (!ret)
+	return -1;
+
+      char *pin = (char *) pinentry.text().utf8();
+      if (!pin)
+	return -1;
+
+      int len = strlen (pin);
+      if (len >= 0)
+	{
+	  pinentry_setbufferlen (pe, len + 1);
+	  if (pe->pin)
+	    {
+	      strcpy (pe->pin, pin);
+	      ::secmem_free (pin);
+	      return len;
+	    }
+	}
+      ::secmem_free (pin);
+      return -1;
+    }
+  else
+    {
+      bool ret = QMessageBox::information (parent, "", pe->description,
+					   pe->ok ? pe->ok : "OK",
+					   pe->cancel ? pe->cancel : "Cancel");
+      return !ret;
+    }
+}
+
+pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler;
+
+int 
+main (int argc, char *argv[])
 {
   pinentry_init ();
+
+#ifdef FALLBACK_CURSES
+  if (!pinentry_have_display (argc, argv))
+    pinentry_cmd_handler = curses_cmd_handler;
+  else
+#endif
+    /* We use a modal dialog window, so we don't need the application
+       window anymore.  */
+    new QApplication (argc, argv);
+
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))
     {
-      printf ("pinentry-curses " VERSION "\n");
+      printf ("pinentry-gtk " VERSION "\n");
       exit (EXIT_SUCCESS);
     }
 
@@ -67,106 +142,4 @@ int curses_main (int argc, char *argv[])
     return 1;
 
   return 0;
-}
-#endif
-
-extern "C++" {
-  extern bool is_secure;
-};
-
-#ifndef VERSION
-#define VERSION "0.1"
-#endif
-
-#ifdef USE_KDE
-static const char *description =
-        I18N_NOOP("Pinentry");
-// INSERT A DESCRIPTION FOR YOUR APPLICATION HERE
- 
- 
-static KCmdLineOptions options[] =
-{
-  { 0, 0, 0 }
-  // INSERT YOUR COMMANDLINE OPTIONS HERE
-};
-#else
-static void 
-usage( const char* appname )
-{
-  fprintf (stderr, "Usage: %s [OPTION]...\n\
-Ask securely for a secret and print it to stdout.\n\
-\n\
-      --display DISPLAY Set the X display\n\
-      --parent-wid      Set the window id the dialogs should appear over\n\
-      --help, -h        Display this help and exit\n", appname);
-
-}
-#endif // USE_KDE
-
-void my_new_handler()
-{
-  secmem_term();
-  qFatal("Out of memory!");
-}
-
-int qt_main( int argc, char *argv[] )
-{
-	secmem_init( 16384*4 ); /* this should be enough, if not, increase it! */
-    secmem_set_flags(SECMEM_WARN);
-    drop_privs();
-    std::set_new_handler(my_new_handler);
-    try {
-#ifdef USE_KDE
-      KAboutData aboutData( "pinentry", I18N_NOOP("Pinentry"),
-			    VERSION, description, KAboutData::License_GPL,
-			    "(c) 2001, Steffen Hansen, Klarälvdalens Datakonsult AB", 0, 0, "klaralvdalens-datakonsult.se");
-      aboutData.addAuthor("Steffen Hansen, Klarälvdalens Datakonsult AB",0, "steffen@klaralvdalens-datakonsult.se");
-      KCmdLineArgs::init( argc, argv, &aboutData );
-      KCmdLineArgs::addCmdLineOptions( options ); // TODO(steffen): Add KDE option handling
-      KApplication app;
-#else
-      QApplication app( argc, argv );
-      WId parentwid = 0;
-      for( int i = 0; i < argc; ++i ) {
-	if( !strncmp( argv[i], "--parent-wid", 12 ) ) {
-	  int len =  strlen( argv[i] );
-	  if( len > 12 && argv[i][12] == '=' ) {
-	    parentwid = strtol( argv[i]+13, 0, 0 );
-	  } else if( len == 12 && i+1 < argc ) {
-	    parentwid = strtol( argv[i+1], 0, 0 );
-	  }
-	} else if( !strcmp( argv[i], "--help" ) || !strcmp( argv[i], "-h" ) ) {	
-	  usage( argv[0] );
-	  exit(0);
-	}
-      }
-#endif // USE_KDE
-      is_secure = true;
-
-      PinEntryController ctrl( parentwid );
-      ctrl.exec();
-      return 0;
-    } catch( std::bad_alloc& ex ) {
-      qDebug("Out of memory, got a %s", ex.what());
-      return -1;
-    }
-}
-
-int main( int argc, char* argv[] ) 
-{
-#ifdef FALLBACK_CURSES
-  if( pinentry_have_display (argc, argv) ) {
-#endif
-	// Work around non-standard handling of DISPLAY
-	for( int i = 1; i < argc; ++i ) {
-    	if( !strcmp( "--display", argv[i] ) ) {
-        	argv[i] = "-display";
-    	}
-  	}
-    return qt_main( argc, argv );
-#ifdef FALLBACK_CURSES
-  } else {
-    return curses_main( argc, argv );
-  }
-#endif
 }

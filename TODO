@@ -1,12 +1,15 @@
-* The DISPLAY setting should be honoured by the pinentry applications using XFree86.
-  This implies reconfiguring the underlying toolkit, is this always possible?
+* The DISPLAY setting should be honoured by the pinentry applications
+  using XFree86.  This implies reconfiguring the underlying toolkit,
+  is this always possible?
   (This is not so important, as pinentry is always restarted.)
 
 * The Qt and curses PIN entry should support enhanced mode (when it is
   implemented in gpg-agent).
 
-* The Qt PIN entry needs to use libpinentry (maybe).
+* The GTK+ PIN entry needs to convert the text of the button label
+  from UTF-8 to the local encoding.
 
-* A heartbeat status message should be send every few seconds, so that
+* Set the max length of password globally (dynamically in protocol?).
+
+* A heartbeat status message should be sent every few seconds, so that
   the gpg-agent is better able to cope with jammed pinentries.
-

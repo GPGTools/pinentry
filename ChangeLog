@@ -1,3 +1,70 @@
+2003-12-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New member PARENT_WID.
+	* pinentry/pinentry.c (pinentry): Add new member here.
+	(usage): Add --parent-wid.
+	(pinentry_parse_opts): Add case for "parent-wid".
+	(option_handler): Same here.
+
+2003-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c (cmd_setcancel): Use strcpy_escaped.
+	(cmd_setok): Likewise.
+	(cmd_setprompt): Likewise.
+	(pinentry_utf8_to_local): Don't use
+	nl_langinfo, but just lc_ctype directly.
+	* pinentry/pinentry.c (cmd_getpin): Do not convert passphrase to
+	UTF-8 here.
+	* gtk/pinentry-gtk.c (button_clicked): Convert passphrase to UTF8
+	here.
+	* pinentry/pinentry-curses.c (dialog_run): Likewise.
+
+2003-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c (pinentry_init): Register secmem_term as
+	atexit function.  Set assuan malloc hooks to secmem.
+	(pinentry_parse_opts): Add break statement to silence gcc warning.
+	* pinentry/pinentry.c (cmd_getpin): If canceled, release and clear
+	PINENTRY->pin nevertheless.
+
+	* acinclude.m4 (qt_incdirs): Add /usr/include/qt3.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Remove cppmemory.h,
+	cppmemory.cpp, pinentrycontroller.h, pinentrycontroller.cpp.
+	(nodist_pinentry_qt_SOURCES): Remove pinentrycontroller.moc.cpp.
+	(libcurses): Move ../pinentry/libpinentry.a from here to ...
+	(pinentry_qt_LDADD): ... here.  Change order a bit to make it
+	work.
+	* qt/cppmemory.h, qt/cppmemory.cpp, qt/pinentrycontroller.h,
+	qt/pinentrycontroller.cpp: Files removed.
+	* qt/secqstring.h, qt/secqstring.cpp, secqlineedit.h,
+	secqlineedit.cpp: New files.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Add secqstring.h,
+	secqstring.cpp, secqlineedit.h, and secqlineedit.cpp.
+	(nodist_pinentry_qt_SOURCES): Add secqlineedit.moc.cpp.
+	* qt/main.cpp: Do not include "memory.h" or "secmem-util.h", nor
+	<new> or "pinentrycontroller.h".  Include <qapplication.h>,
+	<qmessagebox.h>, <qwidget.h> and "secqstring.h".  Always include
+	<pinentry.h>.
+	[USE_KDE]: Remove all instances.
+	(curses_main): Function removed.
+	(my_new_handler): Likewise.
+	(qt_main): Likewise.
+	(qt_cmd_handler): New function.
+	(pinentry_cmd_handler): Define always (to qt_cmd_handler).
+	(main): Rewritten.
+	* qt/pinentrydialog.cpp: Do not include <qlineedit.h>, but
+	"secqlineedit.h".
+	(PinEntryDialog::PinEntryDialog): Make _edit a SecQLineEdit
+	object.  Connect accepted SIGNAL to accept SLOT, and rejected
+	SIGNAL to reject SLOT.
+	(PinEntryDialog::setText): Make argument SecQString rather than
+	QString.
+	(PinEntryDialog::text): Likewise for return value.
+	* qt/pinentrydialog.h: Declare SecQString and SecQLineEdit classes.
+	(class PinEntryDialog): Disable property text (for now).  Adjust
+	argument of setText and return value of text, as well as type of
+	_edit.	
+
 2003-12-09  Werner Koch  <wk@gnupg.org>
 
 	* README.CVS: New.

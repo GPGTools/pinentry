@@ -34,6 +34,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <memory.h>
+
 #include "pinentry.h"
 
 #define STRING_OK "<OK>"
@@ -543,6 +545,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   FILE *ttyfo = NULL;
   SCREEN *screen = 0;
   int done = 0;
+  char *pin_utf8;
 
   /* Open the desired terminal if necessary.  */
   if (tty_name)
@@ -688,6 +691,16 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   /* XXX Factor out into dialog_release or something.  */
   free (diag.ok);
   free (diag.cancel);
+
+  pin_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
+  if (pin_utf8)
+    {
+      pinentry_setbufferlen (pinentry, strlen (pin_utf8) + 1);
+      if (pinentry->pin)
+	strcpy (pinentry->pin, pin_utf8);
+      secmem_free (pin_utf8);
+    }
+
   return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
 }
 

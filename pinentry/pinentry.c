@@ -55,6 +55,7 @@ struct pinentry pinentry =
     0,		/* Debug mode.  */
     0,		/* Enhanced mode.  */
     1,		/* Global grab.  */
+    0,		/* Parent Window ID.  */
     0		/* Result.  */
   };
 
@@ -62,8 +63,6 @@ struct pinentry pinentry =
 char *
 pinentry_utf8_to_local (char *lc_ctype, char *text)
 {
-  char *old_ctype;
-  char *target_encoding;
   iconv_t cd;
   char *input = text;
   size_t input_len = strlen (text) + 1;
@@ -77,21 +76,13 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
   if (!lc_ctype)
     return strdup (text);
 
-  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
-  if (!old_ctype)
-    return NULL;
-  setlocale (LC_CTYPE, lc_ctype);
-  target_encoding = nl_langinfo (CODESET);
-  setlocale (LC_CTYPE, old_ctype);
-  free (old_ctype);
-
   /* This is overkill, but simplifies the iconv invocation greatly.  */
   output_len = input_len * MB_LEN_MAX;
   output_buf = output = malloc (output_len);
   if (!output)
     return NULL;
 
-  cd = iconv_open (target_encoding, "UTF-8");
+  cd = iconv_open (lc_ctype, "UTF-8");
   if (cd == (iconv_t) -1)
     {
       free (output);
@@ -204,11 +195,17 @@ pinentry_init (void)
   secmem_init (1);
   secmem_set_flags (SECMEM_WARN);
   drop_privs ();
+
+  if (atexit (secmem_term))
+    /* FIXME: Could not register at-exit function, bail out.  */
+    ;
+
+  assuan_set_malloc_hooks (secmem_malloc, secmem_realloc, secmem_free);
 }
 
 /* Simple test to check whether DISPLAY is set or the option --display
    was given.  Used to decide whether the GUI or curses should be
-   initialized. */
+   initialized.  */
 int
 pinentry_have_display (int argc, char **argv)
 {
@@ -236,6 +233,7 @@ Ask securely for a secret and print it to stdout.\n\
       --lc-messages     Set the tty LC_MESSAGES value\n\
   -e, --enhanced        Ask for timeout and insurance, too\n\
   -g, --no-global-grab  Grab keyboard only while window is focused\n\
+      --parent-wid	Parent window ID (for positioning)\n\
   -d, --debug           Turn on debugging output\n\
       --help            Display this help and exit\n\
       --version         Output version information and exit\n", "?");
@@ -260,6 +258,7 @@ pinentry_parse_opts (int argc, char *argv[])
      { "lc-messages", required_argument, 0, 'M' },
      { "enhanced", no_argument, &pinentry.enhanced, 1 },
      { "no-global-grab", no_argument, &pinentry.grab, 0 },
+     { "parent-wid", required_argument, 0, 'W' },
      { "help", no_argument, &opt_help, 1 },
      { "version", no_argument, &opt_version, 1 },
      { NULL, 0, NULL, 0 }};
@@ -316,8 +315,13 @@ pinentry_parse_opts (int argc, char *argv[])
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
+	case 'W':
+	  pinentry.parent_wid = atoi (optarg);
+	  /* FIXME: Add some error handling.  Use strtol.  */
+	  break;
         default:
           /* XXX Should never happen.  */
+	  break;
         }
     }
   if (opt_version) 
@@ -386,6 +390,11 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       if (!pinentry.lc_messages)
 	return ASSUAN_Out_Of_Core;
     }
+  else if (!strcmp (key, "parent-wid"))
+    {
+      pinentry.parent_wid = atoi (value);
+      /* FIXME: Use strtol and add some error handling.  */
+    }
   else
     return ASSUAN_Invalid_Option;
   return 0;
@@ -438,7 +447,7 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
   if (!newp)
     return ASSUAN_Out_Of_Core;
 
-  strcpy (newp, line);
+  strcpy_escaped (newp, line);
   if (pinentry.prompt)
     free (pinentry.prompt);
   pinentry.prompt = newp;
@@ -472,7 +481,7 @@ cmd_setok (ASSUAN_CONTEXT ctx, char *line)
   if (!newo)
     return ASSUAN_Out_Of_Core;
 
-  strcpy (newo, line);
+  strcpy_escaped (newo, line);
   if (pinentry.ok)
     free (pinentry.ok);
   pinentry.ok = newo;
@@ -489,7 +498,7 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
   if (!newc)
     return ASSUAN_Out_Of_Core;
 
-  strcpy (newc, line);
+  strcpy_escaped (newc, line);
   if (pinentry.cancel)
     free (pinentry.cancel);
   pinentry.cancel = newc;
@@ -522,30 +531,28 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     pinentry.prompt = NULL;
 
   if (result < 0)
-    return ASSUAN_Canceled;
-
-  if (result && pinentry.pin)
     {
-      char *p;
-
-      p = pinentry_local_to_utf8 (pinentry.lc_ctype, pinentry.pin, 1);
-      if (p)
-        {
-          result = assuan_send_data (ctx, p, strlen (p));
-          secmem_free (p);
-        }
-      else /* Most likely we can't convert between the character sets. */
-        result = ASSUAN_Invalid_Data;
+      if (pinentry.pin)
+	{
+	  secmem_free (pinentry.pin);
+	  pinentry.pin = NULL;
+	}
+      return ASSUAN_Canceled;
     }
-  else
-    result = assuan_send_data (ctx, pinentry.pin, result);
+
+  if (result)
+    {
+      result = assuan_send_data (ctx, pinentry.pin, result);
+      if (!result)
+	result = assuan_send_data (ctx, NULL, 0);
+    }
+
   if (pinentry.pin)
     {
       secmem_free (pinentry.pin);
       pinentry.pin = NULL;
     }
-  if (!result)
-    result = assuan_send_data (ctx, NULL, 0);
+
   return result;
 }
 

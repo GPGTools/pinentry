@@ -18,10 +18,11 @@
    02111-1307, USA  */
 
 #include <qlayout.h>
-#include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
 #include <qmessagebox.h>
+
+#include "secqlineedit.h"
 
 #include "pinentrydialog.h"
 
@@ -46,9 +47,9 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   QBoxLayout* l = new QHBoxLayout( top );
   _prompt = new QLabel( this );
   l->addWidget( _prompt );
-  _edit  = new QLineEdit( this );
+  _edit = new SecQLineEdit( this );
   _edit->setMaxLength( 256 );
-  _edit->setEchoMode( QLineEdit::Password );
+  _edit->setEchoMode( SecQLineEdit::Password );
   l->addWidget( _edit );
 
   l = new QHBoxLayout( top );
@@ -66,6 +67,12 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
 	   this, SIGNAL( accepted() ) );
   connect( _cancel, SIGNAL( clicked() ),
 	   this, SIGNAL( rejected() ) );
+
+  connect (this, SIGNAL (accepted ()),
+	   this, SLOT (accept ()));
+  connect (this, SIGNAL (rejected ()),
+	   this, SLOT (reject ()));
+
   _edit->setFocus();
 }
 
@@ -119,12 +126,12 @@ QString PinEntryDialog::error() const
   return _error->text();
 }
 
-void PinEntryDialog::setText( const QString& txt ) 
+void PinEntryDialog::setText( const SecQString& txt ) 
 {
   _edit->setText( txt );
 }
 
-QString PinEntryDialog::text() const 
+SecQString PinEntryDialog::text() const 
 {
   return _edit->text();
 }

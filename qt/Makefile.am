@@ -23,7 +23,7 @@ bin_PROGRAMS = pinentry-qt
 
 if FALLBACK_CURSES
 ncurses_include = -I$(top_srcdir)/pinentry $(NCURSES_INCLUDE)
-libcurses = ../pinentry/libpinentry-curses.a ../pinentry/libpinentry.a $(LIBCURSES) $(LIBICONV)
+libcurses = ../pinentry/libpinentry-curses.a $(LIBCURSES) $(LIBICONV)
 else
 ncurses_include =
 libcurses =
@@ -32,15 +32,17 @@ endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) $(ncurses_include)
 AM_CXXFLAGS = $(QT_CXXFLAGS)
-pinentry_qt_LDADD = $(top_builddir)/assuan/libassuan.a \
-	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
-	$(QT_LIBS) $(libcurses)
+pinentry_qt_LDADD = $(QT_LIBS) $(libcurses) ../pinentry/libpinentry.a \
+	$(top_builddir)/assuan/libassuan.a \
+	$(top_builddir)/secmem/libsecmem.a $(LIBCAP)
 pinentry_qt_LDFLAGS = $(QT_LDFLAGS)
 
-pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
-	pinentrycontroller.h pinentrycontroller.cpp \
-	cppmemory.cpp main.cpp 
-nodist_pinentry_qt_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
+pinentry_qt_SOURCES = secqstring.h secqstring.cpp \
+	secqlineedit.h secqlineedit.cpp \
+	pinentrydialog.h pinentrydialog.cpp \
+	main.cpp 
+nodist_pinentry_qt_SOURCES = secqlineedit.moc.cpp \
+	pinentrydialog.moc.cpp
 
 DISTCLEANFILES = $(nodist_pinentry_qt_SOURCES)
 

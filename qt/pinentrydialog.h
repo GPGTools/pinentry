@@ -24,14 +24,15 @@
 
 class QLabel;
 class QPushButton;
-class QLineEdit;
+class SecQLineEdit;
+class SecQString;
 
 class PinEntryDialog : public QDialog {
   Q_OBJECT
 
   Q_PROPERTY( QString description READ description WRITE setDescription )
   Q_PROPERTY( QString error READ error WRITE setError )
-  Q_PROPERTY( QString text READ text WRITE setText )
+    //  Q_PROPERTY( SecQString text READ text WRITE setText )
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
@@ -43,8 +44,8 @@ public:
   void setError( const QString& );
   QString error() const;
 
-  void setText( const QString& );
-  QString text() const;
+  void setText( const SecQString& );
+  SecQString text() const;
 
   void setPrompt( const QString& );
   QString prompt() const;
@@ -66,7 +67,7 @@ private:
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;
-  QLineEdit* _edit;
+  SecQLineEdit* _edit;
   QPushButton* _ok;
   QPushButton* _cancel;  
   bool       _grabbed;

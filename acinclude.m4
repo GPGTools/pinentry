@@ -1152,7 +1152,7 @@ qt_incdirs=""
 for dir in $qt_dirs; do
    qt_incdirs="$qt_incdirs $dir/include $dir"
 done
-qt_incdirs="$QTINC $qt_incdirs /usr/local/qt/include /usr/include/qt /usr/include /usr/X11R6/include/X11/qt /usr/X11R6/include/qt /usr/X11R6/include/qt2 $x_includes"
+qt_incdirs="$QTINC $qt_incdirs /usr/local/qt/include  /usr/include /usr/X11R6/include/X11/qt /usr/X11R6/include/qt /usr/X11R6/include/qt2 /usr/include/qt3 $x_includes"
 if test ! "$ac_qt_includes" = "NO"; then
    qt_incdirs="$ac_qt_includes $qt_incdirs"
 fi

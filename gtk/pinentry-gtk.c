@@ -131,7 +131,8 @@ button_clicked (GtkWidget *widget, gpointer data)
   if (data)
     { /* okay button or enter used inntext field */
       const char *s;
-      
+      char *s_utf8;
+
       if (pinentry->enhanced)
         {
           printf("Options: %s\nTimeout: %d\n\n",
@@ -144,10 +145,15 @@ button_clicked (GtkWidget *widget, gpointer data)
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY(entry));
       if (!s)
         s = "";
-      passphrase_ok = 1;
-      pinentry_setbufferlen (pinentry, strlen(s)+1);
-      if (pinentry->pin)
-        strcpy (pinentry->pin, s);
+      s_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
+      if (s_utf8)
+	{
+	  passphrase_ok = 1;
+	  pinentry_setbufferlen (pinentry, strlen (s_utf8) + 1);
+	  if (pinentry->pin)
+	    strcpy (pinentry->pin, s_utf8);
+	  secmem_free (s_utf8);
+	}
     }
   gtk_main_quit ();
 }

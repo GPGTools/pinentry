@@ -1,3 +1,19 @@
+Noteworthy changes in version 0.7.0 (unreleased)
+------------------------------------------------
+
+ * Make UTF8 description (prompt, error message, button texts) work.
+
+ * Make sure that secmem_term is called before program termination.
+
+ * Make assuan in Gtk and Curses pinentry use secure memory for
+   storage.
+
+ * Fixed a bug that would occur if a canceled GETPIN was immediately
+   followed by a CONFIRM.
+
+ * Disable undo/redo in Qt pinentry.
+
+
 Noteworthy changes in version 0.6.8 (2003-02-07)
 ------------------------------------------------
 

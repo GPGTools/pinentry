@@ -59,6 +59,9 @@ struct pinentry
   int enhanced;
   /* True if caller should grab the keyboard.  */
   int grab;
+  /* The window ID of the parent window over which the pinentry window
+     should be displayed.  */
+  int parent_wid;
 
   /* The user should set this to -1 if the user canceled the request,
      and to the length of the PIN stored in pin otherwise.  */
