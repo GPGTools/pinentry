@@ -1,3 +1,7 @@
+2002-11-09  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.6.
+
 2002-11-08  Werner Koch  <wk@gnupg.org>
 
 	* pinentry/pinentry-curses.c (convert_utf8_string): Renamed to 
