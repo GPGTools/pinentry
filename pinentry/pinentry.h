@@ -61,7 +61,7 @@ typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
 
 /* Start the pinentry event loop.  The program will start to process
    Assuan commands until it is finished or an error occurs.  If an
-   error occurs, -1 is returned an errno indicates the type of an
+   error occurs, -1 is returned and errno indicates the type of an
    error.  Otherwise, 0 is returned.  */
 int pinentry_loop (void);
 
