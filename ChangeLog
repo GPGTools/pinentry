@@ -1,6 +1,10 @@
 2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
-	* configure.ac: Version 0.9.6
+	* configure.ac: Version 0.6.10-cvs
+
+2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Version 0.6.9
 	* qt/Makefile.am: Added moc files to DISTCLEANFILES
 	* qt/pinentrycontroller.cpp: Dont spew assuan debug stuff out on stderr.
 
