@@ -1,3 +1,21 @@
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	Update to automake 1.9.
+	
+	* autogen.sh (configure_ac): Add --build-w32 option.
+	* Makefile.am: Support for the W32 pinentry. 
+	* configure.ac: Ditto.  Reformatted some error messages.
+	Define the usual conditionals for W32.
+	Check for a couple of more usually required headers.
+
+	* pinentry/pinentry.h (sleep) [W32]: New.
+
+	* pinentry/pinentry.c: Include langinfo.h only if available.
+	(pinentry_loop) [DOSISH]: Don't do uid check.
+
+	* secmem/util.c [DOSISH]: Disable UID stuff.
+
+	
 2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* acinclude.m4 (IU_LIB_NCURSES, IU_LIB_CURSES, IU_LIB_TERMCAP):

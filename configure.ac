@@ -28,11 +28,13 @@ AC_INIT(pinentry, 0.7.2-cvs, [gpa-dev@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
+
 AH_TOP([
 /* We need this, because some autoconf tests rely on this (e.g. stpcpy)
    and it should be used for new programs anyway */
 #define _GNU_SOURCE  1
 ])
+
 AM_MAINTAINER_MODE
 
 AC_CANONICAL_HOST
@@ -52,12 +54,59 @@ AC_PROG_RANLIB
 # for Qt and autoconf does does not allow that.
 AC_PROG_CXX
 AC_PROG_LN_S
+AC_CHECK_TOOL(WINDRES, windres, :)
+
+
+have_dosish_system=no
+have_w32_system=no
+case "${host}" in
+    *-mingw32*)
+        AC_DEFINE(USE_ONLY_8DOT3,1,
+                  [set this to limit filenames to the 8.3 format])
+        AC_DEFINE(HAVE_DRIVE_LETTERS,1,
+                  [defined if we must run on a stupid file system])
+        have_dosish_system=yes
+        have_w32_system=yes
+        ;;
+    i?86-emx-os2 | i?86-*-os2*emx )
+        # OS/2 with the EMX environment
+        AC_DEFINE(HAVE_DRIVE_LETTERS)
+        have_dosish_system=yes
+        ;;
+
+    i?86-*-msdosdjgpp*)
+        # DOS with the DJGPP environment
+        AC_DEFINE(HAVE_DRIVE_LETTERS)
+        have_dosish_system=yes
+        ;;
+esac
+
+if test "$have_dosish_system" = yes; then
+   AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
+             [Defined if we run on some of the PCDOS like systems 
+              (DOS, Windoze. OS/2) with special properties like
+              no file modes])
+fi
+AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
+
+if test "$have_w32_system" = yes; then
+   AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+fi
+AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+
+
+
 
 dnl Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
     CPPFLAGS="$CPPFLAGS -Wall"
 fi
+
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(string.h unistd.h langinfo.h termio.h locale.h)
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(seteuid stpcpy mmap)
@@ -102,24 +151,27 @@ if test "$LIBCURSES"; then
   if test "$fallback_curses" != "no"; then
     fallback_curses=yes
     AC_DEFINE(FALLBACK_CURSES, 1,
-	      [The GUI pinentries should fall back to curses if X is not available.])
+     [The GUI pinentries should fall back to curses if X is not available.])
   fi
 else
   if test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes"; then
     AC_MSG_ERROR([[
+***
 *** The curses library is required. The latest version of
 *** ncurses is always available from ftp://ftp.gnu.org/gnu/ncurses/.
-]])
+***]])
   fi
   pinentry_curses=no
   fallback_curses=no
 fi
-AM_CONDITIONAL(BUILD_LIBPINENTRY_CURSES, test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes")
+AM_CONDITIONAL(BUILD_LIBPINENTRY_CURSES,
+              test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes")
 AM_CONDITIONAL(BUILD_PINENTRY_CURSES, test "$pinentry_curses" = "yes")
 AM_CONDITIONAL(FALLBACK_CURSES, test "$fallback_curses" = "yes")
 
 if test "$pinentry_curses" = "yes"; then
-  AC_DEFINE(PINENTRY_CURSES, 1, [The Curses version of Pinentry is to be build])
+  AC_DEFINE(PINENTRY_CURSES, 1,
+           [The Curses version of Pinentry is to be build])
 fi
 
 
@@ -137,9 +189,10 @@ if test "$pinentry_gtk" != "no"; then
 AM_PATH_GLIB(1.2.0,,
 if test "$pinentry_gtk" = "yes"; then
     AC_MSG_ERROR([[
+***
 *** GLIB 1.2.0 or newer is required. The latest version of GLIB
 *** is always available from ftp://ftp.gtk.org/.
-]])
+***]])
 else
     pinentry_gtk=no
 fi)
@@ -150,9 +203,10 @@ AM_PATH_GTK(1.2.0,
     AC_DEFINE(HAVE_GTK, 1, [Defined if GTK is available]),
 if test "$pinentry_gtk" = "yes"; then
     AC_MSG_ERROR([[
+***
 *** GTK+ 1.2.0 or newer is required. The latest version of GTK+
 *** is always available form ftp://ftp.gtk.org/.
-]])
+***]])
 else
     pinentry_gtk=no
 fi)
@@ -238,22 +292,28 @@ QT_CHECK_COMPILERS
 QT_PATH
 if test $have_qt = "no"; then
 	if test $pinentry_qt = "yes"; then
-	  AC_MSG_ERROR([Qt ($qt_minversion) $ac_qt_notfound not found. Please check your installation!
-	  For more details about this problem, look at the end of config.log.$missing_qt_mt])
+	  AC_MSG_ERROR([[
+***
+*** Qt ($qt_minversion) $ac_qt_notfound not found. Please check your
+*** installation!  For more details about this problem, look at the
+*** end of config.log.$missing_qt_mt
+***]])
 	else
 	  pinentry_qt="no"	  
 	fi
 fi
 if test $have_moc = "no"; then
 	if test $pinentry_qt = "yes"; then
-        AC_MSG_ERROR([No Qt meta object compiler (moc) found!
-        Please check whether you installed Qt correctly.
-        You need to have a running moc binary.
-        configure tried to run $ac_cv_path_moc and the test didn't
-        succeed. If configure shouldn't have tried this one, set
-        the environment variable MOC to the right one before running
-        configure.
-        ])
+        AC_MSG_ERROR([[
+***
+*** No Qt meta object compiler (moc) found!
+*** Please check whether you installed Qt correctly.
+*** You need to have a running moc binary.
+*** configure tried to run $ac_cv_path_moc and the test didn't
+*** succeed. If configure shouldn't have tried this one, set
+*** the environment variable MOC to the right one before running
+*** configure.
+***]])
 	else
 	  pinentry_qt="no"	  
 	fi
@@ -275,6 +335,19 @@ dnl dnl Additional checks for Qt pinentry.
 dnl dnl End of checks for Qt pinentry.
 dnl fi
 
+
+#
+# Check whether we should build the W32 pinentry.  This is actually
+# the simplest check as we do this only for that platform.
+#
+pinentry_w32=no
+test $have_w32_system = yes && pinentry_w32=yes
+AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
+
+
+#
+# Figure out the default pinentry
+#
 if test "$pinentry_gtk" = "yes"; then
    PINENTRY_DEFAULT=pinentry-gtk
 else
@@ -287,7 +360,11 @@ else
       if test "$pinentry_curses" = "yes"; then
         PINENTRY_DEFAULT=pinentry-curses
       else
-        AC_MSG_ERROR([[No pinentry enabled.]])
+        if test "$pinentry_w32" = "yes"; then
+          PINENTRY_DEFAULT=pinentry-w32
+        else
+          AC_MSG_ERROR([[No pinentry enabled.]])
+        fi
       fi
     fi
   fi
@@ -303,6 +380,7 @@ curses/Makefile
 gtk/Makefile
 gtk+-2/Makefile
 qt/Makefile
+w32/Makefile
 doc/Makefile
 Makefile
 ])
@@ -316,6 +394,7 @@ AC_MSG_NOTICE([
 	GTK+ Pinentry: $pinentry_gtk
 	GTK+-2 Pinentry: $pinentry_gtk_2
 	Qt Pinentry: $pinentry_qt
+        W32 Pinentry: $pinentry_w32
 
 	Fallback to Curses: $fallback_curses
 

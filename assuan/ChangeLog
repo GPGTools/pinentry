@@ -1,3 +1,9 @@
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	* assuan.h (assuan_error_t, assuan_context_t): New aliases.
+	* assuan-buffer.c (readline): Renamed EOF to ISEOF to avoid
+	compiler warnings.
+
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
 	* mkerrors: Add missing last LF.

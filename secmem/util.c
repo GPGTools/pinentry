@@ -41,8 +41,10 @@
        __result; }))
 #endif
 
+#ifndef HAVE_DOSISH_SYSTEM
 static int uid_set = 0;
 static uid_t real_uid, file_uid;
+#endif /*!HAVE_DOSISH_SYSTEM*/
 
 /* write DATA of size BYTES to FD, until all is written or an error occurs */
 ssize_t xwrite(int fd, const void *data, size_t bytes)
@@ -78,12 +80,14 @@ int debugmsg(const char *fmt, ...)
 #endif
 
 /* initialize uid variables */
+#ifndef HAVE_DOSISH_SYSTEM
 static void init_uids(void)
 {
   real_uid = getuid();
   file_uid = geteuid();
   uid_set = 1;
 }
+#endif
 
 
 #if 0 /* Not used. */
@@ -121,6 +125,7 @@ void raise_privs()
 /* drop all additional privileges */
 void drop_privs()
 {
+#ifndef HAVE_DOSISH_SYSTEM
   if (!uid_set)
     init_uids();
   if (real_uid != file_uid) {
@@ -130,4 +135,5 @@ void drop_privs()
     }
     file_uid = real_uid;
   }
+#endif
 }

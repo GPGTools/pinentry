@@ -29,6 +29,67 @@ check_version () {
 }
 
 
+# ***** W32 build script *******
+# Used to cross-compile for Windows.
+if test "$1" = "--build-w32"; then
+    tmp=`dirname $0`
+    tsdir=`cd "$tmp"; pwd`
+    shift
+    if [ ! -f $tsdir/config.guess ]; then
+        echo "$tsdir/config.guess not found" >&2
+        exit 1
+    fi
+    build=`$tsdir/config.guess`
+
+    [ -z "$w32root" ] && w32root="$HOME/w32root"
+    echo "Using $w32root as standard install directory" >&2
+    
+    # See whether we have the Debian cross compiler package or the
+    # old mingw32/cpd system
+    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
+        host=i586-mingw32msvc
+        crossbindir=/usr/$host/bin
+    else
+       host=i386--mingw32
+       if ! mingw32 --version >/dev/null; then
+          echo "We need at least version 0.3 of MingW32/CPD" >&2
+          exit 1
+       fi
+       crossbindir=`mingw32 --install-dir`/bin
+       # Old autoconf version required us to setup the environment
+       # with the proper tool names.
+       CC=`mingw32 --get-path gcc`
+       CPP=`mingw32 --get-path cpp`
+       AR=`mingw32 --get-path ar`
+       RANLIB=`mingw32 --get-path ranlib`
+       export CC CPP AR RANLIB 
+    fi
+   
+    if [ -f "$tsdir/config.log" ]; then
+        if ! head $tsdir/config.log | grep "$host" >/dev/null; then
+            echo "Pease run a 'make distclean' first" >&2
+            exit 1
+        fi
+    fi
+
+    ./configure --enable-maintainer-mode --prefix=${w32root} \
+                --host=i586-mingw32msvc --build=${build} \
+                --disable-pinentry-gtk \
+                --disable-pinentry-gtk2 \
+                --disable-pinentry-qt 
+
+    rc=$?
+    # Ugly hack to overcome a gettext problem.  Someone should look into
+    # gettext to figure out why the po directory is not ignored as it used
+    # to be.
+    [ $rc = 0 ] && touch $tsdir/po/all
+    exit $rc
+fi
+# ***** end W32 build script *******
+
+
+
+
 # Grep the required versions from configure.ac
 autoconf_vers=`sed -n '/^AC_PREREQ(/ { 
 s/^.*(\(.*\))/\1/p

@@ -71,12 +71,11 @@ writen ( int fd, const char *buffer, size_t length )
 
 /* read an entire line */
 static int
-readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
+readline (int fd, char *buf, size_t buflen, int *r_nread, int *iseof)
 {
-  size_t nleft = buflen;
-  char *p;
+  size_t nleft = buflen; char *p;
 
-  *eof = 0;
+  *iseof = 0;
   *r_nread = 0;
   while (nleft > 0)
     {
@@ -93,7 +92,7 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *eof)
         }
       else if (!n)
         {
-          *eof = 1;
+          *iseof = 1;
           break; /* allow incomplete lines */
         }
       p = buf;

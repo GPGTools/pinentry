@@ -26,7 +26,7 @@ dnl ------------------------------------------------------------------------
 dnl Find a file (or one of more files in a list of dirs)
 dnl ------------------------------------------------------------------------
 dnl
-AC_DEFUN(QT_FIND_FILE,
+AC_DEFUN([QT_FIND_FILE],
 [
 $3=NO
 for i in $2;
@@ -48,7 +48,7 @@ dnl Find the meta object compiler in the PATH,
 dnl in $QTDIR/bin, and some more usual places
 dnl ------------------------------------------------------------------------
 dnl
-AC_DEFUN(QT_PATH_MOC,
+AC_DEFUN([QT_PATH_MOC],
 [
    qt_bindirs=""
    for dir in $qt_dirs; do
@@ -82,7 +82,7 @@ dnl Find the header files and libraries for the X Window System.
 dnl Extended the macro AC_PATH_XTRA.
 dnl ------------------------------------------------------------------------
 dnl
-AC_DEFUN(QT_PATH_X,
+AC_DEFUN([QT_PATH_X],
 [
 AC_ARG_ENABLE(
   embedded,
@@ -121,7 +121,7 @@ AC_SUBST(QT_LIBS)
 AC_SUBST(QTE_NORTTI)
 ])
 
-AC_DEFUN(QT_PRINT_PROGRAM,
+AC_DEFUN([QT_PRINT_PROGRAM],
 [
 AC_REQUIRE([QT_CHECK_VERSION])
 cat > conftest.$ac_ext <<EOF
@@ -185,7 +185,7 @@ EOF
 ])
 
 
-AC_DEFUN(QT_CHECK_VERSION,
+AC_DEFUN([QT_CHECK_VERSION],
 [
 if test -z "$1"; then
   qt_ver=3
@@ -256,7 +256,7 @@ dnl $(QT_LDFLAGS) will be -Lqtliblocation (if needed)
 dnl and $(QT_INCLUDES) will be -Iqthdrlocation (if needed)
 dnl ------------------------------------------------------------------------
 dnl
-AC_DEFUN(QT_PATH_1_3,
+AC_DEFUN([QT_PATH_1_3],
 [
 AC_REQUIRE([QT_PATH_X])
 AC_REQUIRE([QT_CHECK_VERSION])
@@ -508,14 +508,14 @@ QT_PATH_MOC
 AC_SUBST(LIB_QPE)
 ])
 
-AC_DEFUN(QT_PATH,
+AC_DEFUN([QT_PATH],
 [
 QT_PATH_1_3
 QT_CHECK_RPATH
 ])
 
 
-AC_DEFUN(QT_CHECK_COMPILER_FLAG,
+AC_DEFUN([QT_CHECK_COMPILER_FLAG],
 [
 AC_MSG_CHECKING(whether $CXX supports -$1)
 kde_cache=`echo $1 | sed 'y% .=/+-%____p_%'`
@@ -542,7 +542,7 @@ fi
 dnl QT_REMOVE_FORBIDDEN removes forbidden arguments from variables
 dnl use: QT_REMOVE_FORBIDDEN(CC, [-forbid -bad-option whatever])
 dnl it's all white-space separated
-AC_DEFUN(QT_REMOVE_FORBIDDEN,
+AC_DEFUN([QT_REMOVE_FORBIDDEN],
 [ __val=$$1
   __forbid=" $2 "
   if test -n "$__val"; then
@@ -563,7 +563,7 @@ AC_DEFUN(QT_REMOVE_FORBIDDEN,
 ])
 
 dnl QT_VALIDIFY_CXXFLAGS checks for forbidden flags the user may have given
-AC_DEFUN(QT_VALIDIFY_CXXFLAGS,
+AC_DEFUN([QT_VALIDIFY_CXXFLAGS],
 [dnl
 if test "x$qt_use_emb" != "xyes"; then
  QT_REMOVE_FORBIDDEN(CXX, [-fno-rtti -rpath])
@@ -574,7 +574,7 @@ else
 fi
 ])
 
-AC_DEFUN(QT_CHECK_COMPILERS,
+AC_DEFUN([QT_CHECK_COMPILERS],
 [
   AC_PROG_CXX
 
@@ -599,7 +599,7 @@ AC_DEFUN(QT_CHECK_COMPILERS,
   AC_PROG_CXXCPP
 ])
 
-AC_DEFUN(QT_CHECK_RPATH,
+AC_DEFUN([QT_CHECK_RPATH],
 [
 AC_MSG_CHECKING(for rpath)
 AC_ARG_ENABLE(rpath,
@@ -623,13 +623,13 @@ AC_MSG_RESULT($USE_RPATH)
 ])
 
 
-AC_DEFUN(QT_CHECK_LIBPTHREAD,
+AC_DEFUN([QT_CHECK_LIBPTHREAD],
 [
 AC_CHECK_LIB(pthread, pthread_create, [LIBPTHREAD="-lpthread"] )
 AC_SUBST(LIBPTHREAD)
 ])
 
-AC_DEFUN(QT_CHECK_PTHREAD_OPTION,
+AC_DEFUN([QT_CHECK_PTHREAD_OPTION],
 [
     AC_ARG_ENABLE(kernel-threads, [  --enable-kernel-threads Enable the use of the LinuxThreads port on FreeBSD/i386 only.],
 	kde_use_kernthreads=$enableval, kde_use_kernthreads=no)
@@ -684,7 +684,7 @@ AC_DEFUN(QT_CHECK_PTHREAD_OPTION,
     AC_SUBST(LIBPTHREAD)
 ])
 
-AC_DEFUN(QT_CHECK_THREADING,
+AC_DEFUN([QT_CHECK_THREADING],
 [
   AC_REQUIRE([QT_CHECK_LIBPTHREAD])
   AC_REQUIRE([QT_CHECK_PTHREAD_OPTION])

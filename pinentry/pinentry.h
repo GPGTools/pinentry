@@ -23,7 +23,11 @@
 
 #ifdef __cplusplus
 extern "C" {
+#if 0 
+}
 #endif
+#endif
+
 
 struct pinentry
 {
@@ -119,10 +123,23 @@ int pinentry_parse_opts (int argc, char *argv[]);
 /* The caller must define this variable to process assuan commands.  */
 extern pinentry_cmd_handler_t pinentry_cmd_handler;
 
+
+
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Windows declares sleep as obsolete, but provides a definition for
+   _sleep but non for the still existing sleep.  */
+#define sleep(a) _sleep ((a))
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
+#if 0 
+{
+#endif
 #ifdef __cplusplus
 }
 #endif
 
 #endif	/* PINENTRY_H */
-
-

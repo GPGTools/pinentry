@@ -28,7 +28,9 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <locale.h>
+#ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
+#endif
 #include <limits.h>
 
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
@@ -676,8 +678,10 @@ pinentry_loop (void)
   ASSUAN_CONTEXT ctx;
 
   /* Extra check to make sure we have dropped privs. */
+#ifndef HAVE_DOSISH_SYSTEM
   if (getuid() != geteuid())
     abort ();
+#endif
 
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and

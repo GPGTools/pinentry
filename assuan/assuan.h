@@ -101,7 +101,9 @@ typedef enum {
   ASSUAN_Card_Not_Present = 404,
   ASSUAN_Invalid_Id = 405
 
-} AssuanError;
+} assuan_error_t;
+
+typedef assuan_error_t AssuanError; /* Deprecated. */
 
 /* This is a list of pre-registered ASSUAN commands */
 typedef enum {
@@ -122,7 +124,8 @@ typedef enum {
 #define ASSUAN_LINELENGTH 1002 /* 1000 + [CR,]LF */
 
 struct assuan_context_s;
-typedef struct assuan_context_s *ASSUAN_CONTEXT;
+typedef struct assuan_context_s *assuan_context_t; 
+typedef struct assuan_context_s *ASSUAN_CONTEXT; /* Deprecated.  */
 
 /*-- assuan-handler.c --*/
 int assuan_register_command (ASSUAN_CONTEXT ctx,

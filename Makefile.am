@@ -47,8 +47,14 @@ else
 pinentry_qt = 
 endif
 
+if BUILD_PINENTRY_W32
+pinentry_w32 = w32
+else
+pinentry_w32 = 
+endif
+
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} doc
+	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_w32} doc
 
 signed-dist: $(distdir).tar.gz.sig
 
