@@ -33,7 +33,7 @@ Examples:
 * To build everything that is supported (complete auto-detection):
 ./configure
 
-Some of the code is taken from Robert Bihlmeyer's Quituple-Agent.  For
-security reasons, all internationalization has been removed.  The
+Some of the code is taken from Robert Bihlmeyer's Quintuple-Agent.
+For security reasons, all internationalization has been removed.  The
 client is expected to tell the PIN entry the text strings to be
 displayed.
