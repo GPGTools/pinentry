@@ -1,3 +1,9 @@
+2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Version 0.9.6
+	* qt/Makefile.am: Added moc files to DISTCLEANFILES
+	* qt/pinentrycontroller.cpp: Dont spew assuan debug stuff out on stderr.
+
 2003-03-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
 	* qt/cppmemory.cpp, qt/main.cpp: Only override array allocation

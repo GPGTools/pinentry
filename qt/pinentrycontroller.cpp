@@ -56,7 +56,9 @@ PinEntryController::PinEntryController( WId parentwid ) : _pinentry( 0 ), _paren
   
   assuan_set_malloc_hooks( secmem_malloc, secmem_realloc, secmem_free );
   int rc = assuan_init_pipe_server( &_ctx, fds );
+#if 0
   assuan_set_log_stream (_ctx, stderr);
+#endif
 
   if( rc ) {
     qDebug(assuan_strerror( static_cast<AssuanError>(rc) ));

@@ -42,5 +42,7 @@ pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	cppmemory.cpp main.cpp 
 nodist_pinentry_qt_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
 
+DISTCLEANFILES = $(nodist_pinentry_qt_SOURCES)
+
 %.moc.cpp: $(srcdir)/%.h
 	$(MOC) $< -o $@
