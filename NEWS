@@ -1,3 +1,11 @@
+
+  * The Curses pinentry supports user-provided button texts in confirm
+    mode.
+
+  * The Curses pinentry supports setting the desired character set
+    locale with --lc-ctype and correctly translates the UTF-8 strings
+    into that.
+
 Noteworthy changes in version 0.6.0 (2002-04-05)
 ------------------------------------------------
 

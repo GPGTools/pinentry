@@ -1,6 +1,6 @@
 * The Button texts are not internationalized and can't be set from the
-  application.  This is supopsedly only true for the GETPIN dialog.
-  (The CONFIRM dialog can take the button text from the PROMPT setting).
+  application.  This is only true for the GETPIN dialog, as the
+  CONFIRM dialog can take the button text from the PROMPT setting.
 
 * The DISPLAY setting should be honoured by the pinentry applications using XFree86.
   This implies reconfiguring the underlying toolkit, is this always possible?
