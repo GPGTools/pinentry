@@ -1,6 +1,6 @@
 # configure.ac
 # Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
-# Copyright (C) 2001, 2002 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
 # 
 # This file is part of PINENTRY.
 # 
@@ -63,12 +63,8 @@ AC_CHECK_FUNCS(seteuid stpcpy mmap)
 GNUPG_CHECK_MLOCK
 
 dnl Checks for libassuan.
-AC_CHECK_FUNCS(fopencookie,,[
-    AC_MSG_ERROR([[
-***
-*** fopencookie(3) is needed to build this package.
-*** We will provide an replacement in a later release.
-***]])])
+dnl -> None required becuase we use a stripped down version of libassuan.
+
 
 dnl Checks for libsecmem.
 GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
