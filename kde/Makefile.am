@@ -42,7 +42,7 @@ bin_PROGRAMS = pinentry-kde
 # Set the include path for X, qt, KDE and the included libs.
 AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(XXX_KDE_DEFINES)
 pinentry_kde_LDADD = $(top_builddir)/assuan/libassuan.a \
-	$(top_builddir)/secmem/libsecmem.a \
+	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
 	$(LIB_QT) $(LIB_KDECORE) $(LIB_KDEUI)
 pinentry_kde_LDFLAGS = $(KDE_RPATH) 
 

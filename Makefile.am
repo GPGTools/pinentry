@@ -46,3 +46,9 @@ signed-dist: $(distdir).tar.gz.sig
 
 %.sig: %
 	gpg -sbav -u 0x57548DCD $@ $<
+
+install-exec-local:
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  echo "  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'` || true; \
+	done

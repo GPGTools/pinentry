@@ -1,5 +1,11 @@
 2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* kde/Makefile.am (pinentry_kde_LDADD): Link with $(LIBCAP).
+	* gtk/Makefile.am (install-exec-local): Moved to ...
+	* Makefile.am (install-exec-local): ... here.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
 	* kde/Makefile.am (kde_appsdir): New variable.
 	* kde/Makefile.am (install-data-local): Use DESTDIR.
 	(uninstall-local): Likewise.

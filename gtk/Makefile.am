@@ -29,9 +29,3 @@ LDADD = ../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a \
 
 pinentry_gtk_SOURCES = pinentry-gtk.c \
 	gtksecentry.c gtksecentry.h
-
-install-exec-local:
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  echo "  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
-	  $(SETCAP) cap_ipc_lock+p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'` || true; \
-	done
