@@ -1,5 +1,9 @@
 2003-12-22  Werner Koch  <wk@gnupg.org>
 
+	* qt/main.cpp: Include errno.h.
+	(main): Translate the --display option to -display, so that the Qt
+	init code can grasp it.
+
 	* doc/ChangeLog: Removed and merged with this file.
 	* doc/pinentry.texi: Cleaned up.
 	* doc/fdl.texi: Removed.
@@ -21,7 +25,7 @@
 	(pinentry_init): Add arg PGMNAME and store it.  Use it at all
 	marked placed instead of the constant "pinentry".
 	(usage): Use it here too.
-	* curses/pinentry-curses.c (main): Call pinentry_init wity our name. 
+	* curses/pinentry-curses.c (main): Call pinentry_init with our name. 
 	* qt/main.cpp (main): Ditto.
 	* gtk/pinentry-gtk.c (main): Ditto. 
 

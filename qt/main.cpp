@@ -24,6 +24,7 @@
 #endif
 
 #include <stdlib.h>
+#include <errno.h>
 
 #include <qapplication.h>
 #include <qwidget.h>
@@ -126,10 +127,45 @@ main (int argc, char *argv[])
     pinentry_cmd_handler = curses_cmd_handler;
   else
 #endif
-    /* We use a modal dialog window, so we don't need the application
-       window anymore.  */
-    new QApplication (argc, argv);
+    {
+      /* Qt does only understand -display but not --display; thus we
+         are fixing that here.  The code is pretty simply and may get
+         confused if an argument is called "--display". */
+      char **new_argv, *p;
+      size_t n;
+      int i, done;
 
+      for (n=0,i=0; i < argc; i++)
+        n += strlen (argv[i])+1;
+      n++;
+      new_argv = (char**)calloc (argc+1, sizeof *new_argv);
+      if (new_argv)
+        *new_argv = (char*)malloc (n);
+      if (!new_argv || !*new_argv)
+        {
+          fprintf (stderr, "pinentry-qt: can't fixup argument list: %s\n",
+                   strerror (errno));
+          exit (EXIT_FAILURE);
+          
+        }
+      for (done=0,p=*new_argv,i=0; i < argc; i++)
+        if (!done && !strcmp (argv[i], "--display"))
+          {
+            new_argv[i] = "-display";
+            done = 1;
+          }
+        else
+          {
+            new_argv[i] = strcpy (p, argv[i]);
+            p += strlen (argv[i]) + 1;
+          }
+
+      /* We use a modal dialog window, so we don't need the application
+         window anymore.  */
+      i = argc;
+      new QApplication (i, new_argv);
+    }
+  
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))

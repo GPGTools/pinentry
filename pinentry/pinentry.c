@@ -321,13 +321,15 @@ pinentry_parse_opts (int argc, char *argv[])
           break;
 
 	case 'D':
+          /* Note, this is currently not used because the GUI engine
+             has already been initialized when parsing these options. */
 	  pinentry.display = strdup (optarg);
 	  if (!pinentry.display)
 	    {
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
-	  break;
+	  break; 
 	case 'T':
 	  pinentry.ttyname = strdup (optarg);
 	  if (!pinentry.ttyname)
