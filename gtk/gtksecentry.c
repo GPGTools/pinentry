@@ -1223,6 +1223,7 @@ gtk_secure_entry_key_press (GtkWidget   *widget,
 	gtk_move_forward_character (entry);
       break;
     case GDK_Return:
+    case GDK_KP_Enter:
       return_val = TRUE;
       gtk_widget_activate (widget);
       break;
