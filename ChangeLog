@@ -1,3 +1,20 @@
+2004-07-30  Moritz Schulte  <moritz@g10code.com>
+
+	* qt/Makefile.am (ncurses_include): Removed
+	-I$(top_srcdir)/pinentry ...
+	(AM_CPPFLAGS): ... added: -I$(top_srcdir)/pinentry.  Thanks to
+	Peter Eisentraut.
+
+	* pinentry/pinentry.c (pinentry_utf8_to_local): Declare INPUT
+	const.
+	(pinentry_local_to_utf8): Likewise.
+	(pinentry_utf8_to_local, pinentry_local_to_utf8): Compile only, if
+	either Curses or GTK+ support is enabled.
+	* configure.ac: Do also check for libiconv when the GTK+ version
+	of pinentry is to be build.  Define PINENTRY_CURSES, PINENTRY_GTK,
+	PINENTRY_QT depending on which versions of pinentry should be
+	build.
+
 2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* acinclude.m4 (QT_CHECK_DIRECT): Removed.

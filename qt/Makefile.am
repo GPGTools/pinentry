@@ -24,7 +24,7 @@ EXTRA_DIST = Manifest README.SecQ
 bin_PROGRAMS = pinentry-qt
 
 if FALLBACK_CURSES
-ncurses_include = -I$(top_srcdir)/pinentry $(NCURSES_INCLUDE)
+ncurses_include = $(NCURSES_INCLUDE)
 libcurses = ../pinentry/libpinentry-curses.a $(LIBCURSES) $(LIBICONV)
 else
 ncurses_include =
@@ -32,7 +32,8 @@ libcurses =
 endif
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) $(ncurses_include)
+AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) $(ncurses_include) \
+	-I$(top_srcdir)/pinentry
 AM_CXXFLAGS = $(QT_CXXFLAGS)
 pinentry_qt_LDADD = $(QT_LIBS) $(libcurses) ../pinentry/libpinentry.a \
 	$(top_builddir)/assuan/libassuan.a \

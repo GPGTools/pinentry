@@ -28,9 +28,12 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <locale.h>
-#include <iconv.h>
 #include <langinfo.h>
 #include <limits.h>
+
+#if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
+#include <iconv.h>
+#endif
 
 #include "assuan.h"
 #include "memory.h"
@@ -65,11 +68,13 @@ struct pinentry pinentry =
   };
 
 
+
+#if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
 char *
 pinentry_utf8_to_local (char *lc_ctype, char *text)
 {
   iconv_t cd;
-  char *input = text;
+  const char *input = text;
   size_t input_len = strlen (text) + 1;
   char *output;
   size_t output_len;
@@ -132,7 +137,7 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
   char *old_ctype;
   char *source_encoding;
   iconv_t cd;
-  char *input = text;
+  const char *input = text;
   size_t input_len = strlen (text) + 1;
   char *output;
   size_t output_len;
@@ -192,6 +197,7 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
     }
   return output_buf;
 }
+#endif
 
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
    new buffer on success and 0 on failure or when the old buffer is

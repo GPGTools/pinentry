@@ -117,10 +117,10 @@ AM_CONDITIONAL(BUILD_LIBPINENTRY_CURSES, test "$pinentry_curses" = "yes" -o "$fa
 AM_CONDITIONAL(BUILD_PINENTRY_CURSES, test "$pinentry_curses" = "yes")
 AM_CONDITIONAL(FALLBACK_CURSES, test "$fallback_curses" = "yes")
 
-if test "$pinentry_curses" = "yes" -o "$fallback_curses" = "yes"; then
-dnl Additional checks for Curses pinentry.
-AM_ICONV
+if test "$pinentry_curses" = "yes"; then
+  AC_DEFINE(PINENTRY_CURSES, 1, [The Curses version of Pinentry is to be build])
 fi
+
 
 dnl
 dnl Check for GTK+ pinentry program.
@@ -162,6 +162,16 @@ if test "$pinentry_gtk" != "no"; then
     pinentry_gtk=yes
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_GTK, test "$pinentry_gtk" = "yes")
+if test "$pinentry_gtk" = "yes"; then
+  AC_DEFINE(PINENTRY_GTK, 1, [The GTK+ version of Pinentry is to be build])
+fi
+
+if test "$pinentry_curses" = "yes" \
+        -o "$fallback_curses" = "yes" \
+        -o "$pinentry_gtk" = "yes"; then
+dnl Additional checks pinentry Curses/GTK+.
+AM_ICONV
+fi
 
 dnl if test "$pinentry_gtk" = "yes"; then
 dnl Additional checks for GTK+ pinentry.
@@ -210,6 +220,10 @@ if test "$pinentry_qt" != "no"; then
     pinentry_qt=yes
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
+
+if test "$pinentry_qt" = "yes"; then
+  AC_DEFINE(PINENTRY_QT, 1, [The Qt version of Pinentry is to be build])
+fi
 
 dnl if test "$pinentry_qt" = "yes"; then
 dnl dnl Additional checks for Qt pinentry.
