@@ -1,6 +1,7 @@
-Noteworthy changes in version 0.6.8 (unreleased)
+Noteworthy changes in version 0.6.8 (2003-02-07)
 ------------------------------------------------
 
+ * Bug fix in pinentry-qt.
 
 Noteworthy changes in version 0.6.7 (2002-11-20)
 ------------------------------------------------

@@ -1,3 +1,7 @@
+2003-02-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.6.8.
+
 2003-02-04  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
 	* qt/main.cpp: Work around '--display' option. This fixes 
