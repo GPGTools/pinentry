@@ -3,6 +3,9 @@
 
   * There is now a Curses frontend.
 
+  * The curses pinentry supports --ttyname and --ttytype options to
+    set the desired input/output terminal and its type.
+
 Noteworthy changes in version 0.5.1 (2002-02-18)
 ------------------------------------------------
 
