@@ -16,28 +16,201 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
+#include <config.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
 
-#include "dialog.h"
-#include "controller.h"
+#include "pinentry.h"
+#include "memory.h"
+
+#include "resource.h"
 
 
-/* int WINAPI */
-/* WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmdLine, int nShowCmd) */
-int
-main ()
+#define PGMNAME "pinentry-w32"
+
+
+static int w32_cmd_handler (pinentry_t pe);
+
+
+/* We use gloabl variables for the state, becuase there should never
+   ever be a second instance.  */
+static HWND dialog_handle;
+static int passphrase_ok = 0;
+
+
+/* Connect this module to the pinnetry framework.  */
+pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
+
+
+
+/* Dialog processing loop.  */
+static BOOL CALLBACK
+dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  struct pinentry_controller_s ctl;
+  switch (msg)
+    {
+    case WM_INITDIALOG:
+      dialog_handle = dlg;
+      SetForegroundWindow (dlg);
+      break;
 
-  fprintf (stderr, "enter main\n");
-  pinentry_ctrl_exec (&ctl);
-  fprintf (stderr, "debug 1\n");
-  pinentry_controller_free (&ctl);
-  fprintf (stderr, "leave main\n");
+    case WM_COMMAND:
+      switch (LOWORD (wparam))
+	{
+	case IDOK:
+	  EndDialog (dlg, TRUE);
+	  break;
+
+	case IDCANCEL:
+	  EndDialog (dlg, FALSE);
+	  break;
+	}
+      break;
+    }
+  return FALSE;
+}
+
+
+/* The okay button has been clicked or the enter enter key in the text
+   field.  */
+static void
+ok_button_clicked (pinentry_t pe)
+{
+  char *s_utf8;
+  char *s_buffer;
+  size_t s_buffer_size = 256;
+  
+  pe->locale_err = 1;
+  s_buffer = secmem_malloc (s_buffer_size + 1);
+  if (!s_buffer)
+    return;
+
+  GetDlgItemText (dialog_handle, IDC_PINENT_TEXT, s_buffer, s_buffer_size);
+/*   s_utf8 = pinentry_local_to_utf8 (pe->lc_ctype, s_buffer, 1); */
+/*   secmem_free (s_buffer); */
+  s_utf8 = s_buffer;   /* FIXME */
+  if (s_utf8)
+    {
+      passphrase_ok = 1;
+      pinentry_setbufferlen (pe, strlen (s_utf8) + 1);
+      if (pe->pin)
+        strcpy (pe->pin, s_utf8);
+/*       secmem_free (s_utf8); */
+      pe->locale_err = 0;
+    }
+}
+
+
+static void
+set_prompt (const char *s)
+{
+  if (!s)
+    s = "";
+  SetDlgItemText (dialog_handle, IDC_PINENT_PROMPT, s);
+}
+
+static void
+set_description (const char *s)
+{
+  if (!s)
+    s = "";
+  SetDlgItemText (dialog_handle, IDC_PINENT_DESC, s);
+}
+
+static void
+set_text (const char *s)
+{
+  if (!s)
+    s = "";
+  SetDlgItemText (dialog_handle, IDC_PINENT_TEXT, s);
+}
+
+static void
+set_ok_text (const char *s)
+{
+  if (!s)
+    s = "OK";
+  SetDlgItemText (dialog_handle, IDOK, s);
+}
+
+static void
+set_cancel_text (const char *s)
+{
+  if (!s)
+    s = "Cancel";
+  SetDlgItemText (dialog_handle, IDCANCEL, s);
+}
+
+static void
+set_error (const char *s)
+{
+  if (!s)
+    s = "";
+  SetDlgItemText (dialog_handle, IDC_PINENT_ERR, s);
+}
+
+
+static int
+w32_cmd_handler (pinentry_t pe)
+{
+  int want_pass = !!pe->pin;
+
+  passphrase_ok = 0;
+
+  if (want_pass)
+    {
+      DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
+                      GetDesktopWindow (), dlg_proc, 0);
+      set_prompt (pe->prompt);
+      set_description (pe->description);
+      set_text (NULL);
+      if (pe->ok)
+        set_ok_text (pe->ok);
+      if (pe->cancel)
+        set_cancel_text (pe->cancel);
+      if (pe->error)
+        set_error (pe->error);
+
+      ShowWindow (dialog_handle, TRUE);
+      ok_button_clicked (pe);
+      if (passphrase_ok && pe->pin)
+	return strlen (pe->pin);
+      else
+	return -1;
+    }
+  else /* Confirmation mode.  */
+    {
+      int ret;
+
+      if (pe->error)
+        ret = MessageBox (NULL, pe->error, "Error", MB_YESNO | MB_ICONERROR);
+      else
+        ret = MessageBox (NULL, pe->description?pe->description:"",
+                          "Information", MB_YESNO | MB_ICONINFORMATION);
+      if (ret == IDYES)
+        return 1;
+      else
+        return 0;
+    }
+
+}
+
+
+int
+main (int argc, char **argv)
+{
+  pinentry_init (PGMNAME);
+
+  /* Consumes all arguments.  */
+  if (pinentry_parse_opts (argc, argv))
+    {
+      printf ("pinentry-w32 (pinentry) " VERSION "\n");
+      exit (EXIT_SUCCESS);
+    }
+
+  if (pinentry_loop ())
+    return 1;
+
   return 0;
 }

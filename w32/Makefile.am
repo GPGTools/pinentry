@@ -28,8 +28,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
 
 
 
-pinentry_w32_SOURCES = main.c pinentry-w32.tc resource.h \
-       controller.c controller.h  dialog.c dialog.h                   
+pinentry_w32_SOURCES = main.c pinentry-w32.rc resource.h
 
 pinentry_w32_LDFLAGS = -mwindows -mconsole
 pinentry_w32_LDADD = pinentry-w32.o \

@@ -1,5 +1,9 @@
 2004-12-22  Werner Koch  <wk@g10code.com>
 
+	* main.c: Simplified.
+	* w32/dialog.h, w32/dialog.c, w32/controller.h, w32/controller.c:
+	Removed
+	
 	* w32/resource.h, w32/pinentry-w32.rc, w32/main.c, w32/dialog.h
 	* w32/dialog.c, w32/controller.h, w32/controller.c
 	* w32/Makefile.am: New.  Based on Timo's work.
