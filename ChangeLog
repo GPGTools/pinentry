@@ -1,5 +1,11 @@
 2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* kde/Makefile.am (kde_appsdir): New variable.
+	* kde/Makefile.am (install-data-local): Use DESTDIR.
+	(uninstall-local): Likewise.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
 	Merge of the gpinentry and curses pinentry program into the
 	pinentry distribution.  For this, the structure of the repository
 	has been thoroughly overhauled.  Some of the changes:

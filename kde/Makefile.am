@@ -35,6 +35,7 @@ LIB_KDEUI = -lkdeui
 KDE_RPATH = -L$(XXX_PREFIX)/lib -L/usr/X11R6/lib \
 	 -Wl,--rpath -Wl,$(XXX_PREFIX)/lib -Wl,--rpath -Wl,/usr/X11R6/lib
 MOC = $(XXX_PREFIX)/bin/moc
+kde_appsdir = $(datadir)/applnk
 
 bin_PROGRAMS = pinentry-kde
 
@@ -52,11 +53,11 @@ pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp pinentrydialog.moc.cp
 EXTRA_DIST = pinentry.desktop  
 
 install-data-local:
-	$(mkinstalldirs) $(kde_appsdir)/Applications/
-	$(INSTALL_DATA) $(srcdir)/pinentry.desktop $(kde_appsdir)/Applications/pinentry.desktop
+	$(mkinstalldirs) $(DESTDIR)$(kde_appsdir)/Applications/
+	$(INSTALL_DATA) $(srcdir)/pinentry.desktop $(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
 
 uninstall-local:
-	-rm -f $(kde_appsdir)/Applications/pinentry.desktop
+	-rm -f $(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
 
 %.moc.cpp: $(srcdir)/%.h
 	$(MOC) $< -o $@
