@@ -36,8 +36,8 @@ void *operator new (size_t s) throw (std::bad_alloc)
     else p = ::malloc( s );
     if(p) return p; // succes!
     
-    new_handler h = set_new_handler(0);
-    set_new_handler(h);
+    std::new_handler h = std::set_new_handler(0);
+    std::set_new_handler(h);
     if( h ) (*h)();
     else throw std::bad_alloc();
   }

@@ -114,7 +114,7 @@ int qt_main( int argc, char *argv[] )
     secmem_init( 16384*8 );
     secmem_set_flags(SECMEM_WARN);
     drop_privs();
-    set_new_handler(my_new_handler);
+    std::set_new_handler(my_new_handler);
     try {
 #ifdef USE_KDE
       KAboutData aboutData( "pinentry", I18N_NOOP("Pinentry"),
