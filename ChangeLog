@@ -1,3 +1,8 @@
+2004-09-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/Makefile.am (pinentry_qt_LDFLAGS): Add $(QT_RPATH).
+	Requested by Leo Savernik <l.savernik@aon.at>.
+
 2004-09-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gtk+-2/padlock-keyhole.xpm: File removed.

@@ -38,7 +38,7 @@ AM_CXXFLAGS = $(QT_CXXFLAGS)
 pinentry_qt_LDADD = $(QT_LIBS) $(libcurses) ../pinentry/libpinentry.a \
 	$(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP)
-pinentry_qt_LDFLAGS = $(QT_LDFLAGS)
+pinentry_qt_LDFLAGS = $(QT_LDFLAGS) $(QT_RPATH)
 
 pinentry_qt_SOURCES = secqstring.h secqstring.cpp \
 	secqinternal_p.h secqinternal.cpp \

@@ -4,6 +4,8 @@ Noteworthy changes in version 0.7.2 (unreleased)
  * Remove bug in configure script that would use installed version of
    Qt even if another path was explicitely specified with QTDIR.
 
+ * Honor the rpath setting for Qt.
+
  * Add GTK+-2 pinentry.
 
  * Install a symbolic link under the name "pinentry" that defaults to
