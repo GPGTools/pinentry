@@ -27,6 +27,10 @@
 #include <string.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <locale.h>
+#include <iconv.h>
+#include <langinfo.h>
+#include <limits.h>
 
 #include "assuan.h"
 #include "memory.h"
@@ -55,6 +59,116 @@ struct pinentry pinentry =
   };
 
 
+char *
+pinentry_utf8_to_local (char *lc_ctype, char *text)
+{
+  char *old_ctype;
+  char *target_encoding;
+  iconv_t cd;
+  char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    return strdup (text);
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  target_encoding = nl_langinfo (CODESET);
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open (target_encoding, "UTF-8");
+  if (cd == (iconv_t) -1)
+    {
+      free (output);
+      return NULL;
+    }
+  processed = iconv (cd, &input, &input_len, &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
+
+/* Convert TEXT whcih is encoded according to LC_CTYPE to UTF-8.  With
+   SECURE set to true, use secure memory for the returned buffer.
+   Return NULL on error. */
+char *
+pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
+{
+  char *old_ctype;
+  char *source_encoding;
+  iconv_t cd;
+  char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    {
+      output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
+      if (output_buf)
+        strcpy (output_buf, input);
+      return output_buf;
+    }
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  source_encoding = nl_langinfo (CODESET);
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = secure? secmem_malloc (output_len):malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open ("UTF-8", source_encoding);
+  if (cd == (iconv_t) -1)
+    {
+      if (secure)
+        secmem_free (output);
+      else
+        free (output);
+      return NULL;
+    }
+  processed = iconv (cd, &input, &input_len, &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      if (secure)
+        secmem_free (output);
+      else
+        free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
+
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
    new buffer on success and 0 on failure or when the old buffer is
    sufficient.  */
@@ -410,7 +524,21 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
   if (result < 0)
     return ASSUAN_Canceled;
 
-  result = assuan_send_data (ctx, pinentry.pin, result);
+  if (result && pinentry.pin)
+    {
+      char *p;
+
+      p = pinentry_local_to_utf8 (pinentry.lc_ctype, pinentry.pin, 1);
+      if (p)
+        {
+          result = assuan_send_data (ctx, p, strlen (p));
+          secmem_free (p);
+        }
+      else /* Most likely we can't convert between the character sets. */
+        result = ASSUAN_Invalid_Data;
+    }
+  else
+    result = assuan_send_data (ctx, pinentry.pin, result);
   if (pinentry.pin)
     {
       secmem_free (pinentry.pin);

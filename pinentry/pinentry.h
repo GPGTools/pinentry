@@ -80,6 +80,16 @@ typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
    error.  Otherwise, 0 is returned.  */
 int pinentry_loop (void);
 
+
+/* Convert the UTF-8 encoded string TEXT to the encoding given in
+   LC_CTYPE.  Return NULL on error. */
+char *pinentry_utf8_to_local (char *lc_ctype, char *text);
+
+/* Convert TEXT whcih is encoded according to LC_CTYPE to UTF-8.  With
+   SECURE set to true, use secure memory for the returned buffer.
+   Return NULL on error. */
+char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
+
 /* Try to make room for at least LEN bytes for the pin in the pinentry
    PIN.  Returns new buffer on success and 0 on failure.  */
 char *pinentry_setbufferlen (pinentry_t pin, int len);
@@ -106,3 +116,5 @@ extern pinentry_cmd_handler_t pinentry_cmd_handler;
 #endif
 
 #endif	/* PINENTRY_H */
+
+

@@ -4,6 +4,8 @@ Noteworthy changes in version 0.6.6 (unreleased)
  * Fixed handling of DISPLAY and --display for the sake of the curses
    fallback.
 
+ * UTF-8 conversion does now work for the GTK+ and CURSES version.
+
 Noteworthy changes in version 0.6.5 (2002-09-30)
 ------------------------------------------------
 

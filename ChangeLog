@@ -1,3 +1,18 @@
+2002-11-08  Werner Koch  <wk@gnupg.org>
+
+	* pinentry/pinentry-curses.c (convert_utf8_string): Renamed to 
+	* pinentry/pinentry.c (pinentry_utf8_to_local): this. Changed
+	callers.
+	(pinentry_local_to_utf8): New.
+	(cmd_getpin): Convert result back to UTF-8.
+	* gtk/pinentry-gtk.c (create_utf8_label): New.
+	(create_window): Use it here to set the prompts.
+
+2002-11-06  Werner Koch  <wk@gnupg.org>
+
+	* pinentry/pinentry-curses.c (dialog_run): Fixed retrun value tests
+	for fopen.
+
 2002-11-05  Werner Koch  <wk@gnupg.org>
 
 	* secmem/util.c (init_uids): Make it a prototype.

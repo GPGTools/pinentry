@@ -74,53 +74,6 @@ struct dialog
 typedef struct dialog *dialog_t;
 
 
-static char *
-convert_utf8_string (char *lc_ctype, char *text)
-{
-  char *old_ctype;
-  char *target_encoding;
-  iconv_t cd;
-  char *input = text;
-  size_t input_len = strlen (text) + 1;
-  char *output;
-  size_t output_len;
-  char *output_buf;
-  size_t processed;
-
-  /* If no locale setting could be determined, simply copy the
-     string.  */
-  if (!lc_ctype)
-    return strdup (text);
-
-  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
-  if (!old_ctype)
-    return NULL;
-  setlocale (LC_CTYPE, lc_ctype);
-  target_encoding = nl_langinfo (CODESET);
-  setlocale (LC_CTYPE, old_ctype);
-  free (old_ctype);
-
-  /* This is overkill, but simplifies the iconv invocation greatly.  */
-  output_len = input_len * MB_LEN_MAX;
-  output_buf = output = malloc (output_len);
-  if (!output)
-    return NULL;
-
-  cd = iconv_open (target_encoding, "UTF-8");
-  if (cd == (iconv_t) -1)
-    {
-      free (output);
-      return NULL;
-    }
-  processed = iconv (cd, &input, &input_len, &output, &output_len);
-  iconv_close (cd);
-  if (processed == (size_t) -1 || input_len)
-    {
-      free (output_buf);
-      return NULL;
-    }
-  return output_buf;
-}
 
 
 static int
@@ -143,7 +96,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 
   if (pinentry->description)
     {
-      description = convert_utf8_string (pinentry->lc_ctype,
+      description = pinentry_utf8_to_local (pinentry->lc_ctype,
 					 pinentry->description);
       if (!description)
 	{
@@ -153,7 +106,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
   if (pinentry->error)
     {
-      error = convert_utf8_string (pinentry->lc_ctype,
+      error = pinentry_utf8_to_local (pinentry->lc_ctype,
 				   pinentry->error);
       if (!error)
 	{
@@ -163,7 +116,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
   if (pinentry->prompt)
     {
-      prompt = convert_utf8_string (pinentry->lc_ctype,
+      prompt = pinentry_utf8_to_local (pinentry->lc_ctype,
 				    pinentry->prompt);
       if (!prompt)
 	{
@@ -200,9 +153,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       cancel[len + 2] = '\0';
     }
 
-  dialog->ok = convert_utf8_string (pinentry->lc_ctype,
+  dialog->ok = pinentry_utf8_to_local (pinentry->lc_ctype,
 				    ok ? ok : STRING_OK);
-  dialog->cancel = convert_utf8_string (pinentry->lc_ctype,
+  dialog->cancel = pinentry_utf8_to_local (pinentry->lc_ctype,
 					cancel ? cancel : STRING_CANCEL);
   if (!dialog->ok || !dialog->cancel)
     {
@@ -578,8 +531,8 @@ static int
 dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 {
   struct dialog diag;
-  FILE *ttyfi = 0;
-  FILE *ttyfo = 0;
+  FILE *ttyfi = NULL;
+  FILE *ttyfo = NULL;
   SCREEN *screen = 0;
   int done = 0;
 
@@ -587,10 +540,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (tty_name)
     {
       ttyfi = fopen (tty_name, "r");
-      if (ttyfi < 0)
+      if (!ttyfi)
 	return -1;
       ttyfo = fopen (tty_name, "w");
-      if (ttyfo < 0)
+      if (!ttyfo)
 	{
 	  int err = errno;
 	  fclose (ttyfi);

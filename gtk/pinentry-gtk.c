@@ -172,6 +172,24 @@ confirm_button_clicked (GtkWidget *widget, gpointer data)
 
 
 static GtkWidget *
+create_utf8_label (char *text)
+{
+  GtkWidget *w;
+  char *buf;
+
+  buf = pinentry_utf8_to_local (pinentry->lc_ctype, text);
+  if (buf)
+    {
+      w = gtk_label_new (buf);
+      free (buf);
+    }
+  else /* no core - simply don't convert */
+    w = gtk_label_new (text);
+  return w;
+}
+
+
+static GtkWidget *
 create_window (int confirm_mode)
 {
   GtkWidget *w;
@@ -208,7 +226,7 @@ create_window (int confirm_mode)
 
   if (pinentry->description)
     {
-      w = gtk_label_new (pinentry->description);
+      w = create_utf8_label (pinentry->description);
       gtk_box_pack_start (GTK_BOX(box), w, TRUE, FALSE, 0);
     }
   if (pinentry->error && !confirm_mode)
@@ -218,7 +236,7 @@ create_window (int confirm_mode)
       GdkColor color[1] = {{0, 0xffff, 0, 0}};
       gboolean success[1];
 
-      w = gtk_label_new (pinentry->error);
+      w = create_utf8_label (pinentry->error);
       gtk_box_pack_start (GTK_BOX(box), w, TRUE, FALSE, 5);
 
       /* fixme: Do we need to release something, or is there a more
@@ -245,7 +263,7 @@ create_window (int confirm_mode)
     {
       if (pinentry->prompt)
         {
-          w = gtk_label_new (pinentry->prompt);
+          w = create_utf8_label (pinentry->prompt);
           gtk_box_pack_start (GTK_BOX(ebox), w, FALSE, FALSE, 0);
         }
       entry = gtk_secure_entry_new ();
