@@ -18,6 +18,10 @@
    02111-1307, USA  */
 
 #include <qlayout.h>
+#include <qlineedit.h>
+#include <qpushbutton.h>
+#include <qlabel.h>
+
 #include "pinentrydialog.h"
 
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
@@ -40,18 +44,18 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
 
   l = new QHBoxLayout( top );
   
-  QPushButton* okB = new QPushButton( tr("OK"), this );
-  QPushButton* cancelB = new QPushButton( tr("Cancel"), this );
+  _ok = new QPushButton( tr("OK"), this );
+  _cancel = new QPushButton( tr("Cancel"), this );
 
-  l->addWidget( okB );
+  l->addWidget( _ok );
   l->addStretch();
-  l->addWidget( cancelB );
+  l->addWidget( _cancel );
 
-  okB->setDefault(true);
+  _ok->setDefault(true);
 
-  connect( okB, SIGNAL( clicked() ),
+  connect( _ok, SIGNAL( clicked() ),
 	   this, SIGNAL( accepted() ) );
-  connect( cancelB, SIGNAL( clicked() ),
+  connect( _cancel, SIGNAL( clicked() ),
 	   this, SIGNAL( rejected() ) );
   _edit->setFocus();
 }
@@ -122,4 +126,14 @@ void PinEntryDialog::setPrompt( const QString& txt )
 QString PinEntryDialog::prompt() const 
 {
   return _prompt->text();
+}
+
+void PinEntryDialog::setOkText( const QString& txt )
+{
+  _ok->setText( txt );
+}
+
+void PinEntryDialog::setCancelText( const QString& txt )
+{
+  _cancel->setText( txt );
 }

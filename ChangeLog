@@ -1,3 +1,8 @@
+2002-04-25  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* pinentry-qt: Use ok and cancel value if
+	provided.
+
 2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gtk/pinentry-gtk.c (create_window): Use ok and cancel value if

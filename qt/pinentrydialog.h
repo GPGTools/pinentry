@@ -21,9 +21,10 @@
 #define __PINENTRYDIALOG_H__
 
 #include <qdialog.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
+
+class QLabel;
+class QPushButton;
+class QLineEdit;
 
 class PinEntryDialog : public QDialog {
   Q_OBJECT
@@ -48,6 +49,9 @@ public:
   void setPrompt( const QString& );
   QString prompt() const;
   
+  void setOkText( const QString& );
+  void setCancelText( const QString& );
+
 signals:
   void accepted();
   void rejected();
@@ -62,6 +66,8 @@ private:
   QLabel*    _error;
   QLabel*    _prompt;
   QLineEdit* _edit;
+  QPushButton* _ok;
+  QPushButton* _cancel;  
   bool       _grabbed;
 };
 

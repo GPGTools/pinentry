@@ -38,6 +38,8 @@ public:
   static int assuanError( ASSUAN_CONTEXT, char* );
   static int assuanGetpin( ASSUAN_CONTEXT, char* );
   static int assuanConfirm( ASSUAN_CONTEXT, char* );
+  static int assuanOk( ASSUAN_CONTEXT, char* );
+  static int assuanCancel( ASSUAN_CONTEXT, char* );
 
 public slots:
   void slotAccepted();
