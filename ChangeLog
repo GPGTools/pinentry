@@ -1,3 +1,10 @@
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (collect_line): New function.
+	(COPY_OUT, MAKE_BUTTON): New macros.
+	(dialog_create): Rewrite the initializing code and the description
+	calculation routine with word wrapping.
+
 2002-11-20  Werner Koch  <wk@gnupg.org>
 
 	Released 0.6.7.
