@@ -65,8 +65,6 @@
 
 #include "secqstring.h"
 
-#include "private/qunicodetables_p.h"
-
 static uint computeNewMax( uint len )
 {
     uint newMax = 4;
@@ -901,7 +899,7 @@ bool SecQString::isRightToLeft() const
     int len = length();
     QChar *p = d->unicode;
     while ( len-- ) {
-	switch( ::direction( *p ) )
+	switch( (*p).direction () )
 	{
 	case QChar::DirL:
 	case QChar::DirLRO:

@@ -1,3 +1,15 @@
+2004-01-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/secqstring.cpp: Do not include "private/qunicodetables_p.h".
+	(isRightToLeft): De-optimize direction query.
+
+	* qt/secqinternal_p.h, qt/secqinternal.cpp: New files.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Add secqinternal_p.h
+	and secqinternal.cpp.
+	(EXTRA_DIST): Add README.SecQ.
+	* qt/secqlineedit.cpp: Include "secqinternal_p.h".
+	(drawContents): Use SecQSharedDoubleBuffer.
+
 2004-01-02  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac: Early check for a c++ compiler.

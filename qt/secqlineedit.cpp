@@ -79,7 +79,7 @@
 #include "qguardedptr.h"
 #include "qstyle.h"
 #include "qwhatsthis.h"
-#include "private/qinternal_p.h"
+#include "secqinternal_p.h"
 #include "private/qtextlayout_p.h"
 #include "qvaluevector.h"
 #if defined(QT_ACCESSIBILITY_SUPPORT)
@@ -1547,9 +1547,9 @@ void SecQLineEdit::drawContents( QPainter *p )
     p->setClipRegion( QRegion(cr) - lineRect );
     p->fillRect( cr, bg );
     p->restore();
-    QSharedDoubleBuffer buffer( p, lineRect.x(), lineRect.y(),
+    SecQSharedDoubleBuffer buffer( p, lineRect.x(), lineRect.y(),
  				lineRect.width(), lineRect.height(),
- 				hasFocus() ? QSharedDoubleBuffer::Force : 0 );
+ 				hasFocus() ? SecQSharedDoubleBuffer::Force : 0 );
     p = buffer.painter();
     p->fillRect( lineRect, bg );
 

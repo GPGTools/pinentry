@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = Manifest
+EXTRA_DIST = Manifest README.SecQ
 
 bin_PROGRAMS = pinentry-qt
 
@@ -40,6 +40,7 @@ pinentry_qt_LDADD = $(QT_LIBS) $(libcurses) ../pinentry/libpinentry.a \
 pinentry_qt_LDFLAGS = $(QT_LDFLAGS)
 
 pinentry_qt_SOURCES = secqstring.h secqstring.cpp \
+	secqinternal_p.h secqinternal.cpp \
 	secqlineedit.h secqlineedit.cpp \
 	pinentrydialog.h pinentrydialog.cpp \
 	main.cpp 

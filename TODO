@@ -7,6 +7,8 @@
   implemented in gpg-agent).  We need to agree on a protocol to use
   anyway.
 
+* The Qt pinentry uses QT's private QTextLayout.
+
 * Set the max length of password globally (dynamically in protocol?).
 
 * A heartbeat status message should be sent every few seconds, so that
