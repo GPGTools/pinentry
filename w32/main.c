@@ -31,6 +31,7 @@
 
 
 static int w32_cmd_handler (pinentry_t pe);
+static void ok_button_clicked (HWND dlg, pinentry_t pe);
 
 
 /* We use gloabl variables for the state, becuase there should never
@@ -48,9 +49,23 @@ pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
 static BOOL CALLBACK
 dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  static pinentry_t pe = NULL;
+  
   switch (msg)
     {
     case WM_INITDIALOG:
+      pe = (pinentry_t)lparam;
+      if (!pe)
+        abort ();
+      SetDlgItemText (dlg, IDC_PINENT_PROMPT, pe->prompt);
+      SetDlgItemText (dlg, IDC_PINENT_DESC, pe->description);
+      SetDlgItemText (dlg, IDC_PINENT_TEXT, "");
+      if (pe->ok)
+        SetDlgItemText (dlg, IDOK, pe->ok);
+      if (pe->cancel)
+        SetDlgItemText (dlg, IDCANCEL, pe->cancel);
+      if (pe->error)
+        SetDlgItemText (dlg, IDC_PINENT_ERR, pe->error);
       dialog_handle = dlg;
       SetForegroundWindow (dlg);
       break;
@@ -59,10 +74,12 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       switch (LOWORD (wparam))
 	{
 	case IDOK:
+          ok_button_clicked (dlg, pe);
 	  EndDialog (dlg, TRUE);
 	  break;
 
 	case IDCANCEL:
+          pe->result = -1;
 	  EndDialog (dlg, FALSE);
 	  break;
 	}
@@ -75,7 +92,7 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 /* The okay button has been clicked or the enter enter key in the text
    field.  */
 static void
-ok_button_clicked (pinentry_t pe)
+ok_button_clicked (HWND dlg, pinentry_t pe)
 {
   char *s_utf8;
   char *s_buffer;
@@ -86,7 +103,7 @@ ok_button_clicked (pinentry_t pe)
   if (!s_buffer)
     return;
 
-  GetDlgItemText (dialog_handle, IDC_PINENT_TEXT, s_buffer, s_buffer_size);
+  pe->result = GetDlgItemText (dlg, IDC_PINENT_TEXT, s_buffer, s_buffer_size);
 /*   s_utf8 = pinentry_local_to_utf8 (pe->lc_ctype, s_buffer, 1); */
 /*   secmem_free (s_buffer); */
   s_utf8 = s_buffer;   /* FIXME */
@@ -98,56 +115,8 @@ ok_button_clicked (pinentry_t pe)
         strcpy (pe->pin, s_utf8);
 /*       secmem_free (s_utf8); */
       pe->locale_err = 0;
+      pe->result = strlen (pe->pin);
     }
-}
-
-
-static void
-set_prompt (const char *s)
-{
-  if (!s)
-    s = "";
-  SetDlgItemText (dialog_handle, IDC_PINENT_PROMPT, s);
-}
-
-static void
-set_description (const char *s)
-{
-  if (!s)
-    s = "";
-  SetDlgItemText (dialog_handle, IDC_PINENT_DESC, s);
-}
-
-static void
-set_text (const char *s)
-{
-  if (!s)
-    s = "";
-  SetDlgItemText (dialog_handle, IDC_PINENT_TEXT, s);
-}
-
-static void
-set_ok_text (const char *s)
-{
-  if (!s)
-    s = "OK";
-  SetDlgItemText (dialog_handle, IDOK, s);
-}
-
-static void
-set_cancel_text (const char *s)
-{
-  if (!s)
-    s = "Cancel";
-  SetDlgItemText (dialog_handle, IDCANCEL, s);
-}
-
-static void
-set_error (const char *s)
-{
-  if (!s)
-    s = "";
-  SetDlgItemText (dialog_handle, IDC_PINENT_ERR, s);
 }
 
 
@@ -161,23 +130,9 @@ w32_cmd_handler (pinentry_t pe)
   if (want_pass)
     {
       DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
-                      GetDesktopWindow (), dlg_proc, 0);
-      set_prompt (pe->prompt);
-      set_description (pe->description);
-      set_text (NULL);
-      if (pe->ok)
-        set_ok_text (pe->ok);
-      if (pe->cancel)
-        set_cancel_text (pe->cancel);
-      if (pe->error)
-        set_error (pe->error);
-
+                      GetDesktopWindow (), dlg_proc, (LPARAM)pe);
       ShowWindow (dialog_handle, TRUE);
-      ok_button_clicked (pe);
-      if (passphrase_ok && pe->pin)
-	return strlen (pe->pin);
-      else
-	return -1;
+      return pe->result;
     }
   else /* Confirmation mode.  */
     {
@@ -193,7 +148,6 @@ w32_cmd_handler (pinentry_t pe)
       else
         return 0;
     }
-
 }
 
 
