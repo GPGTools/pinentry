@@ -1,5 +1,8 @@
 2003-12-09  Werner Koch  <wk@gnupg.org>
 
+	* README.CVS: New.
+	* Makefile.am (EXTRA_DIST): Add README.CVS
+	(ACLOCAL_AMFLAGS): New.
 	* configure.ac: Added min_automake_versions.
 	* autogen.sh: Revamped.
 

@@ -19,7 +19,9 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = autogen.sh 
+ACLOCAL_AMFLAGS = -I m4
+
+EXTRA_DIST = autogen.sh README.CVS
 
 if BUILD_PINENTRY_CURSES
 pinentry_curses = curses
