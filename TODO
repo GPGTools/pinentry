@@ -1,1 +1,16 @@
+* The Button texts are not internationalized and can't be set from the
+  application.
 
+* There needs to be a way to set the DISPLAY via the assuan interface.
+
+* There needs to be a way to set the terminal node and type ($TERM
+  value) at the command line and via the assuan interface.
+
+* The KDE and curses PIN entry need enhanced mode.
+
+* The KDE PIN entry needs to use libpinentry (maybe).
+
+* Configure checks for KDE libs and features are needed.
+
+* libcap has a local install target in the GTK+ pinentry, needs to be
+  made top level.

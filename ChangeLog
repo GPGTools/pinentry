@@ -1,0 +1,816 @@
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	Merge of the gpinentry and curses pinentry program into the
+	pinentry distribution.  For this, the structure of the repository
+	has been thoroughly overhauled.  Some of the changes:
+	* secmem: New directory with secure memory allocation code.
+	* pinentry: New directory with pinentry support library.
+	* curses: New directory with curses frontend.
+	* gtk: New directory with GTK+ frontend.
+	* kde: New directory with only the core of the old kpinentry program.
+	* admin: Directory removed.
+	* po: Directory removed.
+	* kpinentry: Directory removed.
+	* doc: Directory removed.
+	* jnlib: Directory removed.x
+
+	The changes in more detail:
+	* AUTHORS: Add authors of other pinentry frontends.
+	* ChangeLog: Add the one from gpinentry.
+	* Makefile.am: Completely rewritten.
+	* README: Add content.
+	* TODO: Add content.
+	* NEWS: New file from gpinentry.
+	* THANKS: New file from gpinentry.
+	* acinclude.m4: New file.
+	* configure.ac: New file which configures for all frontends.
+	* curses/Makefile.am, curses/pinentry-curses.c: New files for
+	curses frontend.
+	* gtk/Makefile.am, gtk/gtksecentry.c, gtk/gtksecentry.h,
+	gtk/pinentry-gtk.c: New files, modified from gpinentry, for GTK+
+	frontend.
+	* kde/Makefile.am, kde/cppmemory.cpp, kde/main.cpp,
+	kde/pinentry.desktop, kde/pinentrycontroller.cpp,
+	kde/pinentrycontroller.h, kde/pinentrydialog.cpp,
+	kde/pinentrydialog.h: New files, modified from kpinentry, for KDE
+	frontend.
+	* pinentry/Makefile.am, pinentry/pinentry.c, pinentry/pinentry.h:
+	New files containing pinentry support library, partly factored out
+	from gpinentry.
+	* secmem/Makefile.am, secmem/memory.h, secmem/secmem-util.h,
+	secmem/secmem.c, secmem/util.c, secmem/util.h: New files
+	containing secure memory allocation code common to all pinentry
+	frontends.
+	* Makefile.dist, acconfig.h, configure.files, configure.in.in:
+	Files removed in favor of new configure.ac.
+	* pinentry.lsm: Removed file never used.
+	* stamp-h.in: Removed generated file.
+	* admin/ChangeLog, admin/Makefile.common, admin/acinclude.m4.in,
+	admin/am_edit, admin/am_edit.py, admin/conf.change.pl,
+	admin/config.guess, admin/config.pl, admin/config.sub,
+	admin/configure.in.min, admin/debianrules, admin/depcomp,
+	admin/install-sh, admin/libtool.m4.in, admin/ltcf-c.sh,
+	admin/ltcf-cxx.sh, admin/ltcf-gcj.sh, admin/ltconfig,
+	admin/ltmain.sh, admin/missing, admin/mkinstalldirs, admin/ylwrap:
+	Removed KDE build suite in favor of configure.ac.
+	* doc/Makefile.am, doc/en/Makefile.am, doc/en/index.docbook:
+	Removed files never used.
+	* jnlib/ChangeLog, jnlib/Makefile.am, jnlib/argparse.c,
+	jnlib/argparse.h jnlib/dotlock.c, jnlib/dotlock.h,
+	jnlib/libjnlib-config.h, jnlib/logging.c, jnlib/logging.h,
+	jnlib/mischelp.h, jnlib/stringhelp.c, jnlib/stringhelp.h,
+	jnlib/strlist.c, jnlib/strlist.h, jnlib/types.h, jnlib/xmalloc.c,
+	jnlib/xmalloc.h: Removed files no longer used.
+	* kpinentry/Makefile.am, kpinentry/cppmemory.cpp,
+	kpinentry/cppmemory.h, kpinentry/i18n.h, kpinentry/main.cpp,
+	kpinentry/memory.h, kpinentry/pinentry.desktop,
+	kpinentry/pinentrycontroller.cpp, kpinentry/pinentrycontroller.h,
+	kpinentry/pinentrydialog.cpp, kpinentry/pinentrydialog.h,
+	kpinentry/secmem.cpp, kpinentry/util.cpp, kpinentry/util.h:
+	Removed files in favor of new files in kde/.
+	* po/Makefile.am, po/pinentry.pot: Removed files never used.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	* gpinentry.c (enter_callback): New
+	(create_window): Connect it to the entry field.
+
+2002-02-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.1.
+
+	* gpinentry.c (create_window): Add CONFIRM_MODE.
+	(cmd_confirm): Implemented.
+
+	* assuan/:  Updated from NewPG.
+
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* gpinentry.c (option_handler): New to allow changing of the grab
+	status.
+	(grab_keyboard): Shortcut this when global grab is not set.
+
+2002-01-04  Werner Koch  <wk@gnupg.org>
+
+        Released 0.5.0.
+	
+	* configure.ac: Bumbed version
+
+	* util.h (xtoi_1, xtoi_2): New.
+	* gpinentry.c (strcpy_escaped): New
+	(cmd_setdesc, cmd_seterror): Use it here to allo multiline texts.
+
+	* gpinentry: Removed debugging outbut
+	(create_window): Tweaked layout.
+
+2001-12-07  Werner Koch  <wk@gnupg.org>
+
+        New package gpinentry based on quintuple-agent.
+	
+        Removed all stuff except for the basic configuration stuff and
+	what is needed to build gpinentry.  Also removed i18n support.
+	* gpinentry.c: Renamed from secret-query.c
+
+2001-02-12  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 1.0.0 released. Woo-hoo!
+
+	* configure.in, NEWS: Bumped version.
+
+2001-02-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (make_tmpdir): Honor $TMPDIR.
+
+	(agent): Would exit on every minor problem. Now, we just close the
+	offending connection.
+	Ignore SIGPIPE, so that EPIPE will close connection.
+
+2001-01-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Move one include statement so that the thing compiles.
+
+	* secret-query.c (main): Minor source cosmetics.
+
+2000-11-16  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* gtksecentry.c (gtk_secure_entry_insert_text): Secured a couple
+	of memory (de)allocations that were missed. Thanks to John Steele
+	<jhs28@eng.cam.ac.uk> for spotting these.
+
+2000-11-10  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Thoughts: Removed in favor of new TODO.
+
+	* README: Remove content and refer to doc/manual.info instead.
+
+	* agent.c (do_get): Would burn badly on a premature exit of the
+	query program (which would occur routinely if you selected /cancel/).
+
+2000-10-25  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* memory.h: Include sys/types.h for size_t.
+
+2000-10-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* README: Removed apology about missing documentation.
+	Updated paragraph about Linux capability patch.
+	Typo & Refill.
+
+2000-10-03  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.9 released.
+
+	* Makefile.am (EXTRA_DIST): Distribute BUGS (the file, that is).
+
+	* configure.in, NEWS: Bumped version.
+
+	* Makefile.am, configure.in: Add debian subdir.
+
+	* README: Recommend GTK+.
+	Update list of checked platforms.
+
+2000-10-02  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (ok): Simplify.
+	Put empty line between headers and secret.
+	(usage): Document '--help' and '--version'.
+
+	* agent.c (do_get): Use enhanced secret-query output to fill in
+	options.
+
+2000-10-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (main): Clarify error.
+
+	* client.c (query_options): New global variable.
+	(main): New option '--query-options' to pass options to the query
+	program.
+	(xgetpass): Use it.
+
+	* agent.c (main): New option '--query-options' to pass options to
+	the query program.
+	(do_get): Use 'query_options'.
+
+	* acconfig.h, configure.in: Add QUERY_PROGRAM definition.
+	* client.c: Remove here.
+	* agent.c (do_get): Use it here, too.
+
+	* secret-query.c (main): New option '--no-global-grab' introduced,
+	that prevents keyboard grabbing unless the window has focus.
+
+2000-09-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (usage): Add two missing pieces of "\n\".
+
+	* agent.c (main): --nofork is now the default, and the option is
+	deprecated. New option --fork added to turn forking on again.
+	Close stdout (and stderr unless debugging) even when not forking,
+	so that normal usage inside eval is still possible.
+	(agent): Exit gracefully on HUP, so that logging out now kills the
+	agent. 
+
+	* README (Contact Information): Old URL - duh!
+	(Using Secret Agent): We no longer fork per default.
+
+	* Makefile.am (lib/libutil.a): New target, allows targets that not
+	automatically recurse (but still depend on libutil.a) to succeed.
+
+2000-07-20  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (usage): New function.
+	(main): Parse options: debug, enhanced, help, version.
+	Turn on locale support.
+	If enhanced, insert widgets to ask for timeout and insurance.
+	(ok): If enhanced, print more information on exit.
+	(grab_keyboard): Die if grab was unsuccessful.
+
+2000-05-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.8 released.
+
+	* configure.in, NEWS: Bumped version.
+
+	* Makefile.am (SUBDIRS): Include doc.
+
+	* configure.in, acconfig.h: Check for ssize_t.
+	Check for vsnprintf(), strdup().
+	Generate doc/Makefile.
+
+	* apgp.c, agpg.c, agentlib.c, util.c: Include more stuff.
+
+	* agent.c (do_get): Use asprintf() instead of snprintf() so we
+	don't need to roll our own for yet another function.
+	Fix some includes.
+
+	* acinclude.m4: gettext macros copied from automake and fixed.
+
+2000-05-30  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in, Makefile.am: Properly include doc subdir.
+
+2000-05-29  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in, acconfig.h: Add test for XMESSAGE path.
+
+	* client.c (main): Decode command from string to integer code
+	first, then evaluate that in ifs.
+
+	* secret-ask.c: New file, external ask-for-confirmation utility.
+
+	* configure.in, Makefile.am: Add secret-ask to programs being
+	built when GTK is available. Rename QUERY to more descriptive
+	GTK_PROGRAMS.
+
+	* agent.c (do_get): If GTK is available, try executing secret-ask
+	first.
+	Only put the comment into the insure-question if there is a
+	comment.
+	(main): --csh was missing from usage message.
+
+2000-04-23  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (constrain_size): Lower window max_width to
+	accomodate bugs in GTK and Scwm.
+
+	* agent.c (main): Set x_enabled if X appears to be available.
+	Use it to selectively make FLAGS_INSURE supported.
+	(do_get): Use it instead of testing at every call.
+	(do_put): Requests containing unsupported flags fail.
+	(forget_old_stuff): Would not set next_deadline correctly.
+	(do_get): Implement FLAGS_INSURE.
+
+	* client.c (main): "list" format changed so that comment is to the
+	far right. Display the deadline as proper date/time, too.
+
+1999-11-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (next_deadline): New global variable, holds time when
+	next secret has to be killed.
+	(store): Keep it up-to-date.
+	(forget_old_stuff): New function, reaps secrets ready to kill,
+	keeps next_deadline updated.
+	(agent): Use it on all secrets, whenever a deadline is active.
+
+1999-11-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.h (request_put): Add flags, deadline. Increase REQUEST_MAGIC. 
+	(reply_get): Ditto, and increase REPLY_MAGIC.
+	* agent.c (store): Store flags, deadline in reply.
+	(do_put): Hand flags, deadline from request on to store().
+	(do_get): Store on-demand queried secrets without deadline or
+	special flags, for now.
+	(agent): Do not ignore obsolete clients, return an error reply.
+	* agentlib.c (agent_put): Add flags, deadline arguments, and copy
+	them into the request.
+	* agentlib.h (agent_put): Update prototype.
+*	* client.c (main): Added --time-to-live (-t) and --insure (-i)
+	options, influencing PUT's deadline and flags, respectively.
+	(main): Change list format to include new attributes.
+
+1999-11-05  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: <getopt.h> check had redundant definition.
+	* acconfig.h: Remove here, too.
+
+	* configure.in: Check for <inttypes.h>. If not found, check for
+	unsigned {int, long} sizes.
+	* agent.h: Either include <inttypes.h>, or try to define uint32_t
+	yourself.
+	Need to include "config.h".
+
+1999-11-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (signed-dist): New rule, generates sig for dist.
+	(%.sig): New rule, for detached signatures in general.
+
+	* configure.in: Check for ulong.
+	* acconfig.h: Document it.
+	* secmem.c: Unconditionally defining it is no longer necessary
+	here. But do include <sys/types.h> in all cases.
+
+	* 0.7 released.
+
+	* secmem.c: ulong is not defined on all systems.
+
+	* agent.h: <inttypes.h> should define `uint32_t' as per Unix98, so
+	we use that.
+
+1999-11-02  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.h: Augmented requests and replies with magic numbers.
+	Data structures heavily commented.
+	All structures and enums typedef'd.
+	* agent.c: Adapted.
+	(store): Set magic number in stored reply.
+	(do_put): Set magic number in reply.
+	(do_delete): Ditto.
+	(do_list): Ditto. 
+	(agent): Check magic number in request.
+	* agentlib.c: Adapted.
+	(send_request): Set magic number in request. Check it in reply.
+	* agentlib.h: Adapted.
+	* agpg.c: Adapted.
+	* apgp.c: Adapted.
+	* client.c: Adapted.
+
+1999-10-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Instead of defining ulong directly, include
+	<sys/types.h>
+
+	* secret-query.c (constrain_size): New function, puts constrains
+	on size of toplevel window.
+	(grab_keyboard): Removed protection against multiple calls.
+	(ungrab_keyboard): New function, cancelling a keyboard grab.
+	(main): Hang `grab_keyboard' onto map-event which makes it
+	actually work, hang `ungrab_keyboard' onto unmap-event.
+	Hang `constrain_size' onto size-request.
+
+	* secmem.c: ulong was undefined on some systems.
+
+1999-10-19  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (install-exec-local): Ignore setcap errors.
+
+	* apgp.c: New program, based on agpg.c, but for pgp2.6.
+	* Makefile.am (bin_PROGRAMS, apgp_SOURCES): Added it.
+
+	* agpg.c (GPG): New constant.
+	(find_id, main): Use it throughout.
+	(find_id): Forgot to pclose on success.
+
+	* secret-query.c (main): Don't expand anything.
+	Use a button box for the buttons.
+	Prompt label can be overridden from the commandline.
+	* agent.c (do_get): Make spawned secret-query show the id.
+	* client.c (xgetpass): Pass prompt to secret-query.
+	(main): Include id in xgetpass prompt.
+
+1999-10-14  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: setcap must be searched outside the usual user
+	PATH, too.
+	* Makefile.am (install-exec-local): Set cap_ipc_lock permitted on
+	installed binaries, if possible.
+
+	* agent.c (xdup2): New function, dup2 with error handling.
+	(move_fd): New function, moves fds.
+	(store): New function, abstracted out from do_put.
+	(do_put): Use it.
+	(do_get): If secret was not found, and DISPLAY is set, try to
+	query the user about it. If successful, store it.
+	(main): Route standard file descriptors to /dev/null rather than
+	just closing them. The latter would confuse children.
+
+1999-10-13  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* gtksecentry.c, gtksecentry.h: New files, being slightly modified
+	versions of GTK+'s gtkentry.[ch], spiffed up to use secure memory.
+	* secret-query.c (ok, unselect, main): Replace GtkEntry with
+	GtkSecureEntry.
+	(main): Initialize secure memory.
+	* Makefile.am (secret_query_SOURCES): Added gtksecentry.[ch].
+
+	* README (Security): New chapter.
+
+	* configure.in, acconfig.h: Check for POSIX capabilities, and the
+	setcap program.
+	* Makefile.am: Link LIBCAP to those binaries using secmem.c.
+
+	* util.h: Include <sys/types.h> for size_t.
+
+1999-09-21  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Synced with gnupg-1.0 (top new feature: capabilities).
+ 	(log_fatal): New function, logs to stderr, and dies.
+
+1999-09-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c (log_info): New function, logs to stderr.
+
+	* agent.c (agent): select() expects the number of fds, not the
+	highest fd. So remember that number.
+
+	* agent.c (agent): Don't use FD_SETSIZE, which is not defined on
+	all systems. Remember the number of the highest descriptor
+	instead.
+
+	* configure.in: Replace getline() instead of getdelim() because
+	this is the function we really need. Still check for getdelim(),
+	though - there are systems out there where this is provided, but
+	getline() is not.
+
+1999-09-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.6 released.
+
+	* configure.in: Bump version.
+
+	* NEWS: Updated.
+
+1999-08-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* util.c (init_uids, lower_privs, raise_privs, drop_privs): New
+	functions, for setuid binaries, extracted from agent.c.
+	* util.h: Add prototypes for them.
+	* agpg.c (main): Use them.
+	* client.c (main): Ditto.
+	* agent.c (main): Ditto. Removed code that did the same.
+	Unconditionally include "asprintf.h" (it protects itself now).
+
+1999-08-25  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (SUBDIRS): Process . before test so that "make
+	check" always builds all in . first.
+
+1999-08-21  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c: Include "config.h".
+
+	* agent.h (reply_list_entry, reply_list): New reply structures.
+	* agent.c (send_list_entry): New function.
+	(do_list): First send number of entries, then each entry via
+	send_list_entry().
+	* agentlib.c (agent_list): Read entries returned by LIST request.
+	* client.c (main): Output all entries returned by agent_list().
+
+	* agentlib.c (agent_put): Don't construct PUT request in insecure
+	stack space.
+
+1999-08-20  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* NEWS: Bump patchlevel.
+
+	* configure.in: Bump patchlevel.
+	Check for missing setenv().
+
+1999-08-09  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for strsignal().
+
+	* client-test: Obsoleted by test/client.
+
+	* Makefile.am (SUBDIRS): New subdirectory.
+	* configure.in (AC_OUTPUT): Add here, too.
+
+	* 0.5 released.
+
+	* README: Explain why secret-client will not output secrets to a
+	tty, and mention the cat-trick.
+
+	* agent.c (main): If seteuid is not available, don't use it and
+	issue a warning if running setuid.
+
+	* configure.in: Run together two REPLACE_FUNCS.
+	Check for seteuid.
+
+	* client-test: Mask out insecure memory warnings.
+
+	* agentlib.c (send_request): Let the calling functions reserve
+	space for the reply, but offer a simple way for simple requests.
+	(agent_get): Allocate secure memory.
+
+	* agent.c (main): Moved secmem_init() after the fork, since that
+	seemingly munlock's all pages.
+	Drop priviledges just in case somebody wants to install this
+	suid-root.
+	Flush stdout.
+
+	* agpg.c (find_id): Would reorder arguments.
+	Initialize opt_version.
+	(main): Initialize secure memory.
+
+	* Makefile.am (agpg_SOURCES): Link with secure memory module.
+
+	* client.c (usage): Fixed another program name reference.
+
+1999-08-06  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Conditionally define HAVE_GTK.
+	* acconfig.h: Add here too.
+
+	* client.c (xgetpass): Use "secret-query" only if it was built.
+	(main): Don't output secret (GET command) to ttys.
+
+	* agpg.c (find_id): Also print own version if "--version" is given.
+	(main): Check agent_init() errors.
+	Print error if exec fails.
+
+	* agent.c (main): Added an option to produce csh-compatible
+	output.
+
+	* agent.c, client.c: Forgot the terminating NULL in long options.
+	Fixed the program names in usage and version output.
+
+	* agent.c (create_socket): AF_UNIX and PF_UNIX are Unix98, so
+	that's what we use. AF_LOCAL, PF_LOCAL removed.
+	* agentlib.c (agent_init): Ditto.
+
+1999-08-05  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.4 released.
+
+	* configure.in: Bumped version.
+	Check for missing getdelim.
+
+	* cgpg: Removed, obsoleted by agpg.
+	* Makefile.am: Here, too.
+
+	* agpg.c (find_id): New function.
+	(main): Use it.
+
+	* Makefile.am (INCLUDES): Put GTK_FLAGS and GLIB_FLAGS here. It
+	is the easiest way for sources needing it, and it won't hurt those 
+	that don't.
+	(agent.o): Explicit command removed accordingly.
+
+1999-08-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Need double quoting in nested AC_MSG_WARN.
+
+	* client.c (xgetpass): If no tty is available, but a DISPLAY is,
+	fork off "secure-query" to read the secret.
+	Put the fgets into a loop that keeps reading until all of the
+	secret is read.
+
+	* client-test: Unset DISPLAY, so that "secret-query" is never used.
+
+1999-08-03  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agpg.c: New file, first cut at a C version of the gpg wrapper,
+	written in a hurry (20 keys waiting to be signed, and a growling
+	stomach).
+	* Makefile.am: Add it to built programs.
+	(LDADD): New default.
+	(secret_client_LDADD): Removed, since it was identical to default.
+
+1999-08-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c: New program, queries the user for a password.
+	* Makefile.am (bin_PROGRAMS): Added it.
+	* configure.in: Check for GTK+, build "secret-query" only when
+	that is available.
+
+	* cgpg: Extra argument for ID is no longer necessary. cgpg will
+	scan the gpg args for switches that affect user-id, and determine
+	the right key itself. Per convention, the key-id is used by "GET".
+
+	* configure.in: The project name is now "secret-agent".
+
+	* Makefile.am: "agent" & "client" renamed to "secret-agent" &
+	"secret-client", respectively.
+	* client-test: Adapt to new names.
+
+	* Thoughts: Removed discussion of other names.
+	Added indication of which things already work.
+
+	* agent.c (make_tmpdir): Removed occurance of "gpg-agent."
+
+	* README: First proper version.
+
+	* client-test: Context diffs are more portable then unified diffs.
+
+	* agent.c, agent.h, agentlib.c, agentlib.h, client.c, memory.h,
+	util.c, util.h: Banner updated to new name.
+
+1999-07-29  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for missing asprintf.
+	Check if -lsocket is needed.
+
+	* secmem.c (secmem_dump_stats): Replace usage of ulong.
+
+	* Makefile.am (INCLUDES): Add the lib subdirectory to include search.
+
+	* agent.c: Forgot to include <string.h>.
+	Include RYO asprintf header if this function is missing.
+	For the sake of compatibility, provide a definition for AF_LOCAL,
+	PF_LOCAL, if missing.
+	* agentlib.c: Ditto.
+
+1999-07-28  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (client_SOURCES): Add "secmem.c", "memory.h".
+
+	* client.c (xgetpass): Use secmem_malloc() instead of RYO.
+	(main): Init and shutdown secmem.
+
+1999-07-27  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (agent_SOURCES): Add "secmem.c", "i18n.h", "memory.h".
+	(client_SOURCES): Add "i18n.h".
+
+	* client.c (main): Exit on agent_init() failure.
+
+	* agent.c (main): Init secmem.
+	Make --debug switch cumulative.
+ 	(cleanup): Shutdown secmem.
+	(do_put): Use secmem for storage of secrets.
+	(do_delete): Use secmem_free(). Since this wipes the memory on its 
+	own, wipe() is superflous now.
+	(agent): Use secmem for inbound requests.
+	(delete_secret): New function, takes part of do_delete's
+	functionality.
+	(do_put): Use it to remove old versions stored under the same id.
+	(do_delete): Use it to delete secrets.
+
+	* memory.h: New file.
+
+	* secmem.c: New file, snarfed from GnuPG and modified slightly.
+
+	* acinclude.m4: New file.
+	* configure.in: (ALL_LINGUAS): Expanded list of available
+	languages. Most of them only have a few translations from gpg,
+	tough ...
+	getopt_long test was commented out for debugging,
+	and left such. Fixed.
+	Check for mlock.
+	* acconfig.h: Comment HAVE_BROKEN_MLOCK.
+
+	* cgpg: A space was missing.
+
+	* i18n.h: New file, centralizing the gettext macro defs.
+
+	* agent.c (BLIND): New macro, that blinds out a secret if debug
+	level is too low.
+	(do_put): Use it.
+	(do_get): Use it.
+	Include i18n.h.
+
+	* agentlib.c: Include i18n.h
+	
+	* client.c (usage): New function.
+	Usage-message made gettext-friendly.
+	(xgetpass): Use perror() instead of fprintf().
+	(main): Use it.
+	Make comment an optional argument of PUT.
+	Include i18n.h.
+
+1999-07-26  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (client_LDADD): Add lib/libutil.a for portability.
+	(agent_LDADD): Ditto.
+	(SUBDIRS): Add lib directory.
+	(bin_SCRIPTS): New with cgpg, so it gets installed, too.
+
+	* configure.in: Add lib/Makefile to output.
+
+1999-07-24  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* cgpg: New file.
+	* Makefile.am (EXTRA_DIST): Added it.
+
+	* agent.c: Moved inclusion of config.h before inclusion of
+	libintl.h since the latter needs HAVE_LC_MESSAGE.
+	* client.c: Ditto.
+	* clientlib.c: Ditto.
+
+	* client-test: Update for new client semantics.
+
+	* client.c (check_status): Use debugmsg(). Do nothing if not
+	debugging.
+	(xgetpass): New function, getpass replacement that uses mlock'ed
+	memory.
+	(main): PUT now asks for the secret rather then getting it from
+	the commandline.
+	GET prints only the secret to stdout.
+
+	* configure.in: Rearranged.
+	Check for socklen_t.
+	* acconfig.h: Added a definition for it.
+
+	* client.c: Include packaged getopt.h if the system doesn't provide 
+	one. 
+	* agent.c: Ditto.
+	(create_socket): Replace AF_FILE, PF_FILE with AF_LOCAL, PF_LOCAL
+	for portability.
+	* agentlib.c (agent_init): Ditto.
+	Explicitly cast addr to a sockaddr pointer.
+
+	* Makefile.am (client_LDADD): Added @INTLLIBS@.
+	(agent_LDADD): Ditto.
+
+1999-07-19  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for getopt.h and getopt_long.
+	* acconfig.h (HAVE_GETOPT_H): New define.
+	* lib/getopt.c, lib/getopt1.c, lib/getopt.h: Added.
+
+1999-07-18  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.2 released.
+
+	* NEWS: Updated.
+
+	* Makefile.am (agent.o): Mentioning the source explicitly does not 
+	work for srcdir!=builddir.
+
+	* client.c (main): Function arguments are not always evaluated in
+	order, so drop the neat ++optind in favor of optind+1, optind+2,
+	etc.
+
+	* configure.in: Upped version.
+
+1999-06-28  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* util.h: Added multi-inclusion guard.
+
+	* agent.c Include "util.h".
+	(main): Forgot to exit at end.
+	(do_delete): Assume that value is a string and wipe it accordingly.
+
+	* configure.in (--enable-debug): New switch.
+
+	* agent.h (status_t): Added STATUS_COMM_ERR code.
+	Added multi-inclusion guard.
+
+	* client.c (main): Abstracted out most functionality into a
+	function library, namely:
+	* agentlib.c: New file.
+	* agentlib.h: New file.
+	* Makefile.am (client_SOURCES): Added agentlib.c, agentlib.h.
+
+	* Makefile.am (INCLUDES): GLIB_CFLAGS moved again, this time to
+	the agent.o target. 
+
+1999-06-15  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.1 released.
+
+	* Makefile.am (agent_CFLAGS): Removed - did not work.
+	(INCLUDES): Moved the GLIB stuff here.
+
+1999-06-14  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in (ALL_LINGUAS): Added `de'.
+
+	* agent.c (do_get): Added more debugmsgs.
+	(do_put): Wouldn't allocate enough for `value'.
+	(main): New option "--nofork" prevents forking.
+	Use macros for the std filedescriptor numbers.
+	Only close stderr if not debugging.
+	(main): Make Usage string gettext-friendly.
+
+	* client-test (cleanup): New function.
+ 	Call it on shell exit.
+	(client): New function.
+	Use it instead of calling client binary directly.
+	diff client output with expected one in GET testcases.
+
+1999-06-13  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (failed_reply): New constant.
+	(do_list): Use it.
+	(do_put): The hash key was overwritten - strdup it.
+	Construct a GET reply and save that in the hash.
+	(do_get): Just send the preconstructed reply if the id is present, 
+	and failed_reply otherwise.
+	(do_delete): Actually free the hashed stuff.
+
+	* client.c: Exit with error if agent returned STATUS_FAIL.
+
+	* Makefile.am (EXTRA_DIST): Added autogen.sh, Thoughts,
+	client-test.
+	(TESTS): Added client-test.
+	(AUTOMAKE_OPTIONS): Added gnits. 
+

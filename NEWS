@@ -1,0 +1,16 @@
+
+  * Merged all pinentry frontends into a single module.
+
+  * There is now a Curses frontend.
+
+Noteworthy changes in version 0.5.1 (2002-02-18)
+------------------------------------------------
+
+  * CONFIRM command works
+
+Noteworthy changes in version 0.5.0 (2002-01-04)
+------------------------------------------------
+
+ * Window layout is somewhat nicer
+
+ * percent escape sequences do now work for SETDESC and SETERROR

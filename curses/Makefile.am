@@ -1,8 +1,8 @@
-# Makefile.am
+# Makefile.am - PIN entry curses frontend.
 # Copyright (C) 2002 g10 Code GmbH
-# 
+#
 # This file is part of PINENTRY.
-# 
+#
 # PINENTRY is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -19,30 +19,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = autogen.sh 
+bin_PROGRAMS = pinentry-curses
 
-if BUILD_PINENTRY_CURSES
-pinentry_curses = curses
-else
-pinentry_curses = 
-endif
+AM_CPPFLAGS = -I$(top_srcdir)/pinentry
+LDADD = ../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a \
+	$(LIBCAP) $(LIBCURSES)
 
-if BUILD_PINENTRY_GTK
-pinentry_gtk = gtk
-else
-pinentry_gtk = 
-endif
-
-if BUILD_PINENTRY_KDE
-pinentry_kde = kde
-else
-pinentry_kde = 
-endif
-
-SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_kde}
-
-signed-dist: $(distdir).tar.gz.sig
-
-%.sig: %
-	gpg -sbav -u 0x57548DCD $@ $<
+pinentry_curses_SOURCES = pinentry-curses.c
