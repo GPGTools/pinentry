@@ -49,8 +49,8 @@ pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
 static BOOL CALLBACK
 dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  static pinentry_t pe = NULL;
-  
+  static pinentry_t pe;
+
   switch (msg)
     {
     case WM_INITDIALOG:
@@ -131,7 +131,7 @@ w32_cmd_handler (pinentry_t pe)
     {
       DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
                       GetDesktopWindow (), dlg_proc, (LPARAM)pe);
-      ShowWindow (dialog_handle, TRUE);
+      ShowWindow (dialog_handle, SW_SHOWNORMAL);
       return pe->result;
     }
   else /* Confirmation mode.  */
