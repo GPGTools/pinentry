@@ -23,6 +23,14 @@
 
 #include "pinentry.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int curses_cmd_handler (pinentry_t pinentry);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* PINENTRY_CURSES_H */

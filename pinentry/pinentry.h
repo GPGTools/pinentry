@@ -21,6 +21,10 @@
 #ifndef PINENTRY_H
 #define PINENTRY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct pinentry
 {
   /* The description to display, or NULL.  */
@@ -80,8 +84,21 @@ int pinentry_loop (void);
    PIN.  Returns new buffer on success and 0 on failure.  */
 char *pinentry_setbufferlen (pinentry_t pin, int len);
 
+/* Initialize the secure memory subsystem, drop privileges and
+   return.  Must be called early.  */
+void pinentry_init (void);
+
+/* Parse the command line options.  Returns 1 if user should print
+   version and exit.  Can exit the program if only help output is
+   requested.  */
+int pinentry_parse_opts (int argc, char *argv[]);
+
 
 /* The caller must define this variable to process assuan commands.  */
 extern pinentry_cmd_handler_t pinentry_cmd_handler;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* PINENTRY_H */
