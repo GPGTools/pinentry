@@ -1,3 +1,10 @@
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* assuan-inquire.c, assuan-connect.c, assuan-client.c
+	* assuan-socket-server.c, assuan-pipe-connect.c
+	* assuan-socket-connect.c: Removed.
+	* assuan-handler.c (assuan_get_data_fp): Removed.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	* Makefile.am (EXTRA_DIST): Added Manifest.
@@ -205,10 +212,10 @@
 
 	
      ************************************************************
-     * Please note that Assuan is source copied from libassuan. *
+     * Please note that this is a stripped down Assuan version.  *
      ************************************************************	
 	
- Copyright 2001, 2002 Free Software Foundation, Inc.
+ Copyright 2001, 2002, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

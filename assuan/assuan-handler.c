@@ -593,32 +593,6 @@ assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
   return n;
 }
 
-/* Return a FP to be used for data output.  The FILE pointer is valid
-   until the end of a handler.  So a close is not needed.  Assuan does
-   all the buffering needed to insert the status line as well as the
-   required line wappping and quoting for data lines.
-
-   We use GNU's custom streams here.  There should be an alternative
-   implementaion for systems w/o a glibc, a simple implementation
-   could use a child process */
-FILE *
-assuan_get_data_fp (ASSUAN_CONTEXT ctx)
-{
-  cookie_io_functions_t cookie_fnc;
-
-  if (ctx->outbound.data.fp)
-    return ctx->outbound.data.fp;
-  
-  cookie_fnc.read = NULL; 
-  cookie_fnc.write = _assuan_cookie_write_data;
-  cookie_fnc.seek = NULL;
-  cookie_fnc.close = _assuan_cookie_write_flush;
-
-  ctx->outbound.data.fp = fopencookie (ctx, "wb", cookie_fnc);
-  ctx->outbound.data.error = 0;
-  return ctx->outbound.data.fp;
-}
-
 
 /* Set the text used for the next OK reponse.  This string is
    automatically reset to NULL after the next command. */
