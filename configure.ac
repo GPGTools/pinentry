@@ -48,6 +48,9 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+# We need to check for cplusplus here becuase we may not do the test
+# for Qt and autoconf does does not allow that.
+AC_PROG_CXX
 
 dnl Checks for compiler features.
 if test "$GCC" = yes; then

@@ -1,3 +1,7 @@
+2004-01-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Early check for a c++ compiler.
+
 2003-12-23  Werner Koch  <wk@gnupg.org>
 
 	Released 0.7.0.
