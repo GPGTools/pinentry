@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <unistd.h>
 
 #include "assuan.h"
 #include "memory.h"
@@ -55,13 +56,14 @@ struct pinentry pinentry =
 
 
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
-   new buffer on success and 0 on failure.  */
+   new buffer on success and 0 on failure or when the old buffer is
+   sufficient.  */
 char *
 pinentry_setbufferlen (pinentry_t pin, int len)
 {
   char *newp;
   if (len < pinentry.pin_len)
-    return;
+    return NULL;
   newp = secmem_realloc (pin->pin, 2 * pin->pin_len);
   if (newp)
     {
@@ -90,10 +92,26 @@ pinentry_init (void)
   drop_privs ();
 }
 
+/* Simple test to check whether DISPLAY is set or the option --display
+   was given.  Used to decide whether the GUI or curses should be
+   initialized. */
+int
+pinentry_have_display (int argc, char **argv)
+{
+  if (getenv ("DISPLAY"))
+    return 1;
+  for (; argc; argc--, argv++)
+    if (!strcmp (*argv, "--display"))
+      return 1;
+  return 0;
+}
+
+
 
 static void 
 usage (void)
 {
+  /* FIXME: replace the "?" by the real program name. */
   fprintf (stderr, "Usage: %s [OPTION]...\n\
 Ask securely for a secret and print it to stdout.\n\
 \n\
@@ -106,7 +124,7 @@ Ask securely for a secret and print it to stdout.\n\
   -g, --no-global-grab  Grab keyboard only while window is focused\n\
   -d, --debug           Turn on debugging output\n\
       --help            Display this help and exit\n\
-      --version         Output version information and exit\n");
+      --version         Output version information and exit\n", "?");
 }
 
 

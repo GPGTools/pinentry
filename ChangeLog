@@ -1,3 +1,31 @@
+2002-11-05  Werner Koch  <wk@gnupg.org>
+
+	* secmem/util.c (init_uids): Make it a prototype.
+
+	* gtk/pinentry-gtk.c (enter_callback): Changed argument name to
+	avoid shadowing warning.
+	(create_window): Removed unused variable I.
+	(ok): Not used, commented.
+
+	* pinentry/pinentry.c: Include headers for getpid and sleep
+	prototypes.
+
+	* secmem/util.h: Correctly declare functions taking no args. 
+
+	* gtk/pinentry-gtk.c: Move gtk headers to the top to avoid
+	compiler warnings about shadowing index etc.
+
+	* curses/pinentry-curses.c: Include stdio.h for the printf prototype.
+
+	* pinentry/pinentry-curses.c (dialog_switch_pos): Return a value.
+
+	* pinentry/pinentry.c (pinentry_have_display): New.
+	(pinentry_setbufferlen): Must return a value. Fixed documentation.
+	(usage): Print a question mark as a substitue for the program name.
+
+	* gtk/pinentry-gtk.c (main): use it here instead of getenv().
+	* qt/main.cpp (main): Ditto.
+
 2002-10-11  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac, Makefile.am: Added doc/ and tests for makeinfo

@@ -86,7 +86,7 @@ void wipe(void *ptr, size_t n)
 }
 
 /* initialize uid variables */
-static void init_uids()
+static void init_uids(void)
 {
   real_uid = getuid();
   file_uid = geteuid();

@@ -155,7 +155,7 @@ int qt_main( int argc, char *argv[] )
 int main( int argc, char* argv[] ) 
 {
 #ifdef FALLBACK_CURSES
-  if( getenv( "DISPLAY" ) ) {
+  if( pinentry_have_display (argc, argv) ) {
 #endif
     return qt_main( argc, argv );
 #ifdef FALLBACK_CURSES

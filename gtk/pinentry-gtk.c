@@ -20,14 +20,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
 #include <X11/X.h>
 
 
@@ -52,13 +52,14 @@ static int confirm_yes = 0;
 
 static GtkWidget *entry, *insure, *time_out;
 
+#if 0 /* not used */
 /* ok - Return to the command handler routine.  */
 static void 
 ok (GtkWidget *w, gpointer data)
 {
   gtk_main_quit ();
 }
-
+#endif /* not used */
 
 /* unselect - work around a bug in GTK+ that permits word-selection to
    work on the invisible passphrase */
@@ -153,7 +154,7 @@ button_clicked (GtkWidget *widget, gpointer data)
 
 
 static void 
-enter_callback (GtkWidget *widget, GtkWidget *entry)
+enter_callback (GtkWidget *widget, GtkWidget *anentry)
 {
   button_clicked (widget, "ok");
 }
@@ -177,7 +178,6 @@ create_window (int confirm_mode)
   GtkWidget *win, *box, *ebox;
   GtkWidget *sbox, *bbox;
   GtkAccelGroup *acc;
-  int i;
 
   /* fixme: check the grabbing code against the one we used with the
      old gpg-agent */
@@ -362,7 +362,7 @@ main (int argc, char *argv[])
   pinentry_init ();
 
 #ifdef FALLBACK_CURSES
-  if (getenv ("DISPLAY"))
+  if (pinentry_have_display (argc, argv))
     gtk_init (&argc, &argv);
   else
     pinentry_cmd_handler = curses_cmd_handler;
@@ -382,3 +382,4 @@ main (int argc, char *argv[])
 
   return 0;
 }
+

@@ -88,6 +88,10 @@ char *pinentry_setbufferlen (pinentry_t pin, int len);
    return.  Must be called early.  */
 void pinentry_init (void);
 
+/* Return true if either DISPLAY is set or ARGV contains the string
+   "--display". */
+int pinentry_have_display (int argc, char **argv);
+
 /* Parse the command line options.  Returns 1 if user should print
    version and exit.  Can exit the program if only help output is
    requested.  */

@@ -42,9 +42,9 @@
 ssize_t xwrite(int, const void *, size_t); /* write until finished */
 int debugmsg(const char *, ...); /* output a debug message if debugging==on */
 void wipe(void *, size_t);	/* wipe a block of memory */
-void lower_privs();		/* lower privileges */
-void raise_privs();		/* raise privileges again */
-void drop_privs();		/* finally drop privileges */
+void lower_privs(void);		/* lower privileges */
+void raise_privs(void);		/* raise privileges again */
+void drop_privs(void);		/* finally drop privileges */
 
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \

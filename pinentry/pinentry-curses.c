@@ -516,6 +516,7 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	}
       refresh ();
     }
+  return 0;
 }
 
 /* XXX Assume that field width is at least > 5.  */
