@@ -30,6 +30,8 @@ extern "C"
 
 #include <new>
 
+#include <stdlib.h>
+
 #ifdef USE_KDE
 # include <kapp.h>
 # include <kcmdlineargs.h>
