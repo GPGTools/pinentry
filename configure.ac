@@ -38,6 +38,12 @@ AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 
 dnl Checks for programs.
+missing_dir=`cd $ac_aux_dir && pwd`
+AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
+AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
+AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
+AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
+AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -219,6 +225,7 @@ pinentry/Makefile
 curses/Makefile
 gtk/Makefile
 qt/Makefile
+doc/Makefile
 Makefile
 ])
 

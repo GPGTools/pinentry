@@ -40,7 +40,7 @@ pinentry_qt =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_qt}
+	${pinentry_gtk} ${pinentry_qt} doc
 
 signed-dist: $(distdir).tar.gz.sig
 
