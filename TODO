@@ -9,8 +9,6 @@
 
 * The Qt PIN entry needs to use libpinentry (maybe).
 
-* The curses pinentry doesn't put user provided button texts into <>.
-
 * The curses pinentry doesn't grok \n in error message.
 
 * No pinentry does s/+/ /.  Should they?
