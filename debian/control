@@ -1,0 +1,39 @@
+Source: pinentry
+Section: unknown
+Priority: optional
+Maintainer: Marcus Brinkmann <mb@g10code.de>
+Build-Depends: debhelper (>> 3.0.0), libncurses5-dev, libgtk1.2-dev, libqt3-mt-dev
+Standards-Version: 3.5.2
+
+Package: pinentry-curses
+Architecture: any
+Depends: ${shlibs:Depends}
+Provides: pinentry
+Description: Curses pin entry dialog for GPG Agent
+ The pinentry program is used for secure input of the passphrase that
+ protects a secret key.
+ .
+ This package contains the curses version of the pinentry, which only
+ requires the text mode.
+
+Package: pinentry-gtk
+Architecture: any
+Depends: ${shlibs:Depends}
+Provides: pinentry
+Description: GTK+ pin entry dialog for GPG Agent
+ The pinentry program is used for secure input of the passphrase that
+ protects a secret key.
+ .
+ This package contains the GTK+ version of the pinentry, which
+ integrates with the GNOME desktop.  It supports text mode, too.
+
+Package: pinentry-qt
+Architecture: any
+Depends: ${shlibs:Depends}
+Provides: pinentry
+Description: QT pin entry dialog for GPG Agent
+ The pinentry program is used for secure input of the passphrase that
+ protects a secret key.
+ .
+ This package contains the QT version of the pinentry, which
+ integrates with the KDE desktop.  It supports text mode, too.

@@ -1,0 +1,6 @@
+pinentry (0.6.3-0) unstable; urgency=low
+
+  * Initial packaging.
+
+ -- Marcus Brinkmann <brinkmd@debian.org>  Thu, 25 Jul 2002 23:09:08 +0200
+
