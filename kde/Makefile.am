@@ -32,15 +32,5 @@ pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	cppmemory.cpp main.cpp 
 nodist_pinentry_kde_SOURCES = pinentrydialog.moc.cpp pinentrycontroller.moc.cpp
 
-EXTRA_DIST = pinentry.desktop  
-
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(kde_appsdir)/Applications/
-	$(INSTALL_DATA) $(srcdir)/pinentry.desktop \
-		$(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
-
-uninstall-local:
-	-rm -f $(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
-
 %.moc.cpp: $(srcdir)/%.h
 	$(MOC) $< -o $@
