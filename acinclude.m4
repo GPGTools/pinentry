@@ -699,16 +699,19 @@ AC_DEFUN(QT_PATH_MOC,
 
    AC_PATH_PROG(MOC, moc, no, [$qt_bindirs])
    if test "$MOC" = no; then
-    AC_MSG_ERROR([No Qt meta object compiler (moc) found!
-Please check whether you installed Qt correctly.
-You need to have a running moc binary.
-configure tried to run $ac_cv_path_moc and the test didn't
-succeed. If configure shouldn't have tried this one, set
-the environment variable MOC to the right one before running
-configure.
-])
+    #AC_MSG_ERROR([No Qt meta object compiler (moc) found!
+    #Please check whether you installed Qt correctly.
+    #You need to have a running moc binary.
+    #configure tried to run $ac_cv_path_moc and the test didn't
+    #succeed. If configure shouldn't have tried this one, set
+    #the environment variable MOC to the right one before running
+    #configure.
+    #])
+    have_moc="no"
+   else
+    have_moc="yes"
+    AC_SUBST(MOC)
    fi
-   AC_SUBST(MOC)
 ])
 
 
@@ -1153,8 +1156,9 @@ Make sure that you have compiled Qt with thread support!"
     fi
   fi
 
-  AC_MSG_ERROR([Qt ($qt_minversion) $ac_qt_notfound not found. Please check your installation!
-For more details about this problem, look at the end of config.log.$missing_qt_mt])
+  #AC_MSG_ERROR([Qt ($qt_minversion) $ac_qt_notfound not found. Please check your installation!
+  #For more details about this problem, look at the end of config.log.$missing_qt_mt])
+  have_qt="no"
 else
   have_qt="yes"
 fi

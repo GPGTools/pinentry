@@ -154,13 +154,35 @@ dnl Check for Qt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
             AC_HELP_STRING([--enable-pinentry-qt], [build Qt pinentry]),
-            pinentry_qt=$enableval, pinentry_qt=no)
+            pinentry_qt=$enableval, pinentry_qt=maybe)
 dnl
 dnl Checks for Qt libraries.  Deal correctly with $pinentry_qt = maybe.
 dnl
 if test "$pinentry_qt" != "no"; then
 QT_CHECK_COMPILERS
 QT_PATH
+if test $have_qt = "no"; then
+	if test $pinentry_qt = "yes"; then
+	  AC_MSG_ERROR([Qt ($qt_minversion) $ac_qt_notfound not found. Please check your installation!
+	  For more details about this problem, look at the end of config.log.$missing_qt_mt])
+	else
+	  pinentry_qt="no"	  
+	fi
+fi
+if test $have_moc = "no"; then
+	if test $pinentry_qt = "yes"; then
+        AC_MSG_ERROR([No Qt meta object compiler (moc) found!
+        Please check whether you installed Qt correctly.
+        You need to have a running moc binary.
+        configure tried to run $ac_cv_path_moc and the test didn't
+        succeed. If configure shouldn't have tried this one, set
+        the environment variable MOC to the right one before running
+        configure.
+        ])
+	else
+	  pinentry_qt="no"	  
+	fi
+fi
 fi
 
 dnl If we have come so far, Qt pinentry can probably be build.
