@@ -1,5 +1,9 @@
 2004-04-20  Werner Koch  <wk@gnupg.org>
 
+	* secmem/secmem.c [!ORIGINAL_GPG_VERSION]: Include util.h for some
+	typedefs and protos.
+	(secmem_free, secmem_term): Use wipememory2 instead of memset.
+
 	* autogen.sh (configure_ac): Fixed version check (s/==/=/).
 
 2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>

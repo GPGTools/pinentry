@@ -41,7 +41,7 @@
 #include "util.h"
 #else /* ORIGINAL_GPG_VERSION */
 
-#include <sys/types.h>
+#include "util.h"
 
 typedef union {
     int a;
@@ -395,10 +395,10 @@ secmem_free( void *a )
     size = mb->size;
     /* This does not make much sense: probably this memory is held in the
      * cache. We do it anyway: */
-    memset(mb, 0xff, size );
-    memset(mb, 0xaa, size );
-    memset(mb, 0x55, size );
-    memset(mb, 0x00, size );
+    wipememory2(mb, 0xff, size );
+    wipememory2(mb, 0xaa, size );
+    wipememory2(mb, 0x55, size );
+    wipememory2(mb, 0x00, size );
     mb->size = size;
     mb->u.next = unused_blocks;
     unused_blocks = mb;
@@ -418,10 +418,10 @@ secmem_term()
     if( !pool_okay )
 	return;
 
-    memset( pool, 0xff, poolsize);
-    memset( pool, 0xaa, poolsize);
-    memset( pool, 0x55, poolsize);
-    memset( pool, 0x00, poolsize);
+    wipememory2( pool, 0xff, poolsize);
+    wipememory2( pool, 0xaa, poolsize);
+    wipememory2( pool, 0x55, poolsize);
+    wipememory2( pool, 0x00, poolsize);
 #if HAVE_MMAP
     if( pool_is_mmapped )
 	munmap( pool, poolsize );

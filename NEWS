@@ -3,6 +3,8 @@ Noteworthy changes in version 0.7.1 (unreleased)
 
  * Removed not needed Assuan cruft.
 
+ * Fixes for *BSD.
+
 
 Noteworthy changes in version 0.7.0 (2003-12-23)
 ------------------------------------------------
