@@ -1,5 +1,18 @@
 2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
 
+	* acinclude.m4: A lot of new checks more or less straight from KDE's
+	admin/acinclude.m4.in.
+	* configure.ac (AC_CANONICAL_HOST): Call that macro.
+	(AC_CHECK_COMPILERS, AC_PATH_KDE): Call those macros if KDE
+	pinentry is enabled.
+	* kde/Makefile.am (CXXFLAGS, XXX_PREFIX, XXX_KDE_DEFINES, LIB_QT,
+	LIB_KDECORE, LIB_KDEUI, KDE_RPATH, MOC, kde_appsdir): Variables removed.
+	(AM_CPPFLAGS): Replace XXX_KDE_DEFINES by all_includes.
+	(pinentry_kde_LDFLAGS): Add all_libraries.
+	* README: Document that automatic check is not possible for KDE.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
 	* curses/pinentry-curses.c (dialog_run): Add handling for TAB key.
 	(dialog_create): New variable description_x.  Calculate dimension
 	of multi-line description correctly.

@@ -19,32 +19,13 @@
 
 ## Process this file with automake to produce Makefile.in
 
-# XXX This should be probed for.
-#KDE_CXXFLAGS = $(USE_EXCEPTIONS)
-CXXFLAGS = -O2 -fno-exceptions -fno-check-new -fexceptions
-
-# XXX The prefix KDE was installed with
-XXX_PREFIX = /cdrom/marcus/install
-
-# XXX The defines that will make it compile, link and run if you have a reasonable system.
-XXX_KDE_DEFINES = -I$(XXX_PREFIX)/include -I/usr/X11R6/include -DQT_THREAD_SUPPORT  -D_REENTRANT
-LIB_QT = -lqt-mt -lpng -lz -lm -ljpeg -lXext -lX11 -lresolv -lSM -lICE \
-	-lpthread -lXrender -lstdc++ -lm -lc -lgcc
-LIB_KDECORE = -lkdecore
-LIB_KDEUI = -lkdeui
-KDE_RPATH = -L$(XXX_PREFIX)/lib -L/usr/X11R6/lib \
-	 -Wl,--rpath -Wl,$(XXX_PREFIX)/lib -Wl,--rpath -Wl,/usr/X11R6/lib
-MOC = $(XXX_PREFIX)/bin/moc
-kde_appsdir = $(datadir)/applnk
-
 bin_PROGRAMS = pinentry-kde
 
-# Set the include path for X, qt, KDE and the included libs.
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(XXX_KDE_DEFINES)
+AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(all_includes)
 pinentry_kde_LDADD = $(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
 	$(LIB_QT) $(LIB_KDECORE) $(LIB_KDEUI)
-pinentry_kde_LDFLAGS = $(KDE_RPATH) 
+pinentry_kde_LDFLAGS = $(all_libraries) $(KDE_RPATH) 
 
 pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp pinentrydialog.moc.cpp \
 	pinentrycontroller.h pinentrycontroller.cpp pinentrycontroller.moc.cpp \
@@ -54,7 +35,8 @@ EXTRA_DIST = pinentry.desktop
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(kde_appsdir)/Applications/
-	$(INSTALL_DATA) $(srcdir)/pinentry.desktop $(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
+	$(INSTALL_DATA) $(srcdir)/pinentry.desktop \
+		$(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop
 
 uninstall-local:
 	-rm -f $(DESTDIR)$(kde_appsdir)/Applications/pinentry.desktop

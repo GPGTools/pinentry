@@ -33,12 +33,12 @@ AH_TOP([
 ])
 AM_MAINTAINER_MODE
 
+AC_CANONICAL_HOST
 
 dnl Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
 fi
-
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -154,12 +154,13 @@ dnl Check for KDE pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-kde,
             AC_HELP_STRING([--enable-pinentry-kde], [build KDE pinentry]),
-            pinentry_kde=$enableval, pinentry_kde=maybe)
+            pinentry_kde=$enableval, pinentry_kde=no)
 dnl
-dnl Checks for GTK+ libraries.  Deal correctly with $pinentry_gtk = maybe.
+dnl Checks for KDE libraries.  Deal correctly with $pinentry_kde = maybe.
 dnl
 if test "$pinentry_kde" != "no"; then
-echo "XXX Mandatory checks for KDE are coming here."
+AC_CHECK_COMPILERS
+AC_PATH_KDE
 fi
 
 dnl If we have come so far, KDE pinentry can probably be build.
@@ -168,13 +169,10 @@ if test "$pinentry_kde" != "no"; then
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_KDE, test "$pinentry_kde" = "yes")
 
-if test "$pinentry_kde" = "yes"; then
-dnl Additional checks for KDE pinentry.
-AC_PROG_CXX
-echo "XXX Optional checks for KDE are coming here."
-
-dnl End of checks for KDE pinentry.
-fi
+dnl if test "$pinentry_kde" = "yes"; then
+dnl dnl Additional checks for KDE pinentry.
+dnl dnl End of checks for KDE pinentry.
+dnl fi
 
 
 AC_CONFIG_FILES([

@@ -5,9 +5,10 @@ This is a collection of simple PIN or passphrase entry dialogs which
 utilize the Assuan protocol as described by the aegypten project; see
 http://www.gnupg.org/aegypten/ for details.
 
-There are programs for different toolkits available.  It is
-automatically detected which modules can be built, but it can also be
-requested explicitely:
+There are programs for different toolkits available.  For the Curses
+and GTK+ GUIs it is automatically detected which modules can be built,
+but it can also be requested explicitely.  For the KDE GUI it MUST be
+requested explicitely, as an automatic check is not yet implemented.
 
 GUI	OPTION			 DEPENDENCIES
 Curses	--enable-pinentry-curses Curses library, for example ncurses
