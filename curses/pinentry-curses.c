@@ -76,13 +76,34 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   int x;
   int ypos;
   int xpos;
+  int description_x = 0;
 
   getmaxyx (stdscr, size_y, size_x);
 
   /* Check if all required lines fit on the screen.  */
   y = 1;		/* Top frame.  */
   if (pinentry->description)
-    y += 2;		/* Description.  */
+    {
+      char *p = pinentry->description;
+      int desc_x = 0;
+
+      while (*p)
+	{
+	  if (*(p++) == '\n')
+	    {
+	      if (desc_x > description_x)
+		description_x = desc_x;
+	      y++;
+	      desc_x = 0;
+	    }
+	  else
+	    desc_x++;
+	}
+      if (desc_x > description_x)
+	description_x = desc_x;
+      y += 2;		/* Description.  */
+    }
+      
   if (pinentry->pin)
     {
       if (pinentry->error)
@@ -98,9 +119,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   x = 0;
   if (pinentry->description)
     {
-      int new_x = strlen (pinentry->description);
-      if (new_x > size_x)
-	new_x = size_x;
+      int new_x = description_x;
+      if (new_x > size_x - 4)
+	new_x = size_x - 4;
       if (new_x > x)
 	x = new_x;
     }
@@ -112,8 +133,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       if (pinentry->error)
 	{
 	  new_x = strlen (pinentry->error);
-	  if (new_x > size_x)
-	    new_x = size_x;
+	  if (new_x > size_x - 4)
+	    new_x = size_x - 4;
 	  if (new_x > x)
 	    x = new_x;
 	}
@@ -121,6 +142,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       new_x = MIN_PINENTRY_LENGTH;
       if (pinentry->prompt)
 	new_x += strlen (pinentry->prompt) + 1;	/* One space after prompt.  */
+      if (new_x > size_x - 4)
+	new_x = size_x - 4;
       if (new_x > x)
 	x = new_x;
     }
@@ -160,15 +183,24 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   if (pinentry->description)
     {
       char *p = pinentry->description;
-      int i = strlen (pinentry->description);
-      move (ypos, xpos);
-      addch (ACS_VLINE);
-      addch (' ');
-      if (i > x - 4)
-	i = x - 4;
-      while (i-- > 0)
-	addch (*(p++));
-      ypos++;
+      int i = 0;
+
+      while (*p)
+	{
+	  move (ypos, xpos);
+	  addch (ACS_VLINE);
+	  addch (' ');
+	  while (*p && *p != '\n')
+	    if (i < x - 4)
+	      {
+		i++;
+		addch (*(p++));
+	      }
+	  if (*p == '\n')
+	    p++;
+	  i = 0;
+	  ypos++;
+	}
       move (ypos, xpos);
       addch (ACS_VLINE);
       ypos++;
@@ -415,7 +447,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	init_pair (1, COLOR_RED, COLOR_BLACK);
     }
 
-  dialog_create (pinentry, &diag);
+  /* XXX */
+  if (dialog_create (pinentry, &diag))
+    return -2;
   dialog_switch_pos (&diag, diag.pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
 
   do
@@ -451,6 +485,26 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      break;
 	    case DIALOG_POS_OK:
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
+	      break;
+	    default:
+	      break;
+	    }
+	  break;
+
+	case '\t':
+	  switch (diag.pos)
+	    {
+	    case DIALOG_POS_PIN:
+	      dialog_switch_pos (&diag, DIALOG_POS_OK);
+	      break;
+	    case DIALOG_POS_OK:
+	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
+	      break;
+	    case DIALOG_POS_CANCEL:
+	      if (diag.pin)
+		dialog_switch_pos (&diag, DIALOG_POS_PIN);
+	      else
+		dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
 	    default:
 	      break;

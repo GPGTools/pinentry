@@ -1,3 +1,9 @@
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_run): Add handling for TAB key.
+	(dialog_create): New variable description_x.  Calculate dimension
+	of multi-line description correctly.
+
 2002-04-04  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (struct pinentry): New members DISPLAY,
