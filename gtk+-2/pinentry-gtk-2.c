@@ -45,8 +45,6 @@
 #endif
 
 
-#include "padlock-keyhole.xpm"
-
 #define PGMNAME "pinentry-gtk2"
 
 #ifndef VERSION
@@ -190,7 +188,6 @@ create_window (int confirm_mode)
   GtkWidget *win, *box, *ebox;
   GtkWidget *wvbox, *chbox, *bbox;
   GtkAccelGroup *acc;
-  GdkPixbuf *padlock_keyhole;
   gchar *msg;
 
   /* FIXME: check the grabbing code against the one we used with the
@@ -225,8 +222,8 @@ create_window (int confirm_mode)
   chbox = gtk_hbox_new (FALSE, HIG_LARGE);
   gtk_box_pack_start (GTK_BOX (wvbox), chbox, FALSE, FALSE, 0);
 
-  padlock_keyhole = gdk_pixbuf_new_from_xpm_data (padlock_keyhole_xpm);
-  w = gtk_image_new_from_pixbuf (padlock_keyhole);
+  w = gtk_image_new_from_stock (GTK_STOCK_DIALOG_AUTHENTICATION,
+					       GTK_ICON_SIZE_DIALOG);
   gtk_misc_set_alignment (GTK_MISC (w), 0.0, 0.0);
   gtk_box_pack_start (GTK_BOX (chbox), w, FALSE, FALSE, 0);
 

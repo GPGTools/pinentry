@@ -1,5 +1,6 @@
 /* GTK - The GIMP Toolkit
  * Copyright (C) 1995-1997 Peter Mattis, Spencer Kimball and Josh MacDonald
+ * Copyright (C) 2004 Albrecht Dreﬂ
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,10 +27,7 @@
 
 /*
  * Heavily stripped down for use in pinentry-gtk-2 by Albrecht Dreﬂ
- * <albrecht.dress@arcor.de> Feb. 2004.
- *
- * (C) by Albrecht Dreﬂ 2004 unter the terms of the GNU Lesser General
- * Public License.
+ * <albrecht.dress@arcor.de> Feb. 2004:
  *
  * The entry is now always invisible, uses secure memory methods to
  * allocate the text memory, and all potentially dangerous methods

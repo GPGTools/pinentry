@@ -1,3 +1,11 @@
+2004-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gtk+-2/padlock-keyhole.xpm: File removed.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use stock icon.
+	* gtk+-2/gtksecentry.h, gtk+-2/gtksecentry.c: Fix copyright notice.
+
+	Submitted by Albrecht Dress albrecht.dress@arcor.de.
+
 2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Invoke AC_PROG_LN_S.
