@@ -13,4 +13,5 @@
 
 * The curses pinentry doesn't grok \n in error message.
 
-* No pinentry groks %-escaped and +-escaped strings.
+* No pinentry does s/+/ /.  Should they?
+
