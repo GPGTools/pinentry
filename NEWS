@@ -1,6 +1,6 @@
 
-  * The Curses pinentry supports user-provided button texts in confirm
-    mode.
+  * The Curses pinentry supports user-provided button texts via the
+    new SETOK and SETCANCEL commands.
 
   * The Curses pinentry supports setting the desired character set
     locale with --lc-ctype and correctly translates the UTF-8 strings
