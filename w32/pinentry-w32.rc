@@ -1,4 +1,4 @@
-/* main.c - Secure W32 dialog for PIN entry.
+/* dialog.rc - Resource definitions
    Copyright (C) 2004 g10 Code GmbH
    
    This program is free software; you can redistribute it and/or
@@ -16,28 +16,26 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
-#include <stdlib.h>
-#include <windows.h>
+#include <winuser.h>
+#include "resource.h"
 
-#include "dialog.h"
-#include "controller.h"
+/* 
+ * Main dialog 
+ */
+
+IDD_PINENT DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Pinentry W32"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Description", IDC_PINENT_DESC, 6, 6, 152, 19
+    EDITTEXT        IDC_PINENT_TEXT, 71, 36, 107, 12, ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK", IDOK, 77, 76, 50, 14
+    PUSHBUTTON      "&Cancel", IDCANCEL, 132, 76, 50, 14
+    LTEXT           "Error", IDC_PINENT_ERR, 2, 62, 180, 9
+    LTEXT           "Prompt", IDC_PINENT_PROMPT, 2, 37, 64, 12
+END
 
 
-/* int WINAPI */
-/* WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmdLine, int nShowCmd) */
-int
-main ()
-{
-  struct pinentry_controller_s ctl;
 
-  fprintf (stderr, "enter main\n");
-  pinentry_ctrl_exec (&ctl);
-  fprintf (stderr, "debug 1\n");
-  pinentry_controller_free (&ctl);
-  fprintf (stderr, "leave main\n");
-  return 0;
-}

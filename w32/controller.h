@@ -1,6 +1,5 @@
-/* pinentrycontroller.h - A secure KDE dialog for PIN entry.
-   Copyright (C) 2002 Klarälvdalens Datakonsult AB
-   Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
+/* controller.h - A W32 dialog for PIN entry.
+   Copyright (C) 2004 g10 Code GmbH
    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -17,26 +16,26 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
-#ifndef __PINENTRYCONTROLLER_H__
-#define __PINENTRYCONTROLLER_H__
+#ifndef W32_CONTROLLER_H
+#define W32_CONTROLLER_H
+
+#include "assuan.h"
 
 
-#include <assuan.h>
-
-
-struct pinentry_controller_s {
-    ASSUAN_CONTEXT _ctx;
-    char * _desc;
-    char * _error;
-    char * _prompt;
-    char * _ok;
-    char * _cancel;
-    struct w32_pinentry_s *_pinentry;
+struct pinentry_controller_s
+{
+  ASSUAN_CONTEXT _ctx;
+  char *_desc;
+  char *_error;
+  char *_prompt;
+  char *_ok;
+  char *_cancel;
+  struct w32_pinentry_s *_pinentry;
 };
 
 
-int  pinentry_ctl_registcmds (struct pinentry_controller_s * c);
-void pinentry_controller_free (struct pinentry_controller_s * c);
-void pinentry_ctrl_exec (struct pinentry_controller_s * c);
+int pinentry_ctl_registcmds (struct pinentry_controller_s *c);
+void pinentry_controller_free (struct pinentry_controller_s *c);
+void pinentry_ctrl_exec (struct pinentry_controller_s *c);
 
-#endif // __PINENTRYCONTROLLER_H__
+#endif /*W32_CONTROLLER_H*/
