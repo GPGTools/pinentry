@@ -1,3 +1,15 @@
+2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4 (IU_LIB_NCURSES, IU_LIB_CURSES, IU_LIB_TERMCAP):
+	Moved to m4/curses.m4.
+	(AM_ICONV): Moved to m4/iconv.m4.
+	(AM_PATH_GLIB): Moved to m4/glib.m4.
+	(QT_FIND_FILE, QT_PATH_MOC, QT_PATH_X, QT_PRINT_PROGRAM,
+	QT_CHECK_VERSION, QT_PATH_1_3, QT_PATH, QT_CHECK_COMPILER_FLAG,
+	QT_REMOVE_FORBIDDEN, QT_VALIDIFY_CXXFLAGS, QT_CHECK_COMPILERS,
+	QT_CHECK_RPATH, QT_CHECK_LIBPTHREAD, QT_CHECK_PTHREAD_OPTION,
+	QT_CHECK_THREADING): Move to m4/qt.m4.
+
 2004-09-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* qt/Makefile.am (pinentry_qt_LDFLAGS): Add $(QT_RPATH).

@@ -1,0 +1,5 @@
+2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses.m4, glib.m4, gtk.m4, iconv.m4, qt.m4: New files.
+	
+
