@@ -70,6 +70,8 @@
 	Removed files in favor of new files in kde/.
 	* po/Makefile.am, po/pinentry.pot: Removed files never used.
 
+	* autogen.sh: New file.
+
 2002-03-04  Werner Koch  <wk@gnupg.org>
 
 	* gpinentry.c (enter_callback): New
