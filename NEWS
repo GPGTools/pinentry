@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.7.2 (unreleased)
+Noteworthy changes in version 0.7.2 (2005-01-27)
 ------------------------------------------------
 
  * Remove bug in configure script that would use installed version of
@@ -11,6 +11,7 @@ Noteworthy changes in version 0.7.2 (unreleased)
  * Install a symbolic link under the name "pinentry" that defaults to
    pinentry-gtk, pinentry-qt, pinentry-gtk-2, or pinentry-curses, in
    that order.
+
 
 Noteworthy changes in version 0.7.1 (2004-04-21)
 ------------------------------------------------

@@ -24,16 +24,12 @@ min_automake_version="1.7.6"
 
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry, 0.7.2-cvs, [gpa-dev@gnupg.org])
+AC_INIT(pinentry, 0.7.2, [gpa-dev@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
 
-AH_TOP([
-/* We need this, because some autoconf tests rely on this (e.g. stpcpy)
-   and it should be used for new programs anyway */
-#define _GNU_SOURCE  1
-])
+AC_GNU_SOURCE
 
 AM_MAINTAINER_MODE
 
@@ -351,11 +347,11 @@ AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
 if test "$pinentry_gtk" = "yes"; then
    PINENTRY_DEFAULT=pinentry-gtk
 else
-  if test "$pinentry_qt" = "yes"; then
-    PINENTRY_DEFAULT=pinentry-qt
+  if test "$pinentry_gtk_2" = "yes"; then
+    PINENTRY_DEFAULT=pinentry-gtk-2
   else
-    if test "$pinentry_gtk_2" = "yes"; then
-      PINENTRY_DEFAULT=pinentry-gtk-2
+    if test "$pinentry_qt" = "yes"; then
+      PINENTRY_DEFAULT=pinentry-qt
     else
       if test "$pinentry_curses" = "yes"; then
         PINENTRY_DEFAULT=pinentry-curses
