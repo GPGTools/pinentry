@@ -22,7 +22,7 @@
 AC_REVISION($Revision$)
 
 AC_PREREQ(2.52)
-AC_INIT(pinentry, 0.6.4, [gpa-dev@gnupg.org])
+AC_INIT(pinentry, 0.6.5, [gpa-dev@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
@@ -38,6 +38,7 @@ AC_CANONICAL_HOST
 dnl Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    CPPFLAGS="$CPPFLAGS -Wall"
 fi
 
 dnl Checks for programs.

@@ -154,6 +154,10 @@ PinEntryController::optionHandler( ASSUAN_CONTEXT ctx, const char* key, const ch
     that->createParentWidget( id );
     return 0;
   }
+
+  /* FIXME: For now we simply ignore all options.  This module should
+     be converted to make use of the pinentry framework. */
+  return 0;
 }
 
 int PinEntryController::assuanDesc( ASSUAN_CONTEXT ctx, char* line )

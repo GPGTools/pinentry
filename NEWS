@@ -1,3 +1,13 @@
+Noteworthy changes in version 0.6.5 (2002-09-30)
+------------------------------------------------
+
+  * Handle Assuan options in the qt version.
+
+Noteworthy changes in version 0.6.4 (2002-08-19)
+------------------------------------------------
+
+  * Handle CONFIRM command in the qt version.
+
 Noteworthy changes in version 0.6.3 (2002-06-26)
 ------------------------------------------------
 
