@@ -31,6 +31,13 @@ struct pinentry
   /* The length of the buffer.  */
   int pin_len;
 
+  /* The name of the X display to use if X is available and supported.  */
+  char *display;
+  /* The name of the terminal node to open if X not available or supported.  */
+  char *ttyname;
+  /* The type of the terminal.  */
+  char *ttytype;
+
   /* True if debug mode is requested.  */
   int debug;
   /* True if enhanced mode is requested.  */

@@ -24,7 +24,7 @@
 CXXFLAGS = -O2 -fno-exceptions -fno-check-new -fexceptions
 
 # XXX The prefix KDE was installed with
-XXX_PREFIX = /usr/local
+XXX_PREFIX = /cdrom/marcus/install
 
 # XXX The defines that will make it compile, link and run if you have a reasonable system.
 XXX_KDE_DEFINES = -I$(XXX_PREFIX)/include -I/usr/X11R6/include -DQT_THREAD_SUPPORT  -D_REENTRANT

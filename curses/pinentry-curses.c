@@ -496,7 +496,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 static int
 dialog_cmd_handler (pinentry_t pinentry)
 {
-  return dialog_run (pinentry, 0, 0);
+  return dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
 }
 
 pinentry_cmd_handler_t pinentry_cmd_handler = dialog_cmd_handler;
@@ -519,4 +519,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-

@@ -24,6 +24,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
 
 #include "assuan.h"
@@ -39,6 +40,9 @@ struct pinentry pinentry =
     NULL,	/* Prompt.  */
     NULL,	/* PIN.  */
     2048,	/* PIN length.  */
+    0,		/* Display.  */
+    0,		/* TTY name.  */
+    0,		/* TTY type.  */
     0,		/* Debug mode.  */
     0,		/* Enhanced mode.  */
     1,		/* Global grab.  */
@@ -89,6 +93,9 @@ usage (void)
   fprintf (stderr, "Usage: %s [OPTION]...\n\
 Ask securely for a secret and print it to stdout.\n\
 \n\
+      --display DISPLAY Set the X display\n\
+      --ttyname PATH    Set the tty terminal node name\n\
+      --ttytype NAME    Set the tty terminal type\n\
   -e, --enhanced        Ask for timeout and insurance, too\n\
   -g, --no-global-grab  Grab keyboard only while window is focused\n\
   -d, --debug           Turn on debugging output\n\
@@ -108,6 +115,9 @@ pinentry_parse_opts (int argc, char *argv[])
   int opt_version = 0;
   struct option opts[] =
     {{ "debug", no_argument, &pinentry.debug, 1 },
+     { "display", required_argument, 0, 'D' },
+     { "ttyname", required_argument, 0, 'T' },
+     { "ttytype", required_argument, 0, 'N' },
      { "enhanced", no_argument, &pinentry.enhanced, 1 },
      { "no-global-grab", no_argument, &pinentry.grab, 0 },
      { "help", no_argument, &opt_help, 1 },
@@ -121,6 +131,33 @@ pinentry_parse_opts (int argc, char *argv[])
         case 0:
         case '?':
           break;
+	case 'D':
+	  pinentry.display = strdup (optarg);
+	  if (!pinentry.display)
+	    {
+	      /* XXX Program name.  */
+	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
+	case 'T':
+	  pinentry.ttyname = strdup (optarg);
+	  if (!pinentry.ttyname)
+	    {
+	      /* XXX Program name.  */
+	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
+	case 'N':
+	  pinentry.ttytype = strdup (optarg);
+	  if (!pinentry.ttytype)
+	    {
+	      /* XXX Program name.  */
+	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
         default:
           /* XXX Should never happen.  */
         }
@@ -145,11 +182,35 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     pinentry.grab = 1;
   else if (!strcmp (key, "debug-wait"))
     {
-      /* Program name.  */
+      /* XXX Program name.  */
       fprintf (stderr, "pinentry: waiting for debugger - my pid is %u ...\n",
 	       (unsigned int) getpid());
       sleep (*value?atoi (value):5);
       fprintf (stderr, "pinentry: ... okay\n");
+    }
+  else if (!strcmp (key, "display"))
+    {
+      if (pinentry.display)
+	free (pinentry.display);
+      pinentry.display = strdup (value);
+      if (!pinentry.display)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "ttyname"))
+    {
+      if (pinentry.ttyname)
+	free (pinentry.ttyname);
+      pinentry.ttyname = strdup (value);
+      if (!pinentry.ttyname)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "ttytype"))
+    {
+      if (pinentry.ttytype)
+	free (pinentry.ttytype);
+      pinentry.ttytype = strdup (value);
+      if (!pinentry.ttytype)
+	return ASSUAN_Out_Of_Core;
     }
   else
     return ASSUAN_Invalid_Option;

@@ -1,3 +1,17 @@
+2002-04-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New members DISPLAY,
+	TTYNAME and TTYTYPE.
+	* pinentry/pinentry.c (pinentry): Likewise.
+	* pinentry/pinentry.c: Include <string.h>.
+	(usage): Add new options --display,
+	--ttyname and --ttytype.
+	(option_handler): Likewise.
+	(pinentry_parse_opts): Likewise.
+
+	* curses/pinentry-curses.c (dialog_cmd_handler): Use
+	PINENTRY->ttyname and PINENTRY->ttytype.
+
 2002-03-30  Marcus Brinkmann  <marcus@g10code.de>
 
 	* acinclude.m4: Add AM_PATH_GLIB and AM_PATH_GTK.
