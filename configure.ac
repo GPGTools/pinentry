@@ -35,17 +35,17 @@ AM_MAINTAINER_MODE
 
 AC_CANONICAL_HOST
 
-dnl Checks for compiler features.
-if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-    CPPFLAGS="$CPPFLAGS -Wall"
-fi
-
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+
+dnl Checks for compiler features.
+if test "$GCC" = yes; then
+    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    CPPFLAGS="$CPPFLAGS -Wall"
+fi
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(seteuid stpcpy)
