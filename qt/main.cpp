@@ -157,6 +157,12 @@ int main( int argc, char* argv[] )
 #ifdef FALLBACK_CURSES
   if( pinentry_have_display (argc, argv) ) {
 #endif
+	// Work around non-standard handling of DISPLAY
+	for( int i = 1; i < argc; ++i ) {
+    	if( !strcmp( "--display", argv[i] ) ) {
+        	argv[i] = "-display";
+    	}
+  	}
     return qt_main( argc, argv );
 #ifdef FALLBACK_CURSES
   } else {
