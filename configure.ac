@@ -180,6 +180,50 @@ dnl fi
 
 
 dnl
+dnl Check for GTK+-2 pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-gtk2,
+            AC_HELP_STRING([--enable-pinentry-gtk2], [build GTK+-2 pinentry]),
+            pinentry_gtk_2=$enableval, pinentry_gtk_2=maybe)
+
+dnl check for pkg-config
+if test "$pinentry_gtk_2" != "no"; then
+	AC_CHECK_PROG(PKGCONFIG, pkg-config, [yes], [no])
+	if test x"$PKGCONFIG" != xyes ; then
+		pinentry_gtk_2=no
+	fi
+fi
+
+dnl check if the module gtk+-2.0 exists
+if test "$pinentry_gtk_2" != "no"; then
+	AC_MSG_CHECKING([for gtk+-2])
+	pkg-config --exists gtk+-2.0
+	if test $? -ne 0 ; then
+		AC_MSG_RESULT([no])
+		AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
+		pinentry_gtk_2=no
+	else
+		AC_MSG_RESULT([yes])
+		AC_MSG_CHECKING([gtk+-2 version >= 2.4.0])
+		modvers=`pkg-config --modversion gtk+-2.0`
+		AC_MSG_RESULT([$modvers])
+		pkg-config --atleast-version=2.4.0 gtk+-2.0
+		if test $? -ne 0 ; then
+			AC_MSG_WARN([building GTK+-2 pinentry disabled])
+			pinentry_gtk_2=no
+		else
+			GTK2CFLAGS=`pkg-config --cflags gtk+-2.0`
+			GTK2LIBS=`pkg-config --libs gtk+-2.0`
+			AC_SUBST(GTK2CFLAGS)
+			AC_SUBST(GTK2LIBS)
+			pinentry_gtk_2=yes
+		fi
+	fi
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
+
+
+dnl
 dnl Check for Qt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
@@ -237,6 +281,7 @@ secmem/Makefile
 pinentry/Makefile
 curses/Makefile
 gtk/Makefile
+gtk+-2/Makefile
 qt/Makefile
 doc/Makefile
 Makefile
@@ -249,6 +294,7 @@ AC_MSG_NOTICE([
 
 	Curses Pinentry: $pinentry_curses
 	GTK+ Pinentry: $pinentry_gtk
+	GTK+-2 Pinentry: $pinentry_gtk_2
 	Qt Pinentry: $pinentry_qt
 
 	Fallback to Curses: $fallback_curses

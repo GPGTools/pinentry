@@ -35,6 +35,12 @@ else
 pinentry_gtk = 
 endif
 
+if BUILD_PINENTRY_GTK_2
+pinentry_gtk_2 = gtk+-2
+else
+pinentry_gtk_2 = 
+endif
+
 if BUILD_PINENTRY_QT
 pinentry_qt = qt
 else
@@ -42,7 +48,7 @@ pinentry_qt =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_qt} doc
+	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} doc
 
 signed-dist: $(distdir).tar.gz.sig
 

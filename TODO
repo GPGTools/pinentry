@@ -13,3 +13,5 @@
 
 * A heartbeat status message should be sent every few seconds, so that
   the gpg-agent is better able to cope with jammed pinentries.
+
+* The gtk+-2 pinentry needs auditing.

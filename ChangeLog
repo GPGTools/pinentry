@@ -1,3 +1,14 @@
+2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for Gtk+-2.
+	* gtk+-2: New directory with gtk+-2 pinentry.
+	* gtk+-2/Makefile.am, gtk+-2/gtksecentry.h, gtk+-2/gtksecentry.c,
+	gtk+-2/pinentry-gtk-2.c, gtk+-2/padlock-keyhole.xpm: New files.
+	* Makefile.am (pinentry_gtk_2): New variable.
+	(SUBDIRS): Add pinentry_gtk_2.
+
+	Submitted by Albrecht Dress albrecht.dress@arcor.de.
+	
 2004-08-04  Werner Koch  <wk@g10code.de>
 
 	* pinentry/pinentry.c (usage): Print help to stdout.
