@@ -1,10 +1,9 @@
 * The Button texts are not internationalized and can't be set from the
-  application.
+  application.  This is supopsedly only true for the GETPIN dialog.
+  (The CONFIRM dialog can take the button text from the PROMPT setting).
 
-* There needs to be a way to set the DISPLAY via the assuan interface.
-
-* There needs to be a way to set the terminal node and type ($TERM
-  value) at the command line and via the assuan interface.
+* The DISPLAY setting should be honoured by the pinentry applications using XFree86.
+  This implies reconfiguring the underlying toolkit, is this always possible?
 
 * The KDE and curses PIN entry need enhanced mode.
 
