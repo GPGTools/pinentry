@@ -24,7 +24,7 @@ bin_PROGRAMS = pinentry-kde
 AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(all_includes)
 pinentry_kde_LDADD = $(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
-	$(LIB_QT) $(LIB_KDECORE) $(LIB_KDEUI)
+	$(LIB_QT) # $(LIB_KDECORE) $(LIB_KDEUI)
 pinentry_kde_LDFLAGS = $(all_libraries) $(KDE_RPATH) 
 
 pinentry_kde_SOURCES = pinentrydialog.h pinentrydialog.cpp \

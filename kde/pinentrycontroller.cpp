@@ -23,7 +23,11 @@ extern "C"
 {
 #include "memory.h"
 }
-#include <kmessagebox.h>
+#ifdef USE_KDE
+# include <kmessagebox.h>
+#else
+# include <qmessagebox.h>
+#endif
 
 PinEntryController::PinEntryController() : _pinentry( 0 )
 {
@@ -157,6 +161,7 @@ int PinEntryController::assuanConfirm( ASSUAN_CONTEXT ctx, char* line )
 int PinEntryController::confirm( char* line )
 {
   int ret;
+#ifdef USE_KDE
   if( !_error.isNull() ) {
     ret = KMessageBox::questionYesNo( 0, _error );
   } else {
@@ -164,6 +169,15 @@ int PinEntryController::confirm( char* line )
   }
   FILE* fp = assuan_get_data_fp( _ctx );
   if( ret == KMessageBox::Yes ) {
+#else
+  if( !_error.isNull() ) {
+    ret = QMessageBox::critical( 0, "", _error, QMessageBox::Yes, QMessageBox::No );
+  } else {
+    ret = QMessageBox::information( 0, "", _desc, QMessageBox::Yes, QMessageBox::No );
+  }    
+  FILE* fp = assuan_get_data_fp( _ctx );
+  if( ret == 0 ) {
+#endif // USE_KDE
     fputs( "YES", fp );    
   } else {
     fputs( "NO", fp );

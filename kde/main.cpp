@@ -24,10 +24,15 @@ extern "C"
 }
 
 #include <new>
-#include <kapp.h>
-#include <kcmdlineargs.h>
-#include <kaboutdata.h>
-#include <klocale.h>
+
+#ifdef USE_KDE
+# include <kapp.h>
+# include <kcmdlineargs.h>
+# include <kaboutdata.h>
+# include <klocale.h>
+#else
+# include <qapplication.h>
+#endif // USE_KDE
 
 #include "pinentrydialog.h"
 #include "pinentrycontroller.h"
@@ -38,6 +43,7 @@ extern "C++" {
 
 #define VERSION "0.1"
 
+#ifdef USE_KDE
 static const char *description =
         I18N_NOOP("Pinentry");
 // INSERT A DESCRIPTION FOR YOUR APPLICATION HERE
@@ -48,6 +54,7 @@ static KCmdLineOptions options[] =
   { 0, 0, 0 }
   // INSERT YOUR COMMANDLINE OPTIONS HERE
 };
+#endif // USE_KDE
 
 void my_new_handler()
 {
@@ -62,6 +69,7 @@ int main( int argc, char** argv )
   drop_privs();
   set_new_handler(my_new_handler);
   try {
+#ifdef USE_KDE
     KAboutData aboutData( "pinentry", I18N_NOOP("Pinentry"),
 			  VERSION, description, KAboutData::License_GPL,
 			  "(c) 2001, Steffen Hansen, Klarälvdalens Datakonsult AB", 0, 0, "klaralvdalens-datakonsult.se");
@@ -69,6 +77,9 @@ int main( int argc, char** argv )
     KCmdLineArgs::init( argc, argv, &aboutData );
     KCmdLineArgs::addCmdLineOptions( options ); // Add our own options.
     KApplication app;
+#else
+    QApplication app( argc, argv );
+#endif // USE_KDE
     is_secure = true;
 
     PinEntryController ctrl;
