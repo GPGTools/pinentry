@@ -48,7 +48,7 @@ static void strcpy_escaped (char *d, const char *s)
   *d = 0;
 }
 
-PinEntryController::PinEntryController() : _pinentry( 0 )
+PinEntryController::PinEntryController( WId parentwid ) : _pinentry( 0 ), _parent(0)
 {
   int fds[2];
   fds[0] = 0;
@@ -62,12 +62,15 @@ PinEntryController::PinEntryController() : _pinentry( 0 )
   }
   rc = registerCommands();
 
+  if( parentwid ) createParentWidget( parentwid );
+
   assuan_set_pointer( _ctx, this );
 }
 
 PinEntryController::~PinEntryController()
 {
   assuan_deinit_server( _ctx );
+  delete _parent;
 }
 
 void PinEntryController::exec()
@@ -114,7 +117,43 @@ int PinEntryController::registerCommands()
 				  table[i].name, table[i].handler);
     if (rc) return rc;
   }
+  assuan_register_option_handler(_ctx, PinEntryController::optionHandler);
+
   return 0;
+}
+
+/* Hack for creating a QWidget with a "foreign" window ID */
+class ForeignWidget : public QWidget
+{
+public:
+  ForeignWidget( WId wid ) : QWidget( 0 ) 
+  {
+    QWidget::destroy();
+    create( wid, false, false );
+  }
+
+  ~ForeignWidget()
+  {
+    destroy( false, false );
+  }
+};
+
+void
+PinEntryController::createParentWidget( WId parentwid )
+{
+  if( _parent ) delete _parent;
+  _parent = new ForeignWidget( parentwid );  
+}
+
+int
+PinEntryController::optionHandler( ASSUAN_CONTEXT ctx, const char* key, const char* value )
+{
+  PinEntryController* that =   static_cast<PinEntryController*>(assuan_get_pointer(ctx));
+  if( !strcmp( key, "parent-wid" ) ) {
+    WId id = strtol( value, 0, 0 );
+    that->createParentWidget( id );
+    return 0;
+  }
 }
 
 int PinEntryController::assuanDesc( ASSUAN_CONTEXT ctx, char* line )
@@ -198,7 +237,7 @@ int PinEntryController::assuanGetpin( ASSUAN_CONTEXT ctx, char* line )
 
 int PinEntryController::getPin( char* line ) {
   if( _pinentry == 0 ) {
-    _pinentry = new PinEntryDialog(0,0,true);
+    _pinentry = new PinEntryDialog(_parent,0,true);
   }
   _pinentry->setPrompt( _prompt );
   _pinentry->setDescription( _desc );
@@ -233,17 +272,17 @@ int PinEntryController::confirm( char* line )
   int ret;
 #ifdef USE_KDE
   if( !_error.isNull() ) {
-    ret = KMessageBox::questionYesNo( 0, _error );
+    ret = KMessageBox::questionYesNo( _parent, _error );
   } else {
-    ret = KMessageBox::questionYesNo( 0, _desc );    
+    ret = KMessageBox::questionYesNo( _parent, _desc );    
   }
   FILE* fp = assuan_get_data_fp( _ctx );
   if( ret == KMessageBox::Yes ) {
 #else
   if( !_error.isNull() ) {
-    ret = QMessageBox::critical( 0, "", _error, QMessageBox::Yes, QMessageBox::No );
+    ret = QMessageBox::critical( _parent, "", _error, QMessageBox::Yes, QMessageBox::No );
   } else {
-    ret = QMessageBox::information( 0, "", _desc, QMessageBox::Yes, QMessageBox::No );
+    ret = QMessageBox::information( _parent, "", _desc, QMessageBox::Yes, QMessageBox::No );
   }    
   FILE* fp = assuan_get_data_fp( _ctx );
   if( ret == 0 ) {

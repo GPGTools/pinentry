@@ -30,8 +30,10 @@ class PinEntryDialog;
 class PinEntryController : public QObject {
   Q_OBJECT
 public:
-  PinEntryController();
+  PinEntryController( WId parent );
   virtual ~PinEntryController();
+
+  static int optionHandler( ASSUAN_CONTEXT, const char* key, const char* value );
 
   static int assuanDesc( ASSUAN_CONTEXT, char* );
   static int assuanPrompt( ASSUAN_CONTEXT, char* );
@@ -52,9 +54,12 @@ private:
 
   int registerCommands();
 
+  void createParentWidget( WId parentwid );
+
   ASSUAN_CONTEXT _ctx;
 
   PinEntryDialog* _pinentry;
+  QWidget* _parent;
   QString _desc;
   QString _prompt;
   QString _error;

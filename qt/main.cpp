@@ -89,6 +89,18 @@ static KCmdLineOptions options[] =
   { 0, 0, 0 }
   // INSERT YOUR COMMANDLINE OPTIONS HERE
 };
+#else
+static void 
+usage( const char* appname )
+{
+  fprintf (stderr, "Usage: %s [OPTION]...\n\
+Ask securely for a secret and print it to stdout.\n\
+\n\
+      --display DISPLAY Set the X display\n\
+      --parent-wid      Set the window id the dialogs should appear over\n\
+      --help, -h        Display this help and exit\n", appname);
+
+}
 #endif // USE_KDE
 
 void my_new_handler()
@@ -110,14 +122,30 @@ int qt_main( int argc, char *argv[] )
 			    "(c) 2001, Steffen Hansen, Klarälvdalens Datakonsult AB", 0, 0, "klaralvdalens-datakonsult.se");
       aboutData.addAuthor("Steffen Hansen, Klarälvdalens Datakonsult AB",0, "steffen@klaralvdalens-datakonsult.se");
       KCmdLineArgs::init( argc, argv, &aboutData );
-      KCmdLineArgs::addCmdLineOptions( options ); // Add our own options.
+      KCmdLineArgs::addCmdLineOptions( options ); // TODO(steffen): Add KDE option handling
       KApplication app;
 #else
       QApplication app( argc, argv );
+      WId parentwid = 0;
+      for( int i = 0; i < argc; ++i ) {
+	if( !strncmp( argv[i], "--parent-wid", 12 ) ) {
+	  int len =  strlen( argv[i] );
+	  if( len > 12 && argv[i][12] == '=' ) {
+	    parentwid = strtol( argv[i]+13, 0, 0 );
+	  } else if( len == 12 && i+1 < argc ) {
+	    parentwid = strtol( argv[i+1], 0, 0 );
+	  }
+	} else if( !strcmp( argv[i], "--help" ) || !strcmp( argv[i], "-h" ) ) {	
+	  usage( argv[0] );
+	  exit(0);
+	}
+      }
 #endif // USE_KDE
       is_secure = true;
+
+      qDebug("parentwid is %p", parentwid);
       
-      PinEntryController ctrl;
+      PinEntryController ctrl( parentwid );
       ctrl.exec();
       return 0;
     } catch( std::bad_alloc& ex ) {
