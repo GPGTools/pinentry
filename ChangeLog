@@ -1,5 +1,9 @@
 2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Choose a more appropriate AC_CONFIG_SRCDIR.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
 	* kde/Makefile.am (pinentry_kde_LDADD): Link with $(LIBCAP).
 	* gtk/Makefile.am (install-exec-local): Moved to ...
 	* Makefile.am (install-exec-local): ... here.
