@@ -1,3 +1,7 @@
+2002-03-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Add AM_PATH_GLIB and AM_PATH_GTK.
+
 2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Choose a more appropriate AC_CONFIG_SRCDIR.
