@@ -159,8 +159,8 @@ dnl
 dnl Checks for KDE libraries.  Deal correctly with $pinentry_kde = maybe.
 dnl
 if test "$pinentry_kde" != "no"; then
-AC_CHECK_COMPILERS
-AC_PATH_KDE
+KDE_CHECK_COMPILERS
+KDE_PATH_KDE
 fi
 
 dnl If we have come so far, KDE pinentry can probably be build.
