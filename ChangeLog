@@ -1,6 +1,14 @@
+2004-12-22  Timo Schulz  <twoaday@g10code.com>
+
+	* w32/main.c: Remove all helper functions and use a callback
+	to set the dialog items directly.
+	(dlg_proc): Set 'result' to -1 to indicate cancel.
+	(ok_button_clicked): Adjusted. Set 'result' to the len of
+	the PIN to indicate success.
+	
 2004-12-22  Werner Koch  <wk@g10code.com>
 
-	* main.c: Simplified.
+	* w32/main.c: Simplified.
 	* w32/dialog.h, w32/dialog.c, w32/controller.h, w32/controller.c:
 	Removed
 	
