@@ -75,6 +75,8 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
   size_t output_len;
   char *output_buf;
   size_t processed;
+  char *old_ctype;
+  char *target_encoding;
 
   /* If no locale setting could be determined, simply copy the
      string.  */
@@ -85,17 +87,27 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
       return strdup (text);
     }
 
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  target_encoding = nl_langinfo (CODESET);
+  if (!target_encoding)
+    target_encoding = "?";
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
   /* This is overkill, but simplifies the iconv invocation greatly.  */
   output_len = input_len * MB_LEN_MAX;
   output_buf = output = malloc (output_len);
   if (!output)
     return NULL;
 
-  cd = iconv_open (lc_ctype, "UTF-8");
+  cd = iconv_open (target_encoding, "UTF-8");
   if (cd == (iconv_t) -1)
     {
-      fprintf (stderr, "%s: can't convert from UTF-8 to local code set: %s\n",
-               this_pgmname, strerror (errno));
+      fprintf (stderr, "%s: can't convert from UTF-8 to %s: %s\n",
+               this_pgmname, target_encoding, strerror (errno));
       free (output_buf);
       return NULL;
     }
@@ -103,8 +115,8 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
   iconv_close (cd);
   if (processed == (size_t) -1 || input_len)
     {
-      fprintf (stderr, "%s: error converting from UTF-8 to local code set: %s\n"
-               , this_pgmname, strerror (errno));
+      fprintf (stderr, "%s: error converting from UTF-8 to %s: %s\n",
+               this_pgmname, target_encoding, strerror (errno));
       free (output_buf);
       return NULL;
     }
@@ -248,20 +260,20 @@ pinentry_have_display (int argc, char **argv)
 static void 
 usage (void)
 {
-  fprintf (stderr, "Usage: %s [OPTION]...\n\
-Ask securely for a secret and print it to stdout.\n\
-\n\
-      --display DISPLAY Set the X display\n\
-      --ttyname PATH    Set the tty terminal node name\n\
-      --ttytype NAME    Set the tty terminal type\n\
-      --lc-ctype        Set the tty LC_CTYPE value\n\
-      --lc-messages     Set the tty LC_MESSAGES value\n\
-  -e, --enhanced        Ask for timeout and insurance, too\n\
-  -g, --no-global-grab  Grab keyboard only while window is focused\n\
-      --parent-wid	Parent window ID (for positioning)\n\
-  -d, --debug           Turn on debugging output\n\
-      --help            Display this help and exit\n\
-      --version         Output version information and exit\n", this_pgmname);
+  fprintf (stderr, "Usage: %s [OPTION]...\n"
+"Ask securely for a secret and print it to stdout.\n"
+"\n"
+"      --display DISPLAY Set the X display\n"
+"      --ttyname PATH    Set the tty terminal node name\n"
+"      --ttytype NAME    Set the tty terminal type\n"
+"      --lc-ctype        Set the tty LC_CTYPE value\n"
+"      --lc-messages     Set the tty LC_MESSAGES value\n"
+"  -e, --enhanced        Ask for timeout and insurance, too\n"
+"  -g, --no-global-grab  Grab keyboard only while window is focused\n"
+"      --parent-wid	 Parent window ID (for positioning)\n"
+"  -d, --debug           Turn on debugging output\n"
+"  -h, --help            Display this help and exit\n"
+"      --version         Output version information and exit\n", this_pgmname);
 }
 
 
@@ -275,26 +287,39 @@ pinentry_parse_opts (int argc, char *argv[])
   int opt_help = 0;
   int opt_version = 0;
   struct option opts[] =
-    {{ "debug", no_argument, &pinentry.debug, 1 },
-     { "display", required_argument, 0, 'D' },
-     { "ttyname", required_argument, 0, 'T' },
-     { "ttytype", required_argument, 0, 'N' },
-     { "lc-ctype", required_argument, 0, 'C' },
+    {{ "debug", no_argument,             0, 'd' },
+     { "display", required_argument,     0, 'D' },
+     { "ttyname", required_argument,     0, 'T' },
+     { "ttytype", required_argument,     0, 'N' },
+     { "lc-ctype", required_argument,    0, 'C' },
      { "lc-messages", required_argument, 0, 'M' },
-     { "enhanced", no_argument, &pinentry.enhanced, 1 },
-     { "no-global-grab", no_argument, &pinentry.grab, 0 },
-     { "parent-wid", required_argument, 0, 'W' },
-     { "help", no_argument, &opt_help, 1 },
+     { "enhanced", no_argument,          0, 'e' },
+     { "no-global-grab", no_argument,    0, 'g' },
+     { "parent-wid", required_argument,  0, 'W' },
+     { "help", no_argument,              0, 'h' },
      { "version", no_argument, &opt_version, 1 },
      { NULL, 0, NULL, 0 }};
   
-  while ((opt = getopt_long (argc, argv, "deg", opts, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "degh", opts, NULL)) != -1)
     {
       switch (opt)
         {
         case 0:
         case '?':
           break;
+        case 'd':
+          pinentry.debug = 1;
+          break;
+        case 'e':
+          pinentry.enhanced = 1;
+          break;
+        case 'g':
+          pinentry.grab = 0;
+          break;
+        case 'h':
+          opt_help = 1;
+          break;
+
 	case 'D':
 	  pinentry.display = strdup (optarg);
 	  if (!pinentry.display)
@@ -339,8 +364,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.parent_wid = atoi (optarg);
 	  /* FIXME: Add some error handling.  Use strtol.  */
 	  break;
+
         default:
-          /* XXX Should never happen.  */
+          fprintf (stderr, "%s: oops: option not handled\n", this_pgmname);
 	  break;
         }
     }

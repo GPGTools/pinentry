@@ -20,7 +20,7 @@
 
 info_TEXINFOS = pinentry.texi
 
-pinentry_TEXINFOS = gpl.texi fdl.texi
+pinentry_TEXINFOS = gpl.texi
 
 DISTCLEANFILES = pinentry.tmp pinentry.ops
 

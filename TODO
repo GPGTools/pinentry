@@ -4,10 +4,8 @@
   (This is not so important, as pinentry is always restarted.)
 
 * The Qt and curses PIN entry should support enhanced mode (when it is
-  implemented in gpg-agent).
-
-* The GTK+ PIN entry needs to convert the text of the button label
-  from UTF-8 to the local encoding.
+  implemented in gpg-agent).  We need to agree on a protocol to use
+  anyway.
 
 * Set the max length of password globally (dynamically in protocol?).
 

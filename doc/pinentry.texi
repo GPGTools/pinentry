@@ -9,15 +9,17 @@ Copyright @copyright{} 2002 g10 Code GmbH
 @end macro
 @macro permissionnotice
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover texts, and with no Back-Cover
-Texts.  A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version. The text of the license can be found in the
+section entitled ``Copying''.
 @end macro
 
+@macro pinentry
+@sc{pinentry}
+@end macro
 
-@settitle Using the PINEntry
+@settitle Using the PIN-Entry
 
 @c Create a separate index for command line options.
 @defcodeindex op
@@ -60,17 +62,16 @@ Free Documentation License''.
 @ifnottex
 @dircategory GNU Utilities
 @direntry
-* gpg: (gnupg).            OpenPGP encryption and signing tool.
-* gpgsm: (gnupg).          S/MIME encryption and signing tool.
+* pinentry::               Ask securely for a passphrase or PIN.
 @end direntry
-This file documents the use and the internals of the PINEnrty.
+This file documents the use and the internals of the @pinentry{}.
 
 This is edition @value{EDITION}, last updated @value{UPDATED}, of
 @cite{The `PINEnrty' Manual}, for version @value{VERSION}.
 @sp 1
 Published by g10 Code GmbH@*
-Remscheider Str. 22@*
-40215 Düsseldorf, Germany
+Hüttenstr. 61@*
+40699 Erkrath, Germany
 @sp 1
 @copyrightnotice{}
 @sp 1
@@ -80,7 +81,7 @@ Remscheider Str. 22@*
 @setchapternewpage odd
 
 @titlepage
-@title Using the PINEntry
+@title Using the PIN-Entry
 @subtitle Version @value{VERSION}
 @subtitle @value{UPDATED}
 @author Werner Koch @code{(wk@@gnupg.org)}
@@ -100,14 +101,14 @@ Remscheider Str. 22@*
 @top Introduction
 @cindex introduction
 
-This manual documents how to use the PINEntry and the protocol implemented.
+This manual documents how to use the @pinentry{} and its protocol.
 
-The @sc{pinentry} is a small GUI application used to enter PINs or
-Passphrases. It is usually invoked by @sc{gpg-agent}
+The @pinentry{} is a small GUI application used to enter PINs or
+passphrases. It is usually invoked by @sc{gpg-agent}
 (@pxref{Invoking GPG-AGENT, ,Invoking the gpg-agent, gnupg,
     The `GNU Privacy Guard' Manual}, for details).       
 
-@sc{pinentry} comes in 3 flavors to fit the look and feel of the used
+@pinentry{} comes in 3 flavors to fit the look and feel of the used
 GUI toolkit:  A @sc{GTK+} based one named @code{pinentry-gtk}, a
 @sc{Qt} based one named @code{pinentry-qt} and a non-graphical one based
 on curser and named @code{pinentry-curses}.  Not all of them might be
@@ -126,8 +127,8 @@ Developer information
 Miscellaneous
 
 * Copying::             GNU General Public License says
-                        how you can copy and share GnuPG
-* GNU Free Documentation License:: How you can copy and share this manual.
+                        how you can copy and share PIN-Entry
+                        as well as this manulal.
 
 Indices
 
@@ -136,12 +137,12 @@ Indices
 @end menu
 
 @node Using pinentry
-@chapter How to use the pinentry
+@chapter How to use the @pinentry{}
 
 @c man begin DESCRIPTION
 
-You may run it directly from the commandline and pass the commands
-according to the Assuan protocol via stdin/stdout.
+You may run @pinentry{} directly from the commandline and pass the
+commands according to the Assuan protocol via stdin/stdout.
 
 
 @c man end
@@ -163,23 +164,45 @@ Print a usage message summarizing the most usefule command-line options.
 @itemx -d
 @opindex debug
 @opindex d
-Trun on some debugging.  Mostly useful for the mainatiners.  Note that
+Turn on some debugging.  Mostly useful for the maintainers.  Note that
 this may reveal sensitive information like the entered passphrase.
 
 @item --enhanced
-@itemx -x
+@itemx -e
 @opindex enhanced
 @opindex e
-Ask for timeouts and insurance, too.
-
+Ask for timeouts and insurance, too.  Note that this is currently not
+fully supported.
 
 @item --no-global-grab
 @itemx -g
 @opindex no-global-grab
 @opindex g
-Grab the keyboard only when the window is focused.
+Grab the keyboard only when the window is focused.  Use this option if
+you are debugging software using the @pinentry{}; otherwise you may
+not be able to to access your X session anymore (unless you have other
+means to connect to the machine to kill the @pinentry{}).
 
+@item --parent-wid @var{n}
+@opindex parent-wid
+Use window ID @var{n} as the parent window for positioning the window.
+Note, that this is not fully supported by all flavors of @pinentry{}.
 
+@item --display @var{string}
+@itemx --ttyname @var{string}
+@itemx --ttytype @var{string}
+@itemx --lc-type @var{string}
+@itemx --lc-messages @var{string}
+@opindex display 
+@opindex ttyname 
+@opindex ttytype 
+@opindex lc-type 
+@opindex lc-messa
+These options are used to pass localization information to
+@pinentry{}.  They are required because @pinentry{} is usally called
+by some background process which does not have any information on the
+locale and terminal to use.  Assuan protocol options are an
+alternative way to pass these information.
 
 @end table
 
@@ -192,16 +215,23 @@ Grab the keyboard only when the window is focused.
 The PIN-Entry should never service more than one connection at once.
 It is reasonable to exec the PIN-Entry prior to a request.
 
-The PIN-Entry does not need to stay in memory because the gpg-agent has
-the ability to cache passphrases.  The usual way to run the PIN-Entry is
-by setting up a pipe (and not a socket) and then fork/exec the
-PIN-Entry.  The communication is then done by means of the protocol
-described here until the client is satisfied with the result.
+The PIN-Entry does not need to stay in memory because the
+@sc{gpg-agent} has the ability to cache passphrases.  The usual way to
+run the PIN-Entry is by setting up a pipe (and not a socket) and then
+fork/exec the PIN-Entry.  The communication is then done by means of
+the protocol described here until the client is satisfied with the
+result.
 
 Although it is called a PIN-Entry, it does allow to enter reasonably
 long strings (at least 2048 characters are supported by every
 pinentry).  The client using the PIN-Entry has to check for
 correctness.
+
+Note that all strings are expected to be encoded as UTF-8; @pinentry{}
+takes care of converting it to the locally used codeset.  To include
+lienfeeds or other special characters, you may percent-escape them
+(i.e. a line feed is encoded as @code{%0A}, the percent sign itself
+is encoded as @code{%25}).
 
 Here is the list of supported commands:
 
@@ -269,8 +299,9 @@ The value returned is either OK for YES or the error code
 @code{ASSUAN_Not_Confirmed}.
 
 @item Set the output device
-When using X, the pinentry program must be invoked with an
-appropriate DISPLAY environment variable or --display option.
+When using X, the @pinentry{} program must be invoked with an
+appropriate @code{DISPLAY} environment variable or the
+@code{--display} option.
 
 When using a text terminal:
 @example
@@ -281,10 +312,10 @@ When using a text terminal:
   C: OPTION lc-ctype=de_DE.UTF-8
   S: OK
 @end example
-The client should set the ttyname option to set the output tty file
-name, the ttytype option to the TERM variable appropriate for this
-tty and lc-ctype to the locale which defines the character set to
-use for this terminal.
+The client should use the @code{ttyname} option to set the output TTY
+file name, the @code{ttytype} option to the @code{TERM} variable
+appropriate for this tty and @code{lc-ctype} to the locale which
+defines the character set to use for this terminal.
 
 @end table
 
@@ -293,7 +324,6 @@ use for this terminal.
 @c ---------------------------------------------------------------------
 
 @include gpl.texi
-@include fdl.texi
 
 @c ---------------------------------------------------------------------
 @c Indexes
