@@ -23,6 +23,3 @@ info_TEXINFOS = pinentry.texi
 pinentry_TEXINFOS = gpl.texi
 
 DISTCLEANFILES = pinentry.tmp pinentry.ops
-
-
-
