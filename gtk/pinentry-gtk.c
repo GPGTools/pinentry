@@ -39,6 +39,8 @@
 
 #include "gtksecentry.h"
 #include "pinentry.h"
+#include "memory.h"
+
 
 #ifdef FALLBACK_CURSES
 #include "pinentry-curses.h"
@@ -383,7 +385,7 @@ pinentry_cmd_handler_t pinentry_cmd_handler = gtk_cmd_handler;
 int 
 main (int argc, char *argv[])
 {
-  pinentry_init ();
+  pinentry_init (PGMNAME);
 
 #ifdef FALLBACK_CURSES
   if (pinentry_have_display (argc, argv))
@@ -397,7 +399,7 @@ main (int argc, char *argv[])
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))
     {
-      printf ("pinentry-gtk " VERSION "\n");
+      printf ("pinentry-gtk (pinentry) " VERSION "\n");
       exit (EXIT_SUCCESS);
     }
 

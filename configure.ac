@@ -56,7 +56,7 @@ if test "$GCC" = yes; then
 fi
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS(seteuid stpcpy)
+AC_CHECK_FUNCS(seteuid stpcpy mmap)
 GNUPG_CHECK_MLOCK
 
 dnl Checks for libassuan.

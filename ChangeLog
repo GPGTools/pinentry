@@ -1,3 +1,30 @@
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* pinentry/pinentry.c: New variable THIS_PGMNAME.
+	(pinentry_init): Add arg PGMNAME and store it.  Use it at all
+	marked placed instead of the constant "pinentry".
+	(usage): Use it here too.
+	* curses/pinentry-curses.c (main): Call pinentry_init wity our name. 
+	* qt/main.cpp (main): Ditto.
+	* gtk/pinentry-gtk.c (main): Ditto. 
+
+	* configure.ac: Check for mmap.
+
+	* secmem/util.h (wipememory2,wipememory,wipe): New.
+	* secmem/util.c (wipe): Removed.
+	* secmem/util.c (lower_privs, raise_privs): Commented out.
+
+	* pinentry/pinentry.c (pinentry_loop): Add paranoia check for
+	dropped privs.
+
+	* secmem/secmem.c (lock_pool): Cleanup syntax of cpp directives.
+
+	* gtk/pinentry-gtk.c (main): Print package name in the version line.
+	* curses/pinentry-curses.c (main): Ditto.
+	* qt/main.cpp (main): Ditto. Fixed typo.
+
+	* gtk/pinentry-gtk.c: Include memory.h.
+	
 2003-12-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (struct pinentry): New member PARENT_WID.

@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2003 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -36,6 +36,10 @@
 #include "memory.h"
 #include "secmem-util.h"
 #include "pinentry.h"
+
+
+/* Keep the name of our program here. */
+static char this_pgmname[50]; 
 
 
 struct pinentry pinentry =
@@ -185,11 +189,16 @@ pinentry_setbufferlen (pinentry_t pin, int len)
 }
 
 
-/* Initialize the secure memory subsystem, drop privileges and
-   return.  Must be called early.  */
+/* Initialize the secure memory subsystem, drop privileges and return.
+   Must be called early. */
 void
-pinentry_init (void)
+pinentry_init (const char *pgmname)
 {
+  /* Store away our name. */
+  if (strlen (pgmname) > sizeof this_pgmname - 2)
+    abort ();
+  strcpy (this_pgmname, pgmname);
+
   /* Initialize secure memory.  1 is too small, so the default size
      will be used.  */
   secmem_init (1);
@@ -236,7 +245,7 @@ Ask securely for a secret and print it to stdout.\n\
       --parent-wid	Parent window ID (for positioning)\n\
   -d, --debug           Turn on debugging output\n\
       --help            Display this help and exit\n\
-      --version         Output version information and exit\n", "?");
+      --version         Output version information and exit\n", this_pgmname);
 }
 
 
@@ -274,8 +283,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.display = strdup (optarg);
 	  if (!pinentry.display)
 	    {
-	      /* XXX Program name.  */
-	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -283,8 +291,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttyname = strdup (optarg);
 	  if (!pinentry.ttyname)
 	    {
-	      /* XXX Program name.  */
-	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -292,8 +299,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttytype = strdup (optarg);
 	  if (!pinentry.ttytype)
 	    {
-	      /* XXX Program name.  */
-	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -301,8 +307,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_ctype = strdup (optarg);
 	  if (!pinentry.lc_ctype)
 	    {
-	      /* XXX Program name.  */
-	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -310,8 +315,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_messages = strdup (optarg);
 	  if (!pinentry.lc_messages)
 	    {
-	      /* XXX Program name.  */
-	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -344,11 +348,10 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     pinentry.grab = 1;
   else if (!strcmp (key, "debug-wait"))
     {
-      /* XXX Program name.  */
-      fprintf (stderr, "pinentry: waiting for debugger - my pid is %u ...\n",
-	       (unsigned int) getpid());
+      fprintf (stderr, "%s: waiting for debugger - my pid is %u ...\n",
+	       this_pgmname, (unsigned int) getpid());
       sleep (*value?atoi (value):5);
-      fprintf (stderr, "pinentry: ... okay\n");
+      fprintf (stderr, "%s: ... okay\n", this_pgmname);
     }
   else if (!strcmp (key, "display"))
     {
@@ -618,6 +621,10 @@ pinentry_loop (void)
   int filedes[2];
   ASSUAN_CONTEXT ctx;
 
+  /* Extra check to make sure we have dropped privs. */
+  if (getuid() != geteuid())
+    abort ();
+
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and
      wait for requests on a Unix domain socket.  */
@@ -626,16 +633,15 @@ pinentry_loop (void)
   rc = assuan_init_pipe_server (&ctx, filedes);
   if (rc)
     {
-      /* XXX Program name.  */
-      fprintf (stderr, "pinentry: failed to initialize the server: %s\n",
-               assuan_strerror(rc));
+      fprintf (stderr, "%s: failed to initialize the server: %s\n",
+               this_pgmname, assuan_strerror(rc));
       return -1;
     }
   rc = register_commands (ctx);
   if (rc)
     {
-      fprintf (stderr, "pinentry: failed to the register commands with Assuan: %s\n",
-               assuan_strerror(rc));
+      fprintf (stderr, "%s: failed to the register commands with Assuan: %s\n",
+               this_pgmname, assuan_strerror(rc));
       return -1;
     }
 
@@ -651,17 +657,16 @@ pinentry_loop (void)
           break;
       else if (rc)
         {
-	  /* XXX Program name.  */
-          fprintf (stderr, "pinentry: Assuan accept problem: %s\n",
-                   assuan_strerror (rc));
+          fprintf (stderr, "%s: Assuan accept problem: %s\n",
+                   this_pgmname, assuan_strerror (rc));
           break;
         }
       
       rc = assuan_process (ctx);
       if (rc)
         {
-          fprintf (stderr, "pinentry: Assuan processing failed: %s\n",
-                   assuan_strerror (rc));
+          fprintf (stderr, "%s: Assuan processing failed: %s\n",
+                   this_pgmname, assuan_strerror (rc));
           continue;
         }
     }

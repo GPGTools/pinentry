@@ -1,5 +1,5 @@
 /* secmem.c  -	memory allocation from a secure heap
- *	Copyright (C) 1998,1999 Free Software Foundation, Inc.
+ *	Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,12 +25,12 @@
 #include <stdarg.h>
 #include <unistd.h>
 #if defined(HAVE_MLOCK) || defined(HAVE_MMAP)
-  #include <sys/mman.h>
-  #include <sys/types.h>
-  #include <fcntl.h>
-  #ifdef USE_CAPABILITIES
-    #include <sys/capability.h>
-  #endif
+# include <sys/mman.h>
+# include <sys/types.h>
+# include <fcntl.h>
+# ifdef USE_CAPABILITIES
+#  include <sys/capability.h>
+# endif
 #endif
 #include <string.h>
 
@@ -48,9 +48,9 @@ typedef union {
     short b;
     char c[1];
     long d;
-  #ifdef HAVE_U64_TYPEDEF
+#ifdef HAVE_U64_TYPEDEF
     u64 e;
-  #endif
+#endif
     float f;
     double g;
 } PROPERLY_ALIGNED_TYPE;
@@ -58,7 +58,8 @@ typedef union {
 #define log_error log_info
 #define log_bug log_fatal
 
-void log_info(char *template, ...)
+void 
+log_info(char *template, ...)
 {
   va_list args;
   
@@ -67,7 +68,8 @@ void log_info(char *template, ...)
   va_end(args);
 }
 
-void log_fatal(char *template, ...)
+void 
+log_fatal(char *template, ...)
 {
   va_list args;
   
@@ -80,7 +82,7 @@ void log_fatal(char *template, ...)
 #endif /* ORIGINAL_GPG_VERSION */
 
 #if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
-  #define MAP_ANONYMOUS MAP_ANON
+#  define MAP_ANONYMOUS MAP_ANON
 #endif
 
 #define DEFAULT_POOLSIZE 16384
@@ -123,7 +125,7 @@ print_warn(void)
 static void
 lock_pool( void *p, size_t n )
 {
-  #if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
+#if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
     int err;
 
     cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
@@ -142,13 +144,13 @@ lock_pool( void *p, size_t n )
 	show_warning = 1;
     }
 
-  #elif defined(HAVE_MLOCK)
+#elif defined(HAVE_MLOCK)
     uid_t uid;
     int err;
 
     uid = getuid();
 
-  #ifdef HAVE_BROKEN_MLOCK
+#ifdef HAVE_BROKEN_MLOCK
     if( uid ) {
 	errno = EPERM;
 	err = errno;
@@ -158,11 +160,11 @@ lock_pool( void *p, size_t n )
 	if( err && errno )
 	    err = errno;
     }
-  #else
+#else
     err = mlock( p, n );
     if( err && errno )
 	err = errno;
-  #endif
+#endif
 
     if( uid && !geteuid() ) {
 	if( setuid( uid ) || getuid() != geteuid()  )
@@ -171,17 +173,17 @@ lock_pool( void *p, size_t n )
 
     if( err ) {
 	if( errno != EPERM
-	  #ifdef EAGAIN  /* OpenBSD returns this */
+#ifdef EAGAIN  /* OpenBSD returns this */
 	    && errno != EAGAIN
-	  #endif
+#endif
 	  )
 	    log_error("can´t lock memory: %s\n", strerror(err));
 	show_warning = 1;
     }
 
-  #else
+#else
     log_info("Please note that you don't have secure memory on this system\n");
-  #endif
+#endif
 }
 
 
@@ -195,18 +197,18 @@ init_pool( size_t n)
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
-  #ifdef HAVE_GETPAGESIZE
+#ifdef HAVE_GETPAGESIZE
     pgsize = getpagesize();
-  #else
+#else
     pgsize = 4096;
-  #endif
+#endif
 
-  #if HAVE_MMAP
+#if HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
-    #ifdef MAP_ANONYMOUS
+# ifdef MAP_ANONYMOUS
        pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
 				 MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    #else /* map /dev/zero instead */
+# else /* map /dev/zero instead */
     {	int fd;
 
 	fd = open("/dev/zero", O_RDWR);
@@ -219,7 +221,7 @@ init_pool( size_t n)
 				      MAP_PRIVATE, fd, 0);
 	}
     }
-    #endif
+# endif
     if( pool == (void*)-1 )
 	log_info("can't mmap pool of %u bytes: %s - using malloc\n",
 			    (unsigned)poolsize, strerror(errno));
@@ -228,7 +230,7 @@ init_pool( size_t n)
 	pool_okay = 1;
     }
 
-  #endif
+#endif
     if( !pool_okay ) {
 	pool = malloc( poolsize );
 	if( !pool )
@@ -420,10 +422,10 @@ secmem_term()
     memset( pool, 0xaa, poolsize);
     memset( pool, 0x55, poolsize);
     memset( pool, 0x00, poolsize);
-  #if HAVE_MMAP
+#if HAVE_MMAP
     if( pool_is_mmapped )
 	munmap( pool, poolsize );
-  #endif
+#endif
     pool = NULL;
     pool_okay = 0;
     poolsize=0;

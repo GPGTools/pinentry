@@ -99,7 +99,7 @@ char *pinentry_setbufferlen (pinentry_t pin, int len);
 
 /* Initialize the secure memory subsystem, drop privileges and
    return.  Must be called early.  */
-void pinentry_init (void);
+void pinentry_init (const char *pgmname);
 
 /* Return true if either DISPLAY is set or ARGV contains the string
    "--display". */

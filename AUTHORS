@@ -1,3 +1,8 @@
+Program: Pinentry
+Bug reports: <gp-dev@gnupg.org>
+Security related bug reports: <security@gnupg.org>
+
+
 Robert Bihlmeyer <robbe@orcus.priv.at>
 Werner Koch, g10 Code GmbH <wk@gnupg.org>
 Steffen Hansen, Klarälvdalens Datakonsult AB <steffen@klaralvdalens-datakonsult.se>

@@ -11,7 +11,7 @@ Noteworthy changes in version 0.7.0 (unreleased)
  * Fixed a bug that would occur if a canceled GETPIN was immediately
    followed by a CONFIRM.
 
- * Disable undo/redo in Qt pinentry.
+ * Disabled undo/redo in Qt pinentry.
 
 
 Noteworthy changes in version 0.6.8 (2003-02-07)

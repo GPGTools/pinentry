@@ -1,5 +1,6 @@
 /* Quintuple Agent utilities
  * Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
+ * Copyright (C) 2003 g10 Code GmbH
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,10 +42,20 @@
 
 ssize_t xwrite(int, const void *, size_t); /* write until finished */
 int debugmsg(const char *, ...); /* output a debug message if debugging==on */
-void wipe(void *, size_t);	/* wipe a block of memory */
-void lower_privs(void);		/* lower privileges */
-void raise_privs(void);		/* raise privileges again */
 void drop_privs(void);		/* finally drop privileges */
+
+
+/* To avoid that a compiler optimizes certain memset calls away, these
+   macros may be used instead. */
+#define wipememory2(_ptr,_set,_len) do { \
+              volatile char *_vptr=(volatile char *)(_ptr); \
+              size_t _vlen=(_len); \
+              while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } \
+                  } while(0)
+#define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
+#define wipe(_ptr,_len)       wipememory2(_ptr,0,_len)
+
+
 
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \

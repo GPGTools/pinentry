@@ -34,12 +34,12 @@ pinentry_cmd_handler_t pinentry_cmd_handler = curses_cmd_handler;
 int 
 main (int argc, char *argv[])
 {
-  pinentry_init ();
+  pinentry_init ("pinentry-curses");
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))
     {
-      printf ("pinentry-curses " VERSION "\n");
+      printf ("pinentry-curses (pinentry) " VERSION "\n");
       exit (EXIT_SUCCESS);
     }
 

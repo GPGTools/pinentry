@@ -77,14 +77,6 @@ int debugmsg(const char *fmt, ...)
 }
 #endif
 
-/* wipe out a block of N bytes starting at address PTR */
-void wipe(void *ptr, size_t n)
-{
-  /* you may want to overwrite with several different bit patterns, depending
-     on your belief system. */
-  memset(ptr, n, 0);
-}
-
 /* initialize uid variables */
 static void init_uids(void)
 {
@@ -93,6 +85,8 @@ static void init_uids(void)
   uid_set = 1;
 }
 
+
+#if 0 /* Not used. */
 /* lower privileges to the real user's */
 void lower_privs()
 {
@@ -109,17 +103,20 @@ void lower_privs()
 #endif /* HAVE_SETEUID */
   }
 }
+#endif /* if 0 */
 
+#if 0 /* Not used. */
 /* raise privileges to the effective user's */
 void raise_privs()
 {
   assert(real_uid >= 0);	/* lower_privs() must be called before this */
 #ifdef HAVE_SETEUID
   if (real_uid != file_uid && seteuid(file_uid) < 0) {
-    perror("Warning: raising privileges failed");
+   perror("Warning: raising privileges failed");
   }
 #endif /* HAVE_SETEUID */
 }
+#endif /* if 0 */
 
 /* drop all additional privileges */
 void drop_privs()

@@ -119,7 +119,7 @@ pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler;
 int 
 main (int argc, char *argv[])
 {
-  pinentry_init ();
+  pinentry_init ("pinentry-qt");
 
 #ifdef FALLBACK_CURSES
   if (!pinentry_have_display (argc, argv))
@@ -134,7 +134,7 @@ main (int argc, char *argv[])
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))
     {
-      printf ("pinentry-gtk " VERSION "\n");
+      printf ("pinentry-qt (pinentry) " VERSION "\n");
       exit (EXIT_SUCCESS);
     }
 
