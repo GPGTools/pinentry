@@ -111,7 +111,7 @@ void my_new_handler()
 
 int qt_main( int argc, char *argv[] )
 {
-    secmem_init( 16384*8 );
+	secmem_init( 16384*4 ); /* this should be enough, if not, increase it! */
     secmem_set_flags(SECMEM_WARN);
     drop_privs();
     std::set_new_handler(my_new_handler);

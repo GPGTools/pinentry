@@ -26,7 +26,7 @@ extern "C"
 
 bool is_secure = false;
 
-void *operator new (size_t s) throw (std::bad_alloc)
+void *operator new[] (size_t s) throw (std::bad_alloc)
 {
   if( s == 0 ) s = 1; // never allocate 0 bytes!
 
@@ -43,19 +43,27 @@ void *operator new (size_t s) throw (std::bad_alloc)
   }
 }
 
-void *operator new[] (size_t s) throw (std::bad_alloc)
+/* We dont need to override non-array new/delete
+ * because Qt always uses new[] for allocating
+ * string data
+ */
+#if 0
+void *operator new (size_t s) throw (std::bad_alloc)
 {
-  return operator new( s );
+  return operator new[]( s );
 }
+#endif
 
-void operator delete (void* p) throw() 
+void operator delete[] (void* p) throw() 
 {  
   if( !p ) return;
   if( ::m_is_secure(p) ) ::secmem_free( p );
   else ::free( p );
 }
 
-void operator delete[] (void* p) throw()
+#if 0
+void operator delete (void* p) throw()
 {
-  operator delete( p );
+  operator delete[]( p );
 }
+#endif

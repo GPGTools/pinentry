@@ -1,4 +1,10 @@
-2003-02-15  Steffen Hansen  <steffen@hrhansen.dk>
+2003-03-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* qt/cppmemory.cpp, qt/main.cpp: Only override array allocation
+	  operators. This should take care of the reported memory-problems
+	  and even make pinentry-qt use a bit less memory.
+
+2003-02-15  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
 	* qt/pinentrydialog.h, qt/pinentrydialog.cpp: Added icons 
 	  for error/non-error messages.
