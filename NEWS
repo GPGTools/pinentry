@@ -1,3 +1,5 @@
+Noteworthy changes in version 0.6.1 (2002-04-25)
+------------------------------------------------
 
   * The Curses pinentry supports user-provided button texts via the
     new SETOK and SETCANCEL commands.
