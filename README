@@ -5,17 +5,16 @@ This is a collection of simple PIN or passphrase entry dialogs which
 utilize the Assuan protocol as described by the aegypten project; see
 http://www.gnupg.org/aegypten/ for details.
 
-There are programs for different toolkits available.  For the Curses
-and GTK+ GUIs it is automatically detected which modules can be built,
-but it can also be requested explicitely.  For the Qt GUI it MUST be
-requested explicitely, as an automatic check is not yet implemented.
+There are programs for different toolkits available.  For all GUIs it
+is automatically detected which modules can be built, but it can also
+be requested explicitely.
 
 GUI	OPTION			 DEPENDENCIES
 Curses	--enable-pinentry-curses Curses library, for example ncurses
 GTK+	--enable-pinentry-gtk	 Gimp Toolkit Library, eg libgtk and libglib
 Qt	--enable-pinentry-qt	 Qt, eg libqt-mt
 
-Some of the is taken from Robert Bihlmeyer's Quituple-Agent.  For
-security reasons all internationalization has been removed as the
+Some of the code is taken from Robert Bihlmeyer's Quituple-Agent.  For
+security reasons, all internationalization has been removed.  The
 client is expected to tell the PIN entry the text strings to be
 displayed.

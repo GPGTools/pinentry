@@ -62,6 +62,12 @@ dnl Checks for libsecmem.
 GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 
+AC_PATH_PROG(SETCAP, setcap, :, "$PATH:/sbin:/usr/sbin")
+AC_CHECK_LIB(cap, cap_set_proc, [
+  AC_DEFINE(USE_CAPABILITIES,1,[The capabilities support library is installed])
+  LIBCAP=-lcap
+])
+AC_SUBST(LIBCAP)
 
 dnl
 dnl Check for curses pinentry program.
@@ -89,6 +95,10 @@ else
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_CURSES, test "$pinentry_curses" = "yes")
 
+if test "$pinentry_curses" = "yes"; then
+dnl Additional checks for Curses pinentry.
+AM_ICONV
+fi
 
 dnl
 dnl Check for GTK+ pinentry program.
@@ -131,22 +141,10 @@ if test "$pinentry_gtk" != "no"; then
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_GTK, test "$pinentry_gtk" = "yes")
 
-if test "$pinentry_gtk" = "yes"; then
+dnl if test "$pinentry_gtk" = "yes"; then
 dnl Additional checks for GTK+ pinentry.
-AC_PATH_PROG(SETCAP, setcap, :, "$PATH:/sbin:/usr/sbin")
-AC_CHECK_LIB(cap, cap_set_proc, [
-  AC_DEFINE(USE_CAPABILITIES,1,[The capabilities support library is installed])
-  LIBCAP=-lcap
-])
-AC_SUBST(LIBCAP)
-
-AC_CHECK_HEADERS(inttypes.h, , need_inttypes=yes)
-if test x$need_inttypes = xyes; then
-  AC_CHECK_SIZEOF(unsigned int, 4)
-  AC_CHECK_SIZEOF(unsigned long, 4)
-fi
 dnl End of additional checks for GTK+ pinentry.
-fi
+dnl fi
 
 
 dnl

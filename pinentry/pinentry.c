@@ -43,6 +43,8 @@ struct pinentry pinentry =
     0,		/* Display.  */
     0,		/* TTY name.  */
     0,		/* TTY type.  */
+    0,		/* TTY LC_CTYPE.  */
+    0,		/* TTY LC_MESSAGES.  */
     0,		/* Debug mode.  */
     0,		/* Enhanced mode.  */
     1,		/* Global grab.  */
@@ -96,6 +98,8 @@ Ask securely for a secret and print it to stdout.\n\
       --display DISPLAY Set the X display\n\
       --ttyname PATH    Set the tty terminal node name\n\
       --ttytype NAME    Set the tty terminal type\n\
+      --lc-ctype        Set the tty LC_CTYPE value\n\
+      --lc-messages     Set the tty LC_MESSAGES value\n\
   -e, --enhanced        Ask for timeout and insurance, too\n\
   -g, --no-global-grab  Grab keyboard only while window is focused\n\
   -d, --debug           Turn on debugging output\n\
@@ -118,6 +122,8 @@ pinentry_parse_opts (int argc, char *argv[])
      { "display", required_argument, 0, 'D' },
      { "ttyname", required_argument, 0, 'T' },
      { "ttytype", required_argument, 0, 'N' },
+     { "lc-ctype", required_argument, 0, 'C' },
+     { "lc-messages", required_argument, 0, 'M' },
      { "enhanced", no_argument, &pinentry.enhanced, 1 },
      { "no-global-grab", no_argument, &pinentry.grab, 0 },
      { "help", no_argument, &opt_help, 1 },
@@ -152,6 +158,24 @@ pinentry_parse_opts (int argc, char *argv[])
 	case 'N':
 	  pinentry.ttytype = strdup (optarg);
 	  if (!pinentry.ttytype)
+	    {
+	      /* XXX Program name.  */
+	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
+	case 'C':
+	  pinentry.lc_ctype = strdup (optarg);
+	  if (!pinentry.lc_ctype)
+	    {
+	      /* XXX Program name.  */
+	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
+	case 'M':
+	  pinentry.lc_messages = strdup (optarg);
+	  if (!pinentry.lc_messages)
 	    {
 	      /* XXX Program name.  */
 	      fprintf (stderr, "pinentry: %s\n", strerror (errno));
@@ -210,6 +234,22 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.ttytype);
       pinentry.ttytype = strdup (value);
       if (!pinentry.ttytype)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "lc-ctype"))
+    {
+      if (pinentry.lc_ctype)
+	free (pinentry.lc_ctype);
+      pinentry.lc_ctype = strdup (value);
+      if (!pinentry.lc_ctype)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "lc-messages"))
+    {
+      if (pinentry.lc_messages)
+	free (pinentry.lc_messages);
+      pinentry.lc_messages = strdup (value);
+      if (!pinentry.lc_messages)
 	return ASSUAN_Out_Of_Core;
     }
   else

@@ -37,6 +37,10 @@ struct pinentry
   char *ttyname;
   /* The type of the terminal.  */
   char *ttytype;
+  /* The LC_CTYPE value for the terminal.  */
+  char *lc_ctype;
+  /* The LC_MESSAGES value for the terminal.  */
+  char *lc_messages;
 
   /* True if debug mode is requested.  */
   int debug;

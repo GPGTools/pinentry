@@ -1,3 +1,28 @@
+2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New variables lc_ctype
+	and lc_messages.
+	* pinentry/pinentry.c (usage): New options --lc-ctype and
+	--lc-messages.
+	(pinentry_parse_opts): Likewise.
+	(option_handler): Likewise.
+	(struct pinentry pinentry): New initializers for new members.
+
+	* curses/pinentry-curses.c (convert_utf8_string): New function.
+	(struct dialog): New members ok and cancel.
+	(dialog_create): New variables ERR, DESCRIPTION, ERROR, PROMPT,
+	OK, and CANCEL.  Initialize them with the localised versions of
+	the pinentry strings.  If in confirm mode, split up the prompt at
+	'|' and use the values as button texts.  Use localised strings.
+	(dialog_switch_pos): Use localised strings.
+	(dialog_run): Free dialog strings.
+
+	* acinclude.m4 (AM_ICONV): New check from gettext.
+	* configure.ac: Run AM_ICONV if curses pinentry is build.
+	Don't check for inttypes.h, don't check size of unsigned int or
+	unsigned long.
+	(LIBCAP): Move check to interface independent part.
+
 2002-04-21  Steffen Hansen  <steffen@hrhansen.dk>
 
 	* Removed X11 dependency and use Qt for grabbing the keyboard.

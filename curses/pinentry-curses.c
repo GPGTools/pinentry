@@ -27,6 +27,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <locale.h>
+#include <iconv.h>
+#include <langinfo.h>
+#include <limits.h>
+#include <string.h>
 #include <errno.h>
 
 #include "pinentry.h"
@@ -61,15 +66,67 @@ struct dialog
 
   int ok_y;
   int ok_x;
+  char *ok;
   int cancel_y;
   int cancel_x;
+  char *cancel;
 };
 typedef struct dialog *dialog_t;
 
 
+char *
+convert_utf8_string (char *lc_ctype, char *text)
+{
+  char *old_ctype;
+  char *target_encoding;
+  iconv_t cd;
+  char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    return strdup (text);
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  target_encoding = nl_langinfo (CODESET);
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open (target_encoding, "UTF-8");
+  if (cd == (iconv_t) -1)
+    {
+      free (output);
+      return NULL;
+    }
+  processed = iconv (cd, &input, &input_len, &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
+
+
 static int
 dialog_create (pinentry_t pinentry, dialog_t dialog)
 {
+  int err = 0;
   int size_y;
   int size_x;
   int y;
@@ -77,14 +134,82 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   int ypos;
   int xpos;
   int description_x = 0;
+  char *description = NULL;
+  char *error = NULL;
+  char *prompt = NULL;
+  char *ok = NULL;
+  char *cancel = NULL;
 
+  if (pinentry->description)
+    {
+      description = convert_utf8_string (pinentry->lc_ctype,
+					 pinentry->description);
+      if (!description)
+	{
+	  err = 1;
+	  goto out;
+	}
+    }
+  if (pinentry->error)
+    {
+      error = convert_utf8_string (pinentry->lc_ctype,
+				   pinentry->error);
+      if (!error)
+	{
+	  err = 1;
+	  goto out;
+	}
+    }
+  if (pinentry->prompt)
+    {
+      if (pinentry->pin)
+	{
+	  prompt = convert_utf8_string (pinentry->lc_ctype,
+					pinentry->prompt);
+	  if (!prompt)
+	    {
+	      err = 1;
+	      goto out;
+	    }
+	}
+      else
+	{
+	  char *prompt_copy = strdup (pinentry->prompt);
+	  char *split;
+
+	  if (!prompt_copy)
+	    {
+	      err = 1;
+	      goto out;
+	    }
+	  split = strchr (prompt_copy, '|');
+	  if (split)
+	    {
+	      *(split++) = '\0';
+	      ok = prompt_copy;
+	      cancel = split;
+	    }
+	}
+    }
+  dialog->ok = convert_utf8_string (pinentry->lc_ctype,
+				    ok ? ok : STRING_OK);
+  dialog->cancel = convert_utf8_string (pinentry->lc_ctype,
+					cancel ? cancel : STRING_CANCEL);
+  /* Release ok & cancel.  */
+  if (ok)
+    free (ok);
+  if (!dialog->ok || !dialog->cancel)
+    {
+      err = 1;
+      goto out;
+    }
   getmaxyx (stdscr, size_y, size_x);
 
   /* Check if all required lines fit on the screen.  */
   y = 1;		/* Top frame.  */
-  if (pinentry->description)
+  if (description)
     {
-      char *p = pinentry->description;
+      char *p = description;
       int desc_x = 0;
 
       while (*p)
@@ -106,18 +231,21 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       
   if (pinentry->pin)
     {
-      if (pinentry->error)
+      if (error)
 	y += 2;		/* Error message.  */
       y += 2;		/* Pin entry field.  */
     }
   y += 2;		/* OK/Cancel and bottom frame.  */
   
   if (y > size_y)
-    return 1;
+    {
+      err = 1;
+      goto out;
+    }
 
   /* Check if all required columns fit on the screen.  */
   x = 0;
-  if (pinentry->description)
+  if (description)
     {
       int new_x = description_x;
       if (new_x > size_x - 4)
@@ -130,9 +258,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 #define MIN_PINENTRY_LENGTH 40
       int new_x;
 
-      if (pinentry->error)
+      if (error)
 	{
-	  new_x = strlen (pinentry->error);
+	  new_x = strlen (error);
 	  if (new_x > size_x - 4)
 	    new_x = size_x - 4;
 	  if (new_x > x)
@@ -140,25 +268,28 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	}
 
       new_x = MIN_PINENTRY_LENGTH;
-      if (pinentry->prompt)
-	new_x += strlen (pinentry->prompt) + 1;	/* One space after prompt.  */
+      if (prompt)
+	new_x += strlen (prompt) + 1;	/* One space after prompt.  */
       if (new_x > size_x - 4)
 	new_x = size_x - 4;
       if (new_x > x)
 	x = new_x;
     }
-  /* We position the Buttons after the first and second third of the
-     width.  Account for rounding when calculating the necessary*/
-  if (x < 2 * (sizeof (STRING_OK) - 1))
-    x = 2 * (sizeof (STRING_OK) - 1);
-  if (x < 2 * (sizeof (STRING_CANCEL) - 1))
-    x = 2 * (sizeof (STRING_CANCEL) - 1);
+  /* We position the buttons after the first and second third of the
+     width.  Account for rounding.  */
+  if (x < 2 * (sizeof (dialog->ok) - 1))
+    x = 2 * (sizeof (dialog->ok) - 1);
+  if (x < 2 * (sizeof (dialog->cancel) - 1))
+    x = 2 * (sizeof (dialog->cancel) - 1);
 
   /* Add the frame.  */
   x += 4;
 
   if (x > size_x)
-    return 1;
+    {
+      err = 1;
+      goto out;
+    }
 
   dialog->pos = DIALOG_POS_NONE;
   dialog->pin = pinentry->pin;
@@ -180,9 +311,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   move (ypos + y - 1, xpos + x - 1);
   addch (ACS_LRCORNER);
   ypos++;
-  if (pinentry->description)
+  if (description)
     {
-      char *p = pinentry->description;
+      char *p = description;
       int i = 0;
 
       while (*p)
@@ -194,7 +325,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	    if (i < x - 4)
 	      {
 		i++;
-		addch (*(p++));
+		addch ((unsigned char) *(p++));
 	      }
 	  if (*p == '\n')
 	    p++;
@@ -209,10 +340,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     {
       int i;
 
-      if (pinentry->error)
+      if (error)
 	{
-	  char *p = pinentry->error;
-	  i = strlen (pinentry->error);
+	  char *p = error;
+	  i = strlen (error);
 	  move (ypos, xpos);
 	  addch (ACS_VLINE);
 	  addch (' ');
@@ -223,7 +354,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  else
 	    standout ();
 	  while (i-- > 0)
-	    addch (*(p++));
+	    addch ((unsigned char) *(p++));
 	  if (has_colors () && COLOR_PAIRS >= 1)
 	    attroff (COLOR_PAIR(1) | A_BOLD);
 	  else
@@ -241,16 +372,16 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       dialog->pin_y = ypos;
       dialog->pin_x = xpos + 2;
       dialog->pin_size = x - 4;
-      if (pinentry->prompt)
+      if (prompt)
 	{
-	  char *p = pinentry->prompt;
-	  i = strlen (pinentry->prompt);
+	  char *p = prompt;
+	  i = strlen (prompt);
 	  if (i > x - 4 - MIN_PINENTRY_LENGTH)
 	    i = x - 4 - MIN_PINENTRY_LENGTH;
 	  dialog->pin_x += i + 1;
 	  dialog->pin_size -= i + 1;
 	  while (i-- > 0)
-	    addch (*(p++));
+	    addch ((unsigned char) *(p++));
 	  addch (' ');
 	}
       for (i = 0; i < dialog->pin_size; i++)
@@ -264,15 +395,23 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   addch (ACS_VLINE);
   dialog->ok_y = ypos;
   /* Calculating the left edge of the left button, rounding down.  */
-  dialog->ok_x = xpos + 2 + ((x - 4) / 2 - (sizeof (STRING_OK) - 1)) / 2;
+  dialog->ok_x = xpos + 2 + ((x - 4) / 2 - (sizeof (dialog->ok) - 1)) / 2;
   move (dialog->ok_y, dialog->ok_x);
-  addstr (STRING_OK);
+  addstr (dialog->ok);
   dialog->cancel_y = ypos;
   /* Calculating the left edge of the right button, rounding up.  */
-  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + (sizeof (STRING_CANCEL) - 1)) / 2;
+  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + (sizeof (dialog->cancel) - 1)) / 2;
   move (dialog->cancel_y, dialog->cancel_x);
-  addstr (STRING_CANCEL);
-  return 0;
+  addstr (dialog->cancel);
+
+ out:
+  if (description)
+    free (description);
+  if (error)
+    free (error);
+  if (prompt)
+    free (prompt);
+  return err;
 }
 
 
@@ -303,11 +442,11 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	{
 	case DIALOG_POS_OK:
 	  move (diag->ok_y, diag->ok_x);
-	  addstr (STRING_OK);
+	  addstr (diag->ok);
 	  break;
 	case DIALOG_POS_CANCEL:
 	  move (diag->cancel_y, diag->cancel_x);
-	  addstr (STRING_CANCEL);
+	  addstr (diag->cancel);
 	  break;
 	default:
 	  break;
@@ -322,14 +461,14 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	case DIALOG_POS_OK:
 	  move (diag->ok_y, diag->ok_x);
 	  standout ();
-	  addstr (STRING_OK);
+	  addstr (diag->ok);
 	  standend ();
 	  set_cursor_state (0);
 	  break;
 	case DIALOG_POS_CANCEL:
 	  move (diag->cancel_y, diag->cancel_x);
 	  standout ();
-	  addstr (STRING_CANCEL);
+	  addstr (diag->cancel);
 	  standend ();
 	  set_cursor_state (0);
 	  break;
@@ -544,6 +683,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     fclose (ttyfi);
   if (ttyfo)
     fclose (ttyfo);
+  /* XXX Factor out into dialog_release or something.  */
+  free (diag.ok);
+  free (diag.cancel);
   return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
 }
 
