@@ -33,7 +33,7 @@
 
 #include "pinentrydialog.h"
 
-#include <pinentry.h>
+#include "pinentry.h"
 
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
