@@ -286,7 +286,7 @@ create_window (int confirm_mode)
   gtk_box_pack_start (GTK_BOX(box), bbox, TRUE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (bbox), 5);
   
-  w = gtk_button_new_with_label ("OK");
+  w = gtk_button_new_with_label (pinentry->ok ? pinentry->ok : "OK");
   gtk_container_add (GTK_CONTAINER(bbox), w);
   if (!confirm_mode)
     {
@@ -306,7 +306,7 @@ create_window (int confirm_mode)
 
   gtk_widget_show (w);
   
-  w = gtk_button_new_with_label ("Cancel");
+  w = gtk_button_new_with_label (pinentry->cancel ? pinentry->cancel : "Cancel");
   gtk_container_add (GTK_CONTAINER(bbox), w);
   gtk_accel_group_add (acc, GDK_Escape, 0, 0, GTK_OBJECT(w), "clicked");
   gtk_signal_connect (GTK_OBJECT(w), "clicked", 
