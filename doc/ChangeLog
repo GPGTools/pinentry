@@ -1,3 +1,12 @@
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	  REMOVED: has been merged with the top level ChangeLog.
+
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* pinentry.texi: Cleaned up.
+	* fdl.texi: Removed.
+
 2002-10-11  Werner Koch  <wk@gnupg.org>
 
 	* pinentry.texi, Makefile.am: New.
