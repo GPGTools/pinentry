@@ -5,7 +5,7 @@
 @include version.texi
 
 @macro copyrightnotice
-Copyright @copyright{} 2002 g10 Code GmbH
+Copyright @copyright{} 2002, 2005 g10 Code GmbH
 @end macro
 @macro permissionnotice
 Permission is granted to copy, distribute and/or modify this document
@@ -67,7 +67,7 @@ section entitled ``Copying''.
 This file documents the use and the internals of the @pinentry{}.
 
 This is edition @value{EDITION}, last updated @value{UPDATED}, of
-@cite{The `PINEnrty' Manual}, for version @value{VERSION}.
+@cite{The `PINEntry' Manual}, for version @value{VERSION}.
 @sp 1
 Published by g10 Code GmbH@*
 Hüttenstr. 61@*
@@ -111,7 +111,7 @@ passphrases. It is usually invoked by @sc{gpg-agent}
 @pinentry{} comes in 3 flavors to fit the look and feel of the used
 GUI toolkit:  A @sc{GTK+} based one named @code{pinentry-gtk}, a
 @sc{Qt} based one named @code{pinentry-qt} and a non-graphical one based
-on curser and named @code{pinentry-curses}.  Not all of them might be
+on curses and named @code{pinentry-curses}.  Not all of them might be
 available on your installation.  If curses is supported on your system,
 the GUI based flavors fall back to curses when the @code{DISPLAY}
 variable is not set.
@@ -128,7 +128,7 @@ Miscellaneous
 
 * Copying::             GNU General Public License says
                         how you can copy and share PIN-Entry
-                        as well as this manulal.
+                        as well as this manual.
 
 Indices
 
@@ -141,7 +141,7 @@ Indices
 
 @c man begin DESCRIPTION
 
-You may run @pinentry{} directly from the commandline and pass the
+You may run @pinentry{} directly from the command line and pass the
 commands according to the Assuan protocol via stdin/stdout.
 
 
@@ -158,7 +158,7 @@ Print the program version and licensing information.
 
 @item --help
 @opindex help
-Print a usage message summarizing the most usefule command-line options.
+Print a usage message summarizing the most useful command line options.
 
 @item --debug
 @itemx -d
@@ -199,7 +199,7 @@ Note, that this is not fully supported by all flavors of @pinentry{}.
 @opindex lc-type 
 @opindex lc-messa
 These options are used to pass localization information to
-@pinentry{}.  They are required because @pinentry{} is usally called
+@pinentry{}.  They are required because @pinentry{} is usually called
 by some background process which does not have any information on the
 locale and terminal to use.  Assuan protocol options are an
 alternative way to pass these information.
@@ -229,7 +229,7 @@ correctness.
 
 Note that all strings are expected to be encoded as UTF-8; @pinentry{}
 takes care of converting it to the locally used codeset.  To include
-lienfeeds or other special characters, you may percent-escape them
+linefeeds or other special characters, you may percent-escape them
 (i.e. a line feed is encoded as @code{%0A}, the percent sign itself
 is encoded as @code{%25}).
 
@@ -252,15 +252,15 @@ passphrase entry.
 @end example
 
 @item Set the button texts
-There are two text with can be set to overide the English defaults:
+There are two text with can be set to override the English defaults:
 
-To set the text for the button signalling confirmation (in UTF-8).
+To set the text for the button signaling confirmation (in UTF-8).
 @example
   C: SETOK Yes
   S: OK
 @end example
 
-To set the text for the button signalling cancellation or disagreement
+To set the text for the button signaling cancellation or disagreement
 (in UTF-8).
 @example
   C: SETCANCEL No
@@ -285,7 +285,7 @@ this command:
   S: OK
 @end example
 Note that the passphrase is transmitted in clear using standard data
-responses.  Expect it to be in utf-8.
+responses.  Expect it to be in UTF-8.
 
 @item Ask for confirmation
 To ask for a confirmation (yes or no), you can use this command:
