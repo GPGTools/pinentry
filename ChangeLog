@@ -1,3 +1,9 @@
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_create): Add '<' and '>' around
+	the user provided button texts.  Replace sizeof by strlen to fix
+	size calculation of ok and cancel button.
+
 2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (struct pinentry): New variables lc_ctype

@@ -174,20 +174,34 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	}
       else
 	{
-	  char *prompt_copy = strdup (pinentry->prompt);
 	  char *split;
-
-	  if (!prompt_copy)
-	    {
-	      err = 1;
-	      goto out;
-	    }
-	  split = strchr (prompt_copy, '|');
+	  split = strchr (pinentry->prompt, '|');
 	  if (split)
 	    {
-	      *(split++) = '\0';
-	      ok = prompt_copy;
-	      cancel = split;
+	      int len = split - pinentry->prompt;
+
+	      ok = malloc (len + 3);
+	      if (!ok)
+		{
+		  err = 1;
+		  goto out;
+		}
+	      ok[0] = '<';
+	      memcpy (&ok[1], pinentry->prompt, len);
+	      ok[len + 1] = '>';
+	      ok[len + 2] = '\0';
+
+	      len = strlen (++split);
+	      cancel = malloc (len + 3);
+	      if (!cancel)
+		{
+		  err = 1;
+		  goto out;
+		}
+	      cancel[0] = '<';
+	      memcpy (&cancel[1], split, len);
+	      cancel[len + 1] = '>';
+	      cancel[len + 2] = '\0';
 	    }
 	}
     }
@@ -195,9 +209,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 				    ok ? ok : STRING_OK);
   dialog->cancel = convert_utf8_string (pinentry->lc_ctype,
 					cancel ? cancel : STRING_CANCEL);
-  /* Release ok & cancel.  */
   if (ok)
     free (ok);
+  if (cancel)
+    free (cancel);
   if (!dialog->ok || !dialog->cancel)
     {
       err = 1;
@@ -277,10 +292,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
   /* We position the buttons after the first and second third of the
      width.  Account for rounding.  */
-  if (x < 2 * (sizeof (dialog->ok) - 1))
-    x = 2 * (sizeof (dialog->ok) - 1);
-  if (x < 2 * (sizeof (dialog->cancel) - 1))
-    x = 2 * (sizeof (dialog->cancel) - 1);
+  if (x < 2 * strlen (dialog->ok))
+    x = 2 * strlen (dialog->ok);
+  if (x < 2 * strlen (dialog->cancel))
+    x = 2 * strlen (dialog->cancel);
 
   /* Add the frame.  */
   x += 4;
@@ -395,12 +410,12 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   addch (ACS_VLINE);
   dialog->ok_y = ypos;
   /* Calculating the left edge of the left button, rounding down.  */
-  dialog->ok_x = xpos + 2 + ((x - 4) / 2 - (sizeof (dialog->ok) - 1)) / 2;
+  dialog->ok_x = xpos + 2 + ((x - 4) / 2 - strlen (dialog->ok)) / 2;
   move (dialog->ok_y, dialog->ok_x);
   addstr (dialog->ok);
   dialog->cancel_y = ypos;
   /* Calculating the left edge of the right button, rounding up.  */
-  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + (sizeof (dialog->cancel) - 1)) / 2;
+  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + strlen (dialog->cancel)) / 2;
   move (dialog->cancel_y, dialog->cancel_x);
   addstr (dialog->cancel);
 
