@@ -143,8 +143,6 @@ int qt_main( int argc, char *argv[] )
 #endif // USE_KDE
       is_secure = true;
 
-      qDebug("parentwid is %p", parentwid);
-      
       PinEntryController ctrl( parentwid );
       ctrl.exec();
       return 0;
