@@ -1,5 +1,5 @@
 # Makefile.am
-# Copyright (C) 2002 g10 Code GmbH
+# Copyright (C) 2002 g10 Code GmbH, Klarälvdalens Datakonsult AB
 #
 # This file is part of PINENTRY.
 #
@@ -21,11 +21,20 @@
 
 bin_PROGRAMS = pinentry-qt
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) 
+if FALLBACK_CURSES
+ncurses_include = -I$(top_srcdir)/pinentry $(NCURSES_INCLUDE)
+libcurses = ../pinentry/libpinentry-curses.a ../pinentry/libpinentry.a $(LIBCURSES) $(LIBICONV)
+else
+ncurses_include =
+libcurses =
+endif
+
+
+AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem $(QT_INCLUDES) $(ncurses_include)
 AM_CXXFLAGS = $(QT_CXXFLAGS)
 pinentry_qt_LDADD = $(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP) \
-	$(QT_LIBS)
+	$(QT_LIBS) $(libcurses)
 pinentry_qt_LDFLAGS = $(QT_LDFLAGS)
 
 pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
