@@ -692,15 +692,18 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   free (diag.ok);
   free (diag.cancel);
 
-  pinentry->locale_err = 1;
-  pin_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
-  if (pin_utf8)
+  if (pinentry->pin)
     {
-      pinentry_setbufferlen (pinentry, strlen (pin_utf8) + 1);
-      if (pinentry->pin)
-	strcpy (pinentry->pin, pin_utf8);
-      secmem_free (pin_utf8);
-      pinentry->locale_err = 0;
+      pinentry->locale_err = 1;
+      pin_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
+      if (pin_utf8)
+	{
+	  pinentry_setbufferlen (pinentry, strlen (pin_utf8) + 1);
+	  if (pinentry->pin)
+	    strcpy (pinentry->pin, pin_utf8);
+	  secmem_free (pin_utf8);
+	  pinentry->locale_err = 0;
+	}
     }
 
   return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
