@@ -1,3 +1,9 @@
+2005-07-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (dialog_switch_pos): Set the cursor
+	state to invisible before moving around.  Move the cursor to the
+	beginning of the dialog buttons for accessibility.
+
 2005-06-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry-curses.c (dialog_run): Only convert pin if a

@@ -460,18 +460,20 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  set_cursor_state (1);
 	  break;
 	case DIALOG_POS_OK:
+	  set_cursor_state (0);
 	  move (diag->ok_y, diag->ok_x);
 	  standout ();
 	  addstr (diag->ok);
 	  standend ();
-	  set_cursor_state (0);
+	  move (diag->ok_y, diag->ok_x);
 	  break;
 	case DIALOG_POS_CANCEL:
+	  set_cursor_state (0);
 	  move (diag->cancel_y, diag->cancel_x);
 	  standout ();
 	  addstr (diag->cancel);
 	  standend ();
-	  set_cursor_state (0);
+	  move (diag->cancel_y, diag->cancel_x);
 	  break;
 	case DIALOG_POS_NONE:
 	  set_cursor_state (0);
