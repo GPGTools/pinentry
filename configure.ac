@@ -220,8 +220,15 @@ fi
 if test "$pinentry_curses" = "yes" \
         -o "$fallback_curses" = "yes" \
         -o "$pinentry_gtk" = "yes"; then
-dnl Additional checks pinentry Curses/GTK+.
-AM_ICONV
+  dnl Additional checks pinentry Curses/GTK+.
+  AM_ICONV
+  if test "$am_cv_func_iconv" != "yes"; then
+    AC_MSG_ERROR([[
+***
+*** The iconv function is required.  You can specify its location
+*** using the --with-libiconv-prefix=PREFIX option to configure.
+***]])
+  fi
 fi
 
 dnl if test "$pinentry_gtk" = "yes"; then
