@@ -298,6 +298,21 @@ issuing this command, and may use SETPROMPT to set the button texts.
 The value returned is either OK for YES or the error code
 @code{ASSUAN_Not_Confirmed}.
 
+@item Show a message
+To show a message, you can use this command:
+@example
+  C: MESSAGE
+  S: OK
+@end example
+alternativly you may add an option to confirm:
+@example
+  C: CONFIRM --one-button
+  S: OK
+@end example
+The client should use SETDESC to set an appropriate text before issuing
+this command, and may use SETOK to set the text for the dismiss button.
+The value returned is OK or an error message.
+
 @item Set the output device
 When using X, the @pinentry{} program must be invoked with an
 appropriate @code{DISPLAY} environment variable or the

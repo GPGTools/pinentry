@@ -1,3 +1,14 @@
+2007-01-24  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.c (cmd_message): New.
+	(cmd_confirm): New command option --one-button.
+	(cmd_getpin): Zeroise ONE_BUTTON.
+	* pinentry/pinentry.h (struct pinentry): Add field ONE_BUTTON.
+	* gtk/pinentry-gtk.c (create_window): Take care of new option.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Ditto.
+	* pinentry/pinentry-curses.c (dialog_create): Ditto.
+	(dialog_create, dialog_switch_pos): Allow CANCEL to be optional.
+
 2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* secmem/secmem.c (init_pool): Close FD after establishing the

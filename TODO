@@ -15,3 +15,5 @@
   the gpg-agent is better able to cope with jammed pinentries.
 
 * The gtk+-2 pinentry needs auditing.
+
+* Implement the one_button feature in Qt.

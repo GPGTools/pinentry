@@ -75,6 +75,11 @@ struct pinentry
      conversion occured. */
   int locale_err;
 
+  /* The caller should set this to true if only one button is
+     required.  This is useful for notification dialogs where only a
+     dismiss button is required. */
+  int one_button;
+
 };
 typedef struct pinentry *pinentry_t;
 

@@ -345,13 +345,17 @@ create_window (int confirm_mode)
 
   gtk_widget_show (w);
   
-  w = gtk_button_new_with_label (pinentry->cancel ? pinentry->cancel : "Cancel");
-  gtk_container_add (GTK_CONTAINER(bbox), w);
-  gtk_accel_group_add (acc, GDK_Escape, 0, 0, GTK_OBJECT(w), "clicked");
-  gtk_signal_connect (GTK_OBJECT(w), "clicked", 
-                      confirm_mode? confirm_button_clicked: button_clicked,
-                      NULL);
-  GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+  if (!pinentry->one_button)
+    {
+      w = gtk_button_new_with_label (pinentry->cancel 
+                                     ? pinentry->cancel : "Cancel");
+      gtk_container_add (GTK_CONTAINER(bbox), w);
+      gtk_accel_group_add (acc, GDK_Escape, 0, 0, GTK_OBJECT(w), "clicked");
+      gtk_signal_connect (GTK_OBJECT(w), "clicked", 
+                          confirm_mode? confirm_button_clicked: button_clicked,
+                          NULL);
+      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+    }
 
   gtk_window_set_position (GTK_WINDOW (win), GTK_WIN_POS_CENTER);
 

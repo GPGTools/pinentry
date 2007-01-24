@@ -181,7 +181,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   while (0)
 
   MAKE_BUTTON (ok, STRING_OK);
-  MAKE_BUTTON (cancel, STRING_CANCEL);
+  if (!pinentry->one_button)
+    MAKE_BUTTON (cancel, STRING_CANCEL);
+  else
+    dialog->cancel = NULL;
 
   getmaxyx (stdscr, size_y, size_x);
 
@@ -272,8 +275,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
      width.  Account for rounding.  */
   if (x < 2 * strlen (dialog->ok))
     x = 2 * strlen (dialog->ok);
-  if (x < 2 * strlen (dialog->cancel))
-    x = 2 * strlen (dialog->cancel);
+  if (dialog->cancel)
+    if (x < 2 * strlen (dialog->cancel))
+      x = 2 * strlen (dialog->cancel);
 
   /* Add the frame.  */
   x += 4;
@@ -399,11 +403,13 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   dialog->ok_x = xpos + 2 + ((x - 4) / 2 - strlen (dialog->ok)) / 2;
   move (dialog->ok_y, dialog->ok_x);
   addstr (dialog->ok);
-  dialog->cancel_y = ypos;
-  /* Calculating the left edge of the right button, rounding up.  */
-  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + strlen (dialog->cancel)) / 2;
-  move (dialog->cancel_y, dialog->cancel_x);
-  addstr (dialog->cancel);
+  if ( dialog->cancel)
+    {
+      dialog->cancel_y = ypos;
+      /* Calculating the left edge of the right button, rounding up.  */
+      move (dialog->cancel_y, dialog->cancel_x);
+      addstr (dialog->cancel);
+    }
 
  out:
   if (description)
@@ -446,8 +452,11 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  addstr (diag->ok);
 	  break;
 	case DIALOG_POS_CANCEL:
-	  move (diag->cancel_y, diag->cancel_x);
-	  addstr (diag->cancel);
+          if (diag->cancel)
+            {
+              move (diag->cancel_y, diag->cancel_x);
+              addstr (diag->cancel);
+            }
 	  break;
 	default:
 	  break;
@@ -468,12 +477,15 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  move (diag->ok_y, diag->ok_x);
 	  break;
 	case DIALOG_POS_CANCEL:
-	  set_cursor_state (0);
-	  move (diag->cancel_y, diag->cancel_x);
-	  standout ();
-	  addstr (diag->cancel);
-	  standend ();
-	  move (diag->cancel_y, diag->cancel_x);
+          if (diag->cancel)
+            {
+              set_cursor_state (0);
+              move (diag->cancel_y, diag->cancel_x);
+              standout ();
+              addstr (diag->cancel);
+              standend ();
+              move (diag->cancel_y, diag->cancel_x);
+            }
 	  break;
 	case DIALOG_POS_NONE:
 	  set_cursor_state (0);

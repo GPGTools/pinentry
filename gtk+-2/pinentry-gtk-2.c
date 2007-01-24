@@ -304,19 +304,22 @@ create_window (int confirm_mode)
   gtk_box_set_spacing (GTK_BOX (bbox), 6);
   gtk_box_pack_start (GTK_BOX (wvbox), bbox, TRUE, FALSE, 0);
 
-  if (pinentry->cancel)
+  if (!pinentry->one_button)
     {
-      msg = pinentry_utf8_validate (pinentry->cancel);
-      w = gtk_button_new_with_label (msg);
-      g_free (msg);
+      if (pinentry->cancel)
+        {
+          msg = pinentry_utf8_validate (pinentry->cancel);
+          w = gtk_button_new_with_label (msg);
+          g_free (msg);
+        }
+      else
+        w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+      gtk_container_add (GTK_CONTAINER (bbox), w);
+      g_signal_connect (G_OBJECT (w), "clicked",
+                        G_CALLBACK (confirm_mode ? confirm_button_clicked
+                                    : button_clicked), NULL);
+      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
-  else
-    w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
-  gtk_container_add (GTK_CONTAINER (bbox), w);
-  g_signal_connect (G_OBJECT (w), "clicked",
-		    G_CALLBACK (confirm_mode ? confirm_button_clicked
-				: button_clicked), NULL);
-  GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
   
   if (pinentry->ok)
     {

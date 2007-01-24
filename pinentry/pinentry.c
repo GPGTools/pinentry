@@ -66,7 +66,8 @@ struct pinentry pinentry =
     1,		/* Global grab.  */
     0,		/* Parent Window ID.  */
     0,		/* Result.  */
-    0           /* Locale error flag. */
+    0,          /* Locale error flag. */
+    0           /* One-button flag.  */
   };
 
 
@@ -576,6 +577,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
+  pinentry.one_button = 0;
 
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -613,11 +615,19 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* Note that the option --one-button is hack to allow the use of old
+   pinentries while the caller is ignoring the result.  Given that
+   options have never been used or flagged as an error the new option
+   is an easy way to enable the messsage mode while not requiring to
+   update pinentry or to have the caller test for the message
+   command.  New applications which are free to require an updated
+   pinentry should use MESSAGE instead. */
 static int
 cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 {
   int result;
 
+  pinentry.one_button = !!strstr (line, "--one-button");
   pinentry.locale_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -628,7 +638,29 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 
   return result ? 0
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
-                                      : ASSUAN_Not_Confirmed);
+                                      : (pinentry.one_button 
+                                         ? 0
+                                         : ASSUAN_Not_Confirmed));
+}
+
+
+static int
+cmd_message (ASSUAN_CONTEXT ctx, char *line)
+{
+  int result;
+
+  pinentry.one_button = 1;
+  pinentry.locale_err = 0;
+  result = (*pinentry_cmd_handler) (&pinentry);
+  if (pinentry.error)
+    {
+      free (pinentry.error);
+      pinentry.error = NULL;
+    }
+
+  return result ? 0 
+                : (pinentry.locale_err? ASSUAN_Locale_Problem
+                                      : 0);
 }
 
 
@@ -650,6 +682,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "SETCANCEL",  0,  cmd_setcancel },
       { "GETPIN",     0,  cmd_getpin },
       { "CONFIRM",    0,  cmd_confirm },
+      { "MESSAGE",    0,  cmd_message },
       { NULL }
     };
   int i, j, rc;
