@@ -65,6 +65,7 @@ struct pinentry pinentry =
     0,		/* Enhanced mode.  */
     1,		/* Global grab.  */
     0,		/* Parent Window ID.  */
+    NULL,       /* Touch file.  */
     0,		/* Result.  */
     0,          /* Locale error flag. */
     0           /* One-button flag.  */
@@ -256,7 +257,10 @@ pinentry_init (const char *pgmname)
 int
 pinentry_have_display (int argc, char **argv)
 {
-  if (getenv ("DISPLAY"))
+  const char *s;
+
+  s = getenv ("DISPLAY");
+  if (s && *s)
     return 1;
   for (; argc; argc--, argv++)
     if (!strcmp (*argv, "--display"))
@@ -450,6 +454,14 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     {
       pinentry.parent_wid = atoi (value);
       /* FIXME: Use strtol and add some error handling.  */
+    }
+  else if (!strcmp (key, "touch-file"))
+    {
+      if (pinentry.touch_file)
+        free (pinentry.touch_file);
+      pinentry.touch_file = strdup (value);
+      if (!pinentry.touch_file)
+	return ASSUAN_Out_Of_Core;
     }
   else
     return ASSUAN_Invalid_Option;

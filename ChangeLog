@@ -1,3 +1,12 @@
+2007-02-14  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add TOUCH_FILE.
+	* pinentry/pinentry.c (option_handler): New option "touch-file".
+	(pinentry_have_display): Ignore an empty DISPLAY.
+	* pinentry/pinentry-curses.c (do_touch_file): New.
+	(curses_cmd_handler): Call it.
+	* configure.ac: Check for utime.h.
+
 2007-01-24  Werner Koch  <wk@g10code.com>
 
 	* pinentry/pinentry.c (cmd_message): New.

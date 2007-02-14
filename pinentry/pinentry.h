@@ -67,6 +67,10 @@ struct pinentry
      should be displayed.  */
   int parent_wid;
 
+  /* The name of an optional file which will be touched after a curses
+     entry has been displayed.  */
+  char *touch_file;
+
   /* The user should set this to -1 if the user canceled the request,
      and to the length of the PIN stored in pin otherwise.  */
   int result;

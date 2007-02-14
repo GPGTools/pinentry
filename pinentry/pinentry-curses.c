@@ -33,6 +33,12 @@
 #include <limits.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef HAVE_UTIME_H
+#include <utime.h>
+#endif /*HAVE_UTIME_H*/
 
 #include <memory.h>
 
@@ -723,8 +729,38 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
 }
 
+
+/* If a touch has been registered, touch that file.  */
+static void
+do_touch_file (pinentry_t pinentry)
+{
+#ifdef HAVE_UTIME_H
+  struct stat st;
+  time_t tim;
+
+  if (!pinentry->touch_file || !*pinentry->touch_file)
+    return;
+
+  if (stat (pinentry->touch_file, &st))
+    return; /* Oops.  */
+
+  /* Make sure that we actually update the mtime.  */
+  while ( (tim = time (NULL)) == st.st_mtime )
+    sleep (1);
+
+  /* Update but ignore errors as we can't do anything in that case.
+     Printing error messages may even clubber the display further. */
+  utime (pinentry->touch_file, NULL);
+#endif /*HAVE_UTIME_H*/
+}
+
+
 int
 curses_cmd_handler (pinentry_t pinentry)
 {
-  return dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
+  int rc;
+
+  rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
+  do_touch_file (pinentry);
+  return rc;
 }

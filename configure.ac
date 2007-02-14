@@ -102,7 +102,7 @@ fi
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(string.h unistd.h langinfo.h termio.h locale.h)
+AC_CHECK_HEADERS(string.h unistd.h langinfo.h termio.h locale.h utime.h)
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(seteuid stpcpy mmap)

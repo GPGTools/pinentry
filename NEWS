@@ -4,6 +4,9 @@ Noteworthy changes in version 0.7.3
  * New command MESSAGE and --one-button compatibility option to
    CONFIRM.
 
+ * New Assuan option touch-file to set a file which will be touched
+   after ncurses does not need the display anymore.
+
 
 Noteworthy changes in version 0.7.2 (2005-01-27)
 ------------------------------------------------
