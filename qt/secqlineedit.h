@@ -202,8 +202,6 @@ protected:
     void focusOutEvent( QFocusEvent * );
     void resizeEvent( QResizeEvent * );
     void drawContents( QPainter * );
-    void contextMenuEvent( QContextMenuEvent * );
-    virtual QPopupMenu *createPopupMenu();
     void windowActivationChange( bool );
 #ifndef QT_NO_COMPAT
     void repaintArea( int, int ) { update(); }
