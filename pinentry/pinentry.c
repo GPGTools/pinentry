@@ -68,7 +68,12 @@ struct pinentry pinentry =
     NULL,       /* Touch file.  */
     0,		/* Result.  */
     0,          /* Locale error flag. */
-    0           /* One-button flag.  */
+    0,          /* One-button flag.  */
+    PINENTRY_COLOR_DEFAULT,
+    0,
+    PINENTRY_COLOR_DEFAULT,
+    PINENTRY_COLOR_DEFAULT,
+    0
   };
 
 
@@ -290,6 +295,56 @@ usage (void)
 }
 
 
+char *
+parse_color (char *arg, pinentry_color_t *color_p, int *bright_p)
+{
+  static struct
+  {
+    const char *name;
+    pinentry_color_t color;
+  } colors[] = { { "none", PINENTRY_COLOR_NONE },
+		 { "default", PINENTRY_COLOR_DEFAULT },
+		 { "black", PINENTRY_COLOR_BLACK },
+		 { "red", PINENTRY_COLOR_RED },
+		 { "green", PINENTRY_COLOR_GREEN },
+		 { "yellow", PINENTRY_COLOR_YELLOW },
+		 { "blue", PINENTRY_COLOR_BLUE },
+		 { "magenta", PINENTRY_COLOR_MAGENTA },
+		 { "cyan", PINENTRY_COLOR_CYAN },
+		 { "white", PINENTRY_COLOR_WHITE } };
+
+  int i;
+  char *new_arg;
+  pinentry_color_t color = PINENTRY_COLOR_DEFAULT;
+
+  if (!arg)
+    return NULL;
+
+  new_arg = strchr (arg, ',');
+  if (new_arg)
+    new_arg++;
+
+  if (bright_p)
+    {
+      const char *bname[] = { "bright-", "bright", "bold-", "bold" };
+
+      *bright_p = 0;
+      for (i = 0; i < sizeof (bname) / sizeof (bname[0]); i++)
+	if (!strncasecmp (arg, bname[i], strlen (bname[i])))
+	  {
+	    *bright_p = 1;
+	    arg += strlen (bname[i]);
+	  }
+    }
+
+  for (i = 0; i < sizeof (colors) / sizeof (colors[0]); i++)
+    if (!strncasecmp (arg, colors[i].name, strlen (colors[i].name)))
+      color = colors[i].color;
+
+  *color_p = color;
+  return new_arg;
+}
+
 /* Parse the command line options.  Returns 1 if user should print
    version and exit.  Can exit the program if only help output is
    requested.  */
@@ -309,6 +364,7 @@ pinentry_parse_opts (int argc, char *argv[])
      { "enhanced", no_argument,          0, 'e' },
      { "no-global-grab", no_argument,    0, 'g' },
      { "parent-wid", required_argument,  0, 'W' },
+     { "colors", required_argument,	 0, 'c' },
      { "help", no_argument,              0, 'h' },
      { "version", no_argument, &opt_version, 1 },
      { NULL, 0, NULL, 0 }};
@@ -378,6 +434,14 @@ pinentry_parse_opts (int argc, char *argv[])
 	case 'W':
 	  pinentry.parent_wid = atoi (optarg);
 	  /* FIXME: Add some error handling.  Use strtol.  */
+	  break;
+
+	case 'c':
+	  optarg = parse_color (optarg, &pinentry.color_fg,
+				&pinentry.color_fg_bright);
+	  optarg = parse_color (optarg, &pinentry.color_bg, NULL);
+	  optarg = parse_color (optarg, &pinentry.color_so,
+				&pinentry.color_so_bright);
 	  break;
 
         default:

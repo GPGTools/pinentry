@@ -1,5 +1,14 @@
 2007-05-10  Marcus Brinkmann  <marcus@g10code.de>
 
+	* pinentry/pinentry.h (pinentry_color_t): New type.
+	(struct pinentry): New members COLOR_FG, COLOR_FG_BRIGHT,
+	COLOR_BG, COLOR_SO.
+	* pinentry/pinentry.c (pinentry_parse_opts): Support new option --colors.
+	(parse_color): New function.
+	* pinentry/pinentry-curses.c (USE_COLORS): New macro.
+	(pinentry_color): New static variable.
+	(dialog_create): Redo color management.
+
 	* pinentry/pinentry-curses.c (dialog_create): Re-add calculation
 	of cancel button position.  Adjust calculation of OK button
 	position if it is the only one used.

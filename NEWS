@@ -7,6 +7,9 @@ Noteworthy changes in version 0.7.3
  * New Assuan option touch-file to set a file which will be touched
    after ncurses does not need the display anymore.
 
+ * New option --colors=FG,BG,SO to set the colors for the curses
+   pinentry.
+
 
 Noteworthy changes in version 0.7.2 (2005-01-27)
 ------------------------------------------------

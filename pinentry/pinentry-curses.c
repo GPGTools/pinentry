@@ -47,6 +47,10 @@
 #define STRING_OK "<OK>"
 #define STRING_CANCEL "<Cancel>"
 
+#define USE_COLORS		(has_colors () && COLOR_PAIRS >= 2)
+static short pinentry_color[] = { -1, -1, COLOR_BLACK, COLOR_RED,
+				  COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE,
+				  COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE };
 static int init_screen;
 
 typedef enum
@@ -352,8 +356,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	      move (ypos, xpos);
 	      addch (ACS_VLINE);
 	      addch (' ');
-	      if (has_colors () && COLOR_PAIRS >= 1)
-		attron (COLOR_PAIR(1) | A_BOLD);
+	      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
+		{
+		  attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+		  attron (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+		}
 	      else
 		standout ();
 	      for (;*p && *p != '\n'; p++)
@@ -362,8 +369,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 		    i++;
 		    addch ((unsigned char) *p);
 		  }
-	      if (has_colors () && COLOR_PAIRS >= 1)
-		attroff (COLOR_PAIR(1) | A_BOLD);
+	      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
+		{
+		  attroff (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+		  attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+		}
 	      else
 		standend ();
 	      if (*p == '\n')
@@ -610,15 +620,29 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   nonl ();		/* Tell curses not to do NL->CR/NL on output.  */
   cbreak ();		/* Take input chars one at a time, no wait for \n.  */
   noecho ();		/* Don't echo input - in color.  */
-  refresh ();
 
   if (has_colors ())
     {
       start_color ();
+      use_default_colors ();
 
-      if (COLOR_PAIRS >= 1)
-	init_pair (1, COLOR_RED, COLOR_BLACK);
+      if (pinentry->color_so == PINENTRY_COLOR_DEFAULT)
+	{
+	  pinentry->color_so = PINENTRY_COLOR_RED;
+	  pinentry->color_so_bright = 1;
+	}
+      if (COLOR_PAIRS >= 2)
+	{
+	  init_pair (1, pinentry_color[pinentry->color_fg],
+		     pinentry_color[pinentry->color_bg]);
+	  init_pair (2, pinentry_color[pinentry->color_so],
+		     pinentry_color[pinentry->color_bg]);
+
+	  bkgd (COLOR_PAIR (1));
+	  attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+	}
     }
+  refresh ();
 
   /* XXX */
   if (dialog_create (pinentry, &diag))

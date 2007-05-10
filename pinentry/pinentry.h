@@ -28,6 +28,13 @@ extern "C" {
 #endif
 #endif
 
+typedef enum {
+  PINENTRY_COLOR_NONE, PINENTRY_COLOR_DEFAULT,
+  PINENTRY_COLOR_BLACK, PINENTRY_COLOR_RED,
+  PINENTRY_COLOR_GREEN, PINENTRY_COLOR_YELLOW,
+  PINENTRY_COLOR_BLUE, PINENTRY_COLOR_MAGENTA,
+  PINENTRY_COLOR_CYAN, PINENTRY_COLOR_WHITE
+} pinentry_color_t;
 
 struct pinentry
 {
@@ -84,6 +91,12 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
+  /* For the curses pinentry, the color of error messages.  */
+  pinentry_color_t color_fg;
+  int color_fg_bright;
+  pinentry_color_t color_bg;
+  pinentry_color_t color_so;
+  int color_so_bright;
 };
 typedef struct pinentry *pinentry_t;
 

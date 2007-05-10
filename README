@@ -40,3 +40,29 @@ Some of the code is taken from Robert Bihlmeyer's Quintuple-Agent.
 For security reasons, all internationalization has been removed.  The
 client is expected to tell the PIN entry the text strings to be
 displayed.
+
+
+Curses Pinentry
+---------------
+
+The curses pinentry supports colors if the terminal does.  The colors
+can be specified by the --colors=FG,BG,SO option, which sets the
+foreground, background and standout colors respectively.  The standout
+color is used for error messages.  Colors can be named by any of
+"black", "red", "green", "yellow", "blue", "magenta", "cyan" and
+"white".  The foreground and standout color can be prefixed by
+"bright-", "bright", "bold-" and "bold", and any of these prefixes has
+the same effect of making the color bolder or brighter.  Two special
+color names are defined as well: "default" chooses the default color,
+and "none" disables use of colors.  The name "none" is only meaningful
+for the standout color and in this case a reversed effect is used for
+error messages.  For the other colors, disabling colors means the same
+as using the defaults.  The default colors are as follows:
+
+	Foreground:	Terminal default
+	Background:	Terminal default
+	Standout:	Bright red
+
+Note that color support is limited by the capabilities of the display
+terminal.  Some color combinations can be very difficult to read, and
+please know that colors are perceived differently by different people.
