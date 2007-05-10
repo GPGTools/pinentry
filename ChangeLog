@@ -1,3 +1,9 @@
+2007-05-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (dialog_create): Re-add calculation
+	of cancel button position.  Adjust calculation of OK button
+	position if it is the only one used.
+
 2007-04-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	* qt/secqlineedit.h (SecQLineEdit::contextMenuEvent,

@@ -404,17 +404,28 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
   move (ypos, xpos);
   addch (ACS_VLINE);
-  dialog->ok_y = ypos;
-  /* Calculating the left edge of the left button, rounding down.  */
-  dialog->ok_x = xpos + 2 + ((x - 4) / 2 - strlen (dialog->ok)) / 2;
-  move (dialog->ok_y, dialog->ok_x);
-  addstr (dialog->ok);
-  if ( dialog->cancel)
+
+  if (dialog->cancel)
     {
+      dialog->ok_y = ypos;
+      /* Calculating the left edge of the left button, rounding down.  */
+      dialog->ok_x = xpos + 2 + ((x - 4) / 2 - strlen (dialog->ok)) / 2;
+      move (dialog->ok_y, dialog->ok_x);
+      addstr (dialog->ok);
+
       dialog->cancel_y = ypos;
       /* Calculating the left edge of the right button, rounding up.  */
+      dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + strlen (dialog->cancel)) / 2;
       move (dialog->cancel_y, dialog->cancel_x);
       addstr (dialog->cancel);
+    }
+  else
+    {
+      dialog->ok_y = ypos;
+      /* Calculating the left edge of the OK button, rounding down.  */
+      dialog->ok_x = xpos + x / 2 - strlen (dialog->ok) / 2;
+      move (dialog->ok_y, dialog->ok_x);
+      addstr (dialog->ok);
     }
 
  out:
