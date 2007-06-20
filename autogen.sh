@@ -28,6 +28,23 @@ check_version () {
     return 1
 }
 
+# Allow to override the default tool names
+AUTOCONF=${AUTOCONF_PREFIX}${AUTOCONF:-autoconf}${AUTOCONF_SUFFIX}
+AUTOHEADER=${AUTOCONF_PREFIX}${AUTOHEADER:-autoheader}${AUTOCONF_SUFFIX}
+
+AUTOMAKE=${AUTOMAKE_PREFIX}${AUTOMAKE:-automake}${AUTOMAKE_SUFFIX}
+ACLOCAL=${AUTOMAKE_PREFIX}${ACLOCAL:-aclocal}${AUTOMAKE_SUFFIX}
+
+GETTEXT=${GETTEXT_PREFIX}${GETTEXT:-gettext}${GETTEXT_SUFFIX}
+MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
+
+DIE=no
+FORCE=
+if test x"$1" = x"--force"; then
+  FORCE=" --force"
+  shift
+fi
+
 
 # ***** W32 build script *******
 # Used to cross-compile for Windows.
@@ -44,25 +61,22 @@ if test "$1" = "--build-w32"; then
     [ -z "$w32root" ] && w32root="$HOME/w32root"
     echo "Using $w32root as standard install directory" >&2
     
-    # See whether we have the Debian cross compiler package or the
-    # old mingw32/cpd system
-    if i586-mingw32msvc-gcc --version >/dev/null 2>&1 ; then
-        host=i586-mingw32msvc
-        crossbindir=/usr/$host/bin
-    else
-       host=i386--mingw32
-       if ! mingw32 --version >/dev/null; then
-          echo "We need at least version 0.3 of MingW32/CPD" >&2
-          exit 1
-       fi
-       crossbindir=`mingw32 --install-dir`/bin
-       # Old autoconf version required us to setup the environment
-       # with the proper tool names.
-       CC=`mingw32 --get-path gcc`
-       CPP=`mingw32 --get-path cpp`
-       AR=`mingw32 --get-path ar`
-       RANLIB=`mingw32 --get-path ranlib`
-       export CC CPP AR RANLIB 
+
+    # Locate the cross compiler
+    crossbindir=
+    for host in i586-mingw32msvc i386-mingw32msvc mingw32; do
+        if ${host}-gcc --version >/dev/null 2>&1 ; then
+            crossbindir=/usr/${host}/bin
+            conf_CC="CC=${host}-gcc"
+            break;
+        fi
+    done
+    if [ -z "$crossbindir" ]; then
+        echo "Cross compiler kit not installed" >&2
+        echo "Under Debian GNU/Linux, you may install it using" >&2
+        echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        echo "Stop." >&2
+        exit 1
     fi
    
     if [ -f "$tsdir/config.log" ]; then
@@ -73,16 +87,12 @@ if test "$1" = "--build-w32"; then
     fi
 
     ./configure --enable-maintainer-mode --prefix=${w32root} \
-                --host=i586-mingw32msvc --build=${build} \
+                --host=${host} --build=${build} \
                 --disable-pinentry-gtk \
                 --disable-pinentry-gtk2 \
                 --disable-pinentry-qt 
 
     rc=$?
-    # Ugly hack to overcome a gettext problem.  Someone should look into
-    # gettext to figure out why the po directory is not ignored as it used
-    # to be.
-    [ $rc = 0 ] && touch $tsdir/po/all
     exit $rc
 fi
 # ***** end W32 build script *******
@@ -116,19 +126,6 @@ then
   exit 1
 fi
 
-# Allow to override the default tool names
-AUTOCONF=${AUTOCONF_PREFIX}${AUTOCONF:-autoconf}${AUTOCONF_SUFFIX}
-AUTOHEADER=${AUTOCONF_PREFIX}${AUTOHEADER:-autoheader}${AUTOCONF_SUFFIX}
-
-AUTOMAKE=${AUTOMAKE_PREFIX}${AUTOMAKE:-automake}${AUTOMAKE_SUFFIX}
-ACLOCAL=${AUTOMAKE_PREFIX}${ACLOCAL:-aclocal}${AUTOMAKE_SUFFIX}
-
-#GETTEXT=${GETTEXT_PREFIX}${GETTEXT:-gettext}${GETTEXT_SUFFIX}
-#MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
-
-DIE=no
-
-
 if check_version $AUTOCONF $autoconf_vers_num $autoconf_vers ; then
     check_version $AUTOHEADER $autoconf_vers_num $autoconf_vers autoconf
 fi
@@ -143,7 +140,7 @@ if test "$DIE" = "yes"; then
     cat <<EOF
 
 Note that you may use alternative versions of the tools by setting 
-the corresponding environment variables; see README.CVS for details.
+the corresponding environment variables; see README.SVN for details.
                    
 EOF
     exit 1
@@ -154,8 +151,8 @@ $ACLOCAL -I m4 $ACLOCAL_FLAGS
 echo "Running autoheader..."
 $AUTOHEADER
 echo "Running automake --gnu ..."
-$AUTOMAKE --gnu;
-echo "Running autoconf..."
-$AUTOCONF
+$AUTOMAKE --gnu
+echo "Running autoconf${FORCE}..."
+$AUTOCONF${FORCE}
 
 echo "You may now run \"./configure --enable-maintainer-mode && make\"."

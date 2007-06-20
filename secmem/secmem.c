@@ -281,11 +281,11 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
-      #ifdef USE_CAPABILITIES
+#ifdef USE_CAPABILITIES
 	/* drop all capabilities */
 	cap_set_proc( cap_from_text("all-eip") );
 
-      #elif !defined(HAVE_DOSISH_SYSTEM)
+#elif !defined(HAVE_DOSISH_SYSTEM)
 	uid_t uid;
 
 	disable_secmem=1;
@@ -294,7 +294,7 @@ secmem_init( size_t n )
 	    if( setuid( uid ) || getuid() != geteuid() )
 		log_fatal("failed to drop setuid\n" );
 	}
-      #endif
+#endif
     }
     else {
 	if( n < DEFAULT_POOLSIZE )

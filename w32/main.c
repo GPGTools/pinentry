@@ -29,20 +29,155 @@
 
 #define PGMNAME "pinentry-w32"
 
+#ifndef LSFW_LOCK
+# define LSFW_LOCK 1
+# define LSFW_UNLOCK 2
+#endif
+
+
+/* This function pointer gets initialized in main.  */
+static WINUSERAPI BOOL WINAPI (*lock_set_foreground_window)(UINT);
+
 
 static int w32_cmd_handler (pinentry_t pe);
 static void ok_button_clicked (HWND dlg, pinentry_t pe);
 
 
-/* We use gloabl variables for the state, becuase there should never
+/* We use gloabl variables for the state, because there should never
    ever be a second instance.  */
 static HWND dialog_handle;
-static int passphrase_ok = 0;
-
+static int confirm_mode;
+static int passphrase_ok;
+static int confirm_yes;
 
 /* Connect this module to the pinnetry framework.  */
 pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
 
+
+
+
+
+/* Convert a wchar to UTF8.  Caller needs to release the string.
+   Returns NULL on error. */
+static char *
+wchar_to_utf8 (const wchar_t *string, size_t len, int secure)
+{
+  int n;
+  char *result;
+
+  /* Note, that CP_UTF8 is not defined in Windows versions earlier
+     than NT.  */
+  n = WideCharToMultiByte (CP_UTF8, 0, string, len, NULL, 0, NULL, NULL);
+  if (n < 0)
+    return NULL;
+
+  result = secure? secmem_malloc (n+1) : malloc (n+1);
+  if (!result)
+    return NULL;
+  n = WideCharToMultiByte (CP_UTF8, 0, string, len, result, n, NULL, NULL);
+  if (n < 0)
+    {
+      if (secure)
+        secmem_free (result);
+      else
+        free (result);
+      return NULL;
+    }
+  return result;
+}
+
+
+/* Convert a UTF8 string to wchar.  Returns NULL on error. Caller
+   needs to free the returned value.  */
+wchar_t *
+utf8_to_wchar (const char *string)
+{
+  int n;
+  wchar_t *result;
+  size_t len = strlen (string);
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, len, NULL, 0);
+  if (n < 0)
+    return NULL;
+
+  result = calloc ((n+1), sizeof *result);
+  if (!result)
+    return NULL;
+  n = MultiByteToWideChar (CP_UTF8, 0, string, len, result, n);
+  if (n < 0)
+    {
+      free (result);
+      return NULL;
+    }
+  result[n] = 0;
+  return result;
+}
+
+
+/* Center the window CHILDWND with the desktop as its parent
+   window.  STYLE is passed as second arg to SetWindowPos.*/
+void
+center_window (HWND childwnd, HWND style) 
+{     
+  HWND parwnd;
+  RECT rchild, rparent;    
+  HDC hdc;
+  int wchild, hchild, wparent, hparent;
+  int wscreen, hscreen, xnew, ynew;
+  int flags = SWP_NOSIZE | SWP_NOZORDER;
+  
+  parwnd = GetDesktopWindow ();
+  GetWindowRect (childwnd, &rchild);     
+  wchild = rchild.right - rchild.left;     
+  hchild = rchild.bottom - rchild.top;
+  
+  GetWindowRect (parwnd, &rparent);     
+  wparent = rparent.right - rparent.left;     
+  hparent = rparent.bottom - rparent.top;      
+  
+  hdc = GetDC (childwnd);     
+  wscreen = GetDeviceCaps (hdc, HORZRES);     
+  hscreen = GetDeviceCaps (hdc, VERTRES);     
+  ReleaseDC (childwnd, hdc);      
+  xnew = rparent.left + ((wparent - wchild) / 2);     
+  if (xnew < 0)
+    xnew = 0;
+  else if ((xnew+wchild) > wscreen) 
+    xnew = wscreen - wchild;
+  ynew = rparent.top  + ((hparent - hchild) / 2);
+  if (ynew < 0)
+    ynew = 0;
+  else if ((ynew+hchild) > hscreen)
+    ynew = hscreen - hchild;
+  if (style == HWND_TOPMOST || style == HWND_NOTOPMOST)
+    flags = SWP_NOMOVE | SWP_NOSIZE;
+  SetWindowPos (childwnd, style? style : NULL, xnew, ynew, 0, 0, flags);
+}
+
+
+
+
+
+/* Call SetDlgItemTextW with an UTF8 string.  */
+static void
+set_dlg_item_text (HWND dlg, int item, const char *string)
+{
+  if (!string || !*string)
+    SetDlgItemText (dlg, item, "");
+  else
+    {
+      wchar_t *wbuf;
+      
+      wbuf = utf8_to_wchar (string);
+      if (!wbuf)
+        SetDlgItemText (dlg, item, "[out of core]");
+      else
+        {
+          SetDlgItemTextW (dlg, item, wbuf);
+          free (wbuf);
+        }
+    }
+}
 
 
 /* Dialog processing loop.  */
@@ -57,24 +192,40 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       pe = (pinentry_t)lparam;
       if (!pe)
         abort ();
-      SetDlgItemText (dlg, IDC_PINENT_PROMPT, pe->prompt);
-      SetDlgItemText (dlg, IDC_PINENT_DESC, pe->description);
-      SetDlgItemText (dlg, IDC_PINENT_TEXT, "");
+      set_dlg_item_text (dlg, IDC_PINENT_PROMPT, pe->prompt);
+      set_dlg_item_text (dlg, IDC_PINENT_DESC, pe->description);
+      set_dlg_item_text (dlg, IDC_PINENT_TEXT, "");
       if (pe->ok)
-        SetDlgItemText (dlg, IDOK, pe->ok);
+        set_dlg_item_text (dlg, IDOK, pe->ok);
       if (pe->cancel)
-        SetDlgItemText (dlg, IDCANCEL, pe->cancel);
+        set_dlg_item_text (dlg, IDCANCEL, pe->cancel);
       if (pe->error)
-        SetDlgItemText (dlg, IDC_PINENT_ERR, pe->error);
+        set_dlg_item_text (dlg, IDC_PINENT_ERR, pe->error);
+
+      if (confirm_mode)
+        {
+          EnableWindow (GetDlgItem (dlg, IDC_PINENT_TEXT), FALSE);
+          SetWindowPos (GetDlgItem (dlg, IDC_PINENT_TEXT), NULL, 0, 0, 0, 0,
+                        (SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW));
+        }
+
       dialog_handle = dlg;
-      SetForegroundWindow (dlg);
+      center_window (dlg, HWND_TOP);
+      /* Fixme: There are two problems: A race condition between the
+         two calls and more important that SetForegroundWindow will
+         fail if a Menu is somewhere open.  */
+      if (SetForegroundWindow (dlg) && lock_set_foreground_window)
+        lock_set_foreground_window (LSFW_LOCK);
       break;
 
     case WM_COMMAND:
       switch (LOWORD (wparam))
 	{
 	case IDOK:
-          ok_button_clicked (dlg, pe);
+          if (confirm_mode)
+            confirm_yes = 1;
+          else
+            ok_button_clicked (dlg, pe);
 	  EndDialog (dlg, TRUE);
 	  break;
 
@@ -95,27 +246,27 @@ static void
 ok_button_clicked (HWND dlg, pinentry_t pe)
 {
   char *s_utf8;
-  char *s_buffer;
-  size_t s_buffer_size = 256;
+  wchar_t *w_buffer;
+  size_t w_buffer_size = 255;
+  unsigned int nchar;
   
   pe->locale_err = 1;
-  s_buffer = secmem_malloc (s_buffer_size + 1);
-  if (!s_buffer)
+  w_buffer = secmem_malloc ((w_buffer_size + 1) * sizeof *w_buffer);
+  if (!w_buffer)
     return;
 
-  pe->result = GetDlgItemText (dlg, IDC_PINENT_TEXT, s_buffer, s_buffer_size);
-/*   s_utf8 = pinentry_local_to_utf8 (pe->lc_ctype, s_buffer, 1); */
-/*   secmem_free (s_buffer); */
-  s_utf8 = s_buffer;   /* FIXME */
+  nchar = GetDlgItemTextW (dlg, IDC_PINENT_TEXT, w_buffer, w_buffer_size);
+  s_utf8 = wchar_to_utf8 (w_buffer, nchar, 1);
+  secmem_free (w_buffer);
   if (s_utf8)
     {
       passphrase_ok = 1;
       pinentry_setbufferlen (pe, strlen (s_utf8) + 1);
       if (pe->pin)
         strcpy (pe->pin, s_utf8);
-/*       secmem_free (s_utf8); */
+      secmem_free (s_utf8);
       pe->locale_err = 0;
-      pe->result = strlen (pe->pin);
+      pe->result = pe->pin? strlen (pe->pin) : 0;
     }
 }
 
@@ -123,37 +274,31 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
 static int
 w32_cmd_handler (pinentry_t pe)
 {
-  int want_pass = !!pe->pin;
+  confirm_mode = !pe->pin;
 
-  passphrase_ok = 0;
+  passphrase_ok = confirm_yes = 0;
 
-  if (want_pass)
-    {
-      DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
-                      GetDesktopWindow (), dlg_proc, (LPARAM)pe);
-      ShowWindow (dialog_handle, SW_SHOWNORMAL);
-      return pe->result;
-    }
-  else /* Confirmation mode.  */
-    {
-      int ret;
-
-      if (pe->error)
-        ret = MessageBox (NULL, pe->error, "Error", MB_YESNO | MB_ICONERROR);
-      else
-        ret = MessageBox (NULL, pe->description?pe->description:"",
-                          "Information", MB_YESNO | MB_ICONINFORMATION);
-      if (ret == IDYES)
-        return 1;
-      else
-        return 0;
-    }
+  DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
+                  GetDesktopWindow (), dlg_proc, (LPARAM)pe);
+  ShowWindow (dialog_handle, SW_SHOWNORMAL);
+  if (lock_set_foreground_window)
+    lock_set_foreground_window (LSFW_UNLOCK);
+  DestroyWindow (dialog_handle);
+  dialog_handle = NULL;
+  if (confirm_mode)
+    return confirm_yes;
+  else if (passphrase_ok && pe->pin)
+    return strlen (pe->pin);
+  else
+    return -1;
 }
 
 
 int
 main (int argc, char **argv)
 {
+  void *handle;
+
   pinentry_init (PGMNAME);
 
   /* Consumes all arguments.  */
@@ -161,6 +306,19 @@ main (int argc, char **argv)
     {
       printf ("pinentry-w32 (pinentry) " VERSION "\n");
       exit (EXIT_SUCCESS);
+    }
+
+  /* We need to load a functuion because that one is only available
+     since W2000 but not in older NTs.  */
+  handle = LoadLibrary ("user32.dll");
+  if (handle)
+    {
+      void *foo;
+      foo = GetProcAddress (handle, "LockSetForegroundWindow");
+      if (foo)
+        lock_set_foreground_window = foo;
+      else
+        CloseHandle (handle);
     }
 
   if (pinentry_loop ())

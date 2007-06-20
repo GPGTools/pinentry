@@ -21,7 +21,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = autogen.sh README.CVS Manifest
+EXTRA_DIST = autogen.sh README.SVN Manifest
 
 if BUILD_PINENTRY_CURSES
 pinentry_curses = curses
@@ -56,10 +56,6 @@ endif
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
 	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_w32} doc
 
-signed-dist: $(distdir).tar.gz.sig
-
-%.sig: %
-	gpg -sbav -u 0x57548DCD $@ $<
 
 install-exec-local:
 	@list='$(bin_PROGRAMS)'; for p in $$list; do \

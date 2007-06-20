@@ -1,3 +1,25 @@
+2007-06-20  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c (wchar_to_utf8): New.
+	(ok_button_clicked): Use it.
+	(utf8_to_wchar): New.
+	(set_dlg_item_text): New.
+	(dlg_proc): Use new function so that we are able to correctly
+	display all prompts.
+	(main): Load LockSetForegroundWindow.
+	(dlg_proc): Call LockSetForegroundWindow via its fnc ptr.
+	(center_window): New.  Taken from GPGol.
+	(dlg_proc): Call it.
+	(w32_cmd_handler): Revamped the confirm mode.
+
+2007-06-18  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c (dlg_proc): Call LockSetForegroundWindow.
+
+	* Makefile.am (signed-dist, %.sig): Remove.
+
+	* autogen.sh: Modernized.
+
 2007-05-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (pinentry_color_t): New type.
