@@ -1,4 +1,15 @@
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* w32/Makefile.am (pinentry_w32_LDFLAGS): Add -mconsole again.
+
+	* w32/main.c (dlg_proc): Set focus.
+	(resize_button): New.  No code yet.
+	(dlg_proc): Call it for the buttons.
+	(w32_cmd_handler): Restore old foreground window.
+
 2007-06-20  Werner Koch  <wk@g10code.com>
+
+	* w32/Makefile.am (pinentry_w32_LDFLAGS): Remove -mconsole.
 
 	* w32/main.c (wchar_to_utf8): New.
 	(ok_button_clicked): Use it.

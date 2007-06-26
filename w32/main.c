@@ -1,5 +1,5 @@
 /* main.c - Secure W32 dialog for PIN entry.
-   Copyright (C) 2004 g10 Code GmbH
+   Copyright (C) 2004, 2007 g10 Code GmbH
    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -116,7 +116,7 @@ utf8_to_wchar (const char *string)
 
 /* Center the window CHILDWND with the desktop as its parent
    window.  STYLE is passed as second arg to SetWindowPos.*/
-void
+static void
 center_window (HWND childwnd, HWND style) 
 {     
   HWND parwnd;
@@ -155,6 +155,21 @@ center_window (HWND childwnd, HWND style)
 }
 
 
+/* Resize the button so that STRING fits into it.   */
+static void
+resize_button (HWND hwnd, const char *string)
+{
+  if (!hwnd)
+    return;
+
+  /* FIXME: Need to figure out how to convert dialog coorddnates to
+     screen coordinates and how buttons should be placed.  */
+/*   SetWindowPos (hbutton, NULL, */
+/*                 10, 180,  */
+/*                 strlen (string+2), 14, */
+/*                 (SWP_NOZORDER)); */
+}
+
 
 
 
@@ -185,10 +200,12 @@ static BOOL CALLBACK
 dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   static pinentry_t pe;
+  static int item;
 
   switch (msg)
     {
     case WM_INITDIALOG:
+      dialog_handle = dlg;
       pe = (pinentry_t)lparam;
       if (!pe)
         abort ();
@@ -196,21 +213,34 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       set_dlg_item_text (dlg, IDC_PINENT_DESC, pe->description);
       set_dlg_item_text (dlg, IDC_PINENT_TEXT, "");
       if (pe->ok)
-        set_dlg_item_text (dlg, IDOK, pe->ok);
+        {
+          set_dlg_item_text (dlg, IDOK, pe->ok);
+          resize_button (GetDlgItem (dlg, IDOK), pe->ok);
+        }
       if (pe->cancel)
-        set_dlg_item_text (dlg, IDCANCEL, pe->cancel);
+        {
+          set_dlg_item_text (dlg, IDCANCEL, pe->cancel);
+          resize_button (GetDlgItem (dlg, IDCANCEL), pe->cancel);
+        }
       if (pe->error)
         set_dlg_item_text (dlg, IDC_PINENT_ERR, pe->error);
+
+      center_window (dlg, HWND_TOP);
 
       if (confirm_mode)
         {
           EnableWindow (GetDlgItem (dlg, IDC_PINENT_TEXT), FALSE);
           SetWindowPos (GetDlgItem (dlg, IDC_PINENT_TEXT), NULL, 0, 0, 0, 0,
                         (SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW));
+          
+          item = IDOK;
         }
+      else
+        item = IDC_PINENT_TEXT;
 
-      dialog_handle = dlg;
-      center_window (dlg, HWND_TOP);
+      if (GetDlgCtrlID ((HWND)wparam) != item) 
+        SetFocus ( GetDlgItem (dlg, item)); 
+      
       /* Fixme: There are two problems: A race condition between the
          two calls and more important that SetForegroundWindow will
          fail if a Menu is somewhere open.  */
@@ -274,17 +304,26 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
 static int
 w32_cmd_handler (pinentry_t pe)
 {
+  HWND lastwindow = GetForegroundWindow ();
+
   confirm_mode = !pe->pin;
 
   passphrase_ok = confirm_yes = 0;
 
+  dialog_handle = NULL;
   DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
                   GetDesktopWindow (), dlg_proc, (LPARAM)pe);
-  ShowWindow (dialog_handle, SW_SHOWNORMAL);
-  if (lock_set_foreground_window)
-    lock_set_foreground_window (LSFW_UNLOCK);
-  DestroyWindow (dialog_handle);
-  dialog_handle = NULL;
+  if (dialog_handle)
+    {
+      ShowWindow (dialog_handle, SW_SHOWNORMAL);
+      if (lock_set_foreground_window)
+        lock_set_foreground_window (LSFW_UNLOCK);
+      if (lastwindow)
+        SetForegroundWindow (lastwindow);
+    }
+  else
+    return -1;
+
   if (confirm_mode)
     return confirm_yes;
   else if (passphrase_ok && pe->pin)
