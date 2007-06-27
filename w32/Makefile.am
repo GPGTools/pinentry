@@ -29,7 +29,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
 
 pinentry_w32_SOURCES = main.c pinentry-w32.rc resource.h
 
-pinentry_w32_LDFLAGS = -mwindows -mconsole
+# Note: For testing you should add -mconsole to LDFLAGS.
+pinentry_w32_LDFLAGS = -mwindows
 pinentry_w32_LDADD = pinentry-w32.o \
 	../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a
 

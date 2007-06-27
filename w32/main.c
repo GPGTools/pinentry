@@ -19,13 +19,14 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define WINVER 0x0403  /* Required for SendInput.  */
 #include <windows.h>
 
 #include "pinentry.h"
 #include "memory.h"
 
 #include "resource.h"
-
+/* #include "msgcodes.h" */
 
 #define PGMNAME "pinentry-w32"
 
@@ -43,17 +44,63 @@ static int w32_cmd_handler (pinentry_t pe);
 static void ok_button_clicked (HWND dlg, pinentry_t pe);
 
 
-/* We use gloabl variables for the state, because there should never
+/* We use global variables for the state, because there should never
    ever be a second instance.  */
 static HWND dialog_handle;
 static int confirm_mode;
 static int passphrase_ok;
 static int confirm_yes;
 
+static FILE *debugfp;
+
+
 /* Connect this module to the pinnetry framework.  */
 pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
 
 
+
+const char *
+w32_strerror (int ec)
+{
+  static char strerr[256];
+  
+  if (ec == -1)
+    ec = (int)GetLastError ();
+  FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
+                 MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 strerr, sizeof strerr - 1, NULL);
+  return strerr;    
+}
+
+
+/* static HWND */
+/* show_window_hierarchy (HWND parent, int level) */
+/* { */
+/*   HWND child; */
+
+/*   child = GetWindow (parent, GW_CHILD); */
+/*   while (child) */
+/*     { */
+/*       char buf[1024+1]; */
+/*       char name[200]; */
+/*       int nname; */
+/*       char *pname; */
+   
+/*       memset (buf, 0, sizeof (buf)); */
+/*       GetWindowText (child, buf, sizeof (buf)-1); */
+/*       nname = GetClassName (child, name, sizeof (name)-1); */
+/*       if (nname) */
+/*         pname = name; */
+/*       else */
+/*         pname = NULL; */
+/*       fprintf (debugfp, "### %*shwnd=%p (%s) `%s'\n", level*2, "", child, */
+/*                pname? pname:"", buf); */
+/*       show_window_hierarchy (child, level+1); */
+/*       child = GetNextWindow (child, GW_HWNDNEXT);	 */
+/*     } */
+
+/*   return NULL; */
+/* } */
 
 
 
@@ -155,6 +202,58 @@ center_window (HWND childwnd, HWND style)
 }
 
 
+
+static void
+move_mouse_and_click (HWND hwnd)
+{
+  RECT rect;
+  HDC hdc;
+  int wscreen, hscreen, x, y, normx, normy;
+  INPUT inp[3];
+  int idx;
+  
+  hdc = GetDC (hwnd);     
+  wscreen = GetDeviceCaps (hdc, HORZRES);     
+  hscreen = GetDeviceCaps (hdc, VERTRES);     
+  ReleaseDC (hwnd, hdc);      
+  if (wscreen < 10 || hscreen < 10)
+    return;
+  
+  GetWindowRect (hwnd, &rect);
+  x = rect.left;
+  y = rect.bottom;
+
+  normx = x * (65535 / wscreen);
+  if (normx < 0 || normx > 65535)
+    return;
+  normy = y * (65535 / hscreen);
+  if (normy < 0 || normy > 65535)
+    return;
+
+  for (idx=0; idx < 3; idx++)
+    memset (&inp[idx], 0, sizeof inp[idx]);
+
+  idx=0;
+  inp[idx].type = INPUT_MOUSE;
+  inp[idx].mi.dx = normx;
+  inp[idx].mi.dy = normy;
+  inp[idx].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+  idx++;
+
+  inp[idx].type = INPUT_MOUSE;
+  inp[idx].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+  idx++;
+
+  inp[idx].type = INPUT_MOUSE;
+  inp[idx].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+  idx++;
+
+  if ( SendInput (idx, inp, sizeof (INPUT)) != idx && debugfp )
+    fprintf (debugfp, "SendInput failed: %s\n", w32_strerror (-1));
+}
+
+
+
 /* Resize the button so that STRING fits into it.   */
 static void
 resize_button (HWND hwnd, const char *string)
@@ -169,6 +268,7 @@ resize_button (HWND hwnd, const char *string)
 /*                 strlen (string+2), 14, */
 /*                 (SWP_NOZORDER)); */
 }
+
 
 
 
@@ -202,6 +302,19 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
   static pinentry_t pe;
   static int item;
 
+
+/*   { */
+/*     int idx; */
+
+/*     for (idx=0; msgcodes[idx].string; idx++) */
+/*       if (msg == msgcodes[idx].msg) */
+/*         break; */
+/*     if (msgcodes[idx].string) */
+/*       fprintf (debugfp, "received %s\n", msgcodes[idx].string); */
+/*     else */
+/*       fprintf (debugfp, "received WM_%u\n", msg); */
+/*   } */
+
   switch (msg)
     {
     case WM_INITDIALOG:
@@ -225,8 +338,6 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       if (pe->error)
         set_dlg_item_text (dlg, IDC_PINENT_ERR, pe->error);
 
-      center_window (dlg, HWND_TOP);
-
       if (confirm_mode)
         {
           EnableWindow (GetDlgItem (dlg, IDC_PINENT_TEXT), FALSE);
@@ -238,14 +349,22 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       else
         item = IDC_PINENT_TEXT;
 
-      if (GetDlgCtrlID ((HWND)wparam) != item) 
-        SetFocus ( GetDlgItem (dlg, item)); 
-      
-      /* Fixme: There are two problems: A race condition between the
-         two calls and more important that SetForegroundWindow will
-         fail if a Menu is somewhere open.  */
-      if (SetForegroundWindow (dlg) && lock_set_foreground_window)
-        lock_set_foreground_window (LSFW_LOCK);
+      center_window (dlg, HWND_TOP);
+
+      /* Unfortunately we can't use SetForegroundWindow because there
+         is no easy eay to have all the calling processes do an
+         AllowSetForegroundWindow.  What we do instead is to bad hack
+         by simulating a click to the Window. */
+/*       if (SetForegroundWindow (dlg) && lock_set_foreground_window) */
+/*         { */
+/*           lock_set_foreground_window (LSFW_LOCK); */
+/*         } */
+
+/*       show_window_hierarchy (GetDesktopWindow (), 0); */
+
+      ShowWindow (dlg, SW_SHOW);
+      move_mouse_and_click ( GetDlgItem (dlg, IDC_PINENT_PROMPT) );
+
       break;
 
     case WM_COMMAND:
@@ -304,22 +423,21 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
 static int
 w32_cmd_handler (pinentry_t pe)
 {
-  HWND lastwindow = GetForegroundWindow ();
+/*   HWND lastwindow = GetForegroundWindow (); */
 
   confirm_mode = !pe->pin;
 
   passphrase_ok = confirm_yes = 0;
 
   dialog_handle = NULL;
-  DialogBoxParam (NULL, (LPCTSTR) IDD_PINENT,
+  DialogBoxParam (GetModuleHandle (NULL), MAKEINTRESOURCE (IDD_PINENT),
                   GetDesktopWindow (), dlg_proc, (LPARAM)pe);
   if (dialog_handle)
     {
-      ShowWindow (dialog_handle, SW_SHOWNORMAL);
-      if (lock_set_foreground_window)
-        lock_set_foreground_window (LSFW_UNLOCK);
-      if (lastwindow)
-        SetForegroundWindow (lastwindow);
+/*       if (lock_set_foreground_window) */
+/*         lock_set_foreground_window (LSFW_UNLOCK); */
+/*       if (lastwindow) */
+/*         SetForegroundWindow (lastwindow); */
     }
   else
     return -1;
@@ -347,7 +465,11 @@ main (int argc, char **argv)
       exit (EXIT_SUCCESS);
     }
 
-  /* We need to load a functuion because that one is only available
+/*   debugfp = fopen ("pinentry.log", "w"); */
+/*   if (!debugfp) */
+/*     debugfp = stderr; */
+
+  /* We need to load a function because that one is only available
      since W2000 but not in older NTs.  */
   handle = LoadLibrary ("user32.dll");
   if (handle)
