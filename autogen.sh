@@ -90,7 +90,7 @@ if test "$1" = "--build-w32"; then
                 --host=${host} --build=${build} \
                 --disable-pinentry-gtk \
                 --disable-pinentry-gtk2 \
-                --disable-pinentry-qt 
+                --disable-pinentry-qt "$@"
 
     rc=$?
     exit $rc

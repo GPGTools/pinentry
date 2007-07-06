@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.7.3
+Noteworthy changes in version 0.7.3 (2007-07-06)
 ------------------------------------------------
 
  * New command MESSAGE and --one-button compatibility option to
@@ -10,7 +10,9 @@ Noteworthy changes in version 0.7.3
  * New option --colors=FG,BG,SO to set the colors for the curses
    pinentry.
 
- * Pinentry-w32 does now work.
+ * Pinentry-w32 does now basicaly work.  It needs some finishing
+   though.  For example the buttons should resize themself according
+   to the size of the text.
 
 
 Noteworthy changes in version 0.7.2 (2005-01-27)

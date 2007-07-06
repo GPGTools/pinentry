@@ -24,7 +24,7 @@ min_automake_version="1.7.6"
 
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry, 0.7.3-cvs, [gpa-dev@gnupg.org])
+AC_INIT(pinentry, 0.7.3, [gnupg-devel@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)

@@ -1,3 +1,13 @@
+2007-07-06  Werner Koch  <wk@g10code.com>
+
+	Released 0.7.3.
+
+	* config.sub, config.guess: Updated from current Savannah CVS.
+
+2007-06-27  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c: Revamped the SetFocus stuff.  It is all not that easy.
+
 2007-06-26  Werner Koch  <wk@g10code.com>
 
 	* w32/Makefile.am (pinentry_w32_LDFLAGS): Add -mconsole again.
