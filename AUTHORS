@@ -1,7 +1,7 @@
 Program: Pinentry
 Bug reports: <gpa-dev@gnupg.org>
 Security related bug reports: <security@gnupg.org>
-
+License: GPLv2+
 
 Robert Bihlmeyer <robbe@orcus.priv.at>
 Werner Koch, g10 Code GmbH <wk@gnupg.org>
