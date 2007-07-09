@@ -62,7 +62,7 @@ section entitled ``Copying''.
 @ifnottex
 @dircategory GNU Utilities
 @direntry
-* pinentry::               Ask securely for a passphrase or PIN.
+* pinentry: (pinentry).    Ask securely for a passphrase or PIN.
 @end direntry
 This file documents the use and the internals of the @pinentry{}.
 

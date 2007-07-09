@@ -1,3 +1,12 @@
+2007-07-09  Werner Koch  <wk@g10code.com>
+
+	* doc/pinentry.texi: Fixed direntry syntax.
+
+	* configure.ac: Add --without-libcap.  From the Gentoo patch archive.
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use expose-event
+	instead of map-event.  From Alon Bar-Lev.
+
 2007-07-06  Werner Koch  <wk@g10code.com>
 
 	Released 0.7.3.

@@ -207,10 +207,10 @@ create_window (int confirm_mode)
   if (!confirm_mode)
     {
       g_signal_connect (G_OBJECT (win),
-			pinentry->grab ? "map-event" : "focus-in-event",
+			pinentry->grab ? "expose-event" : "focus-in-event",
 			G_CALLBACK (grab_keyboard), NULL);
       g_signal_connect (G_OBJECT (win),
-			pinentry->grab ? "unmap-event" : "focus-out-event",
+			pinentry->grab ? "no-expose-event" : "focus-out-event",
 			G_CALLBACK (ungrab_keyboard), NULL);
     }
   gtk_window_add_accel_group (GTK_WINDOW (win), acc);
