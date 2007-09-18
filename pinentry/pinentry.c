@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002, 2003 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2007 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -69,11 +69,13 @@ struct pinentry pinentry =
     0,		/* Result.  */
     0,          /* Locale error flag. */
     0,          /* One-button flag.  */
+    0,          /* Quality-Bar flag.  */
     PINENTRY_COLOR_DEFAULT,
     0,
     PINENTRY_COLOR_DEFAULT,
     PINENTRY_COLOR_DEFAULT,
-    0
+    0,
+    NULL        /* Assuan context.  */
   };
 
 
@@ -207,6 +209,111 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
   return output_buf;
 }
 #endif
+
+
+/* Copy TEXT or TEXTLEN to BUFFER and escape as required.  Return a
+   pointer to the end of the new buffer.  Note that BUFFER must be
+   large enough to keep the entire text; allocataing it 3 times of
+   TEXTLEN is sufficient.  */
+static char *
+copy_and_escape (char *buffer, const void *text, size_t textlen)
+{
+  int i;
+  const unsigned char *s = (unsigned char *)text;
+  char *p = buffer;
+  
+  for (i=0; i < textlen; i++)
+    {
+      if (s[i] < ' ' || s[i] == '+')
+        {
+          snprintf (p, 4, "%%%02X", s[i]);
+          p += 3;
+        }
+      else if (s[i] == ' ')
+        *p++ = '+';
+      else
+        *p++ = s[i];
+    }
+  return p;
+}
+
+
+
+/* Run a quality inquiry for PASSPHRASE of LENGTH.  (We need LENGTH
+   because not all backends might be able to return a proper
+   C-string.).  Returns: A value between -100 and 100 to give an
+   estimate of the passphrase's quality.  Negative values are use if
+   the caller won't even accept that passphrase.  Note that we expect
+   just one data line which should not be escaped in any represent a
+   numeric signed decimal value.  Extra data is currently ignored but
+   should not be send at all.  */
+int
+pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
+{
+  ASSUAN_CONTEXT ctx = pin->ctx_assuan;
+  const char prefix[] = "INQUIRE QUALITY ";
+  char *command;
+  char *line;
+  size_t linelen;
+  int gotvalue = 0;
+  int value = 0;
+  int rc;
+
+  if (!ctx)
+    return 0; /* Can't run the callback.  */
+
+  if (length > 300)
+    length = 300;  /* Limit so that it definitely fits into an Assuan
+                      line.  */
+
+  command = secmem_malloc (strlen (prefix) + 3*length + 1);
+  if (!command)
+    return 0;
+  strcpy (command, prefix);
+  copy_and_escape (command + strlen(command), passphrase, length);
+  rc = assuan_write_line (ctx, command);
+  secmem_free (command);
+  if (rc)
+    {
+      fprintf (stderr, "ASSUAN WRITE LINE failed: rc=%d\n", rc);
+      return 0;
+    }
+
+  for (;;)
+    {
+      do 
+        {
+          rc = assuan_read_line (ctx, &line, &linelen);
+          if (rc)
+            {
+              fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
+              return 0;
+            }
+        }    
+      while (*line == '#' || !linelen);
+      if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+          && (!line[3] || line[3] == ' '))
+        break; /* END command received*/
+      if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N'
+          && (!line[3] || line[3] == ' '))
+        break; /* CAN command received*/
+      if (line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+          && (!line[3] || line[3] == ' '))
+        break; /* ERR command received*/
+      if (line[0] != 'D' || line[1] != ' ' || linelen < 3 || gotvalue)
+        continue;
+      gotvalue = 1;
+      value = atoi (line+2);
+    }
+  if (value < -100)
+    value = -100;
+  else if (value > 100)
+    value = 100;
+
+  return value;
+}
+
+
 
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
    new buffer on success and 0 on failure or when the old buffer is
@@ -638,6 +745,15 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+
+static int
+cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
+{
+  pinentry.quality_bar = 1;
+  return 0;
+}
+
+
 static int
 cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 {
@@ -654,8 +770,9 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     }
   pinentry.locale_err = 0;
   pinentry.one_button = 0;
-
+  pinentry.ctx_assuan = ctx;
   result = (*pinentry_cmd_handler) (&pinentry);
+  pinentry.ctx_assuan = NULL;
   if (pinentry.error)
     {
       free (pinentry.error);
@@ -663,6 +780,8 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     }
   if (set_prompt)
     pinentry.prompt = NULL;
+
+  pinentry.quality_bar = 0;  /* Reset it after the command.  */
 
   if (result < 0)
     {
@@ -704,6 +823,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   int result;
 
   pinentry.one_button = !!strstr (line, "--one-button");
+  pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -726,6 +846,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   int result;
 
   pinentry.one_button = 1;
+  pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -759,6 +880,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "GETPIN",     0,  cmd_getpin },
       { "CONFIRM",    0,  cmd_confirm },
       { "MESSAGE",    0,  cmd_message },
+      { "SETQUALITYBAR", 0,  cmd_setqualitybar },
       { NULL }
     };
   int i, j, rc;

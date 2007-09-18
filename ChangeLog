@@ -1,3 +1,11 @@
+2007-09-18  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add member QUALITY_BAR
+	and CTX_ASSUAN.
+	* pinentry/pinentry.c (cmd_setqualitybar): New.
+	(copy_and_escape): New.
+	(pinentry_inq_quality): New.
+
 2007-07-09  Werner Koch  <wk@g10code.com>
 
 	* doc/pinentry.texi: Fixed direntry syntax.

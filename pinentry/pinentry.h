@@ -91,12 +91,21 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
+  /* If this is set, a passphrase quality indicator is shown.  There
+     will also be an inquiry back to the caller to get an indication
+     of the quality for the passphrase entered so far.  */
+  int quality_bar;
+
   /* For the curses pinentry, the color of error messages.  */
   pinentry_color_t color_fg;
   int color_fg_bright;
   pinentry_color_t color_bg;
   pinentry_color_t color_so;
   int color_so_bright;
+
+  /* Fo the quality indicator we need to do an inquiry.  Thus we need
+     to save the assuan ctx.  */
+  void *ctx_assuan;
 };
 typedef struct pinentry *pinentry_t;
 
@@ -123,6 +132,11 @@ char *pinentry_utf8_to_local (char *lc_ctype, char *text);
    SECURE set to true, use secure memory for the returned buffer.
    Return NULL on error. */
 char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
+
+
+/* Run a quality inquiry for PASSPHRASE of LENGTH. */
+int pinentry_inq_quality (pinentry_t pin, 
+                          const char *passphrase, size_t length);
 
 /* Try to make room for at least LEN bytes for the pin in the pinentry
    PIN.  Returns new buffer on success and 0 on failure.  */

@@ -276,6 +276,18 @@ a GETPIN or CONFIRM, and is only displayed when asking for a PIN.
   S: OK
 @end example
 
+@item Enable a passphrase quality indicator
+Adds a quality indicator to the GETPIN window.  This indicator is
+updated as the passphrase is typed.  The clients needs to implement an
+inquiry named "QUALITY" which gets passed the current passpharse
+(percent-plus escaped) and should send back a string with a single
+numerical vauelue between -100 and 100.  Negative values will be
+displayed in red.
+@example
+  C: SETQUALITYBAR
+  S: OK
+@end example
+
 @item Ask for a PIN
 The meat of this tool is to ask for a passphrase of PIN, it is done with
 this command:

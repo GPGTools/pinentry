@@ -1,6 +1,6 @@
 /* pinentry-gtk-2.c
    Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
-   Copyright (C) 2001, 2002 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2007 g10 Code GmbH
    Copyright (C) 2004 by Albrecht Dreﬂ <albrecht.dress@arcor.de>
 
    pinentry-gtk-2 is a pinentry application for the Gtk+-2 widget set.
@@ -56,6 +56,7 @@ static int passphrase_ok;
 static int confirm_yes;
 
 static GtkWidget *entry;
+static GtkWidget *qualitybar;
 static GtkWidget *insure;
 static GtkWidget *time_out;
 
@@ -181,6 +182,49 @@ pinentry_utf8_validate (gchar *text)
 }
 
 
+/* Handler called for "changed".   We use it to update the quality
+   indicator.  */
+static void
+changed_text_handler (GtkWidget *widget)
+{
+  char textbuf[50];
+  const char *s;
+  int length;
+  int percent;
+  GdkColor color = { 0, 0, 0, 0};
+
+  if (!qualitybar || !pinentry->quality_bar)
+    return;
+
+  s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (widget));
+  if (!s)
+    s = "";
+  length = strlen (s);
+  percent = length? pinentry_inq_quality (pinentry, s, length) : 0;
+  if (!length)
+    {
+      *textbuf = 0;
+      color.red = 0xffff;
+    }
+  else if (percent < 0)
+    {
+      snprintf (textbuf, sizeof textbuf, "(%d%%)", -percent);
+      color.red = 0xffff;
+      percent = -percent;
+    }
+  else
+    {
+      snprintf (textbuf, sizeof textbuf, "%d%%", percent);
+      color.green = 0xffff;
+    }
+  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 
+                                 (double)percent/100.0);
+  gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), textbuf);
+  gtk_widget_modify_bg (qualitybar, GTK_STATE_PRELIGHT, &color);
+}
+
+
+
 static GtkWidget *
 create_window (int confirm_mode)
 {
@@ -237,7 +281,7 @@ create_window (int confirm_mode)
       g_free (msg);
       gtk_misc_set_alignment (GTK_MISC (w), 0.0, 0.5);
       gtk_label_set_line_wrap (GTK_LABEL (w), TRUE);
-	gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
+      gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
     }
   if (pinentry->error && !confirm_mode)
     {
@@ -251,7 +295,17 @@ create_window (int confirm_mode)
       gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
       gtk_widget_modify_fg (w, GTK_STATE_NORMAL, &color);
     }
-
+  
+  if (pinentry->quality_bar)
+    {
+      qualitybar = gtk_progress_bar_new();
+      gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), "<small>foo</small>");
+      gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
+      gtk_box_pack_start (GTK_BOX (box), qualitybar, TRUE, FALSE, 0);
+    }
+  else
+    qualitybar = NULL;
+  
   ebox = gtk_hbox_new (FALSE, HIG_SMALL);
   gtk_box_pack_start (GTK_BOX(box), ebox, FALSE, FALSE, 0);
 
@@ -264,10 +318,13 @@ create_window (int confirm_mode)
 	  g_free (msg);
 	  gtk_box_pack_start (GTK_BOX (ebox), w, FALSE, FALSE, 0);
 	}
+
       entry = gtk_secure_entry_new ();
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "activate",
 			G_CALLBACK (enter_callback), entry);
+      g_signal_connect (G_OBJECT (entry), "changed",
+                        G_CALLBACK (changed_text_handler), entry);
       gtk_box_pack_start (GTK_BOX (ebox), entry, TRUE, TRUE, 0);
       gtk_widget_grab_focus (entry);
       gtk_widget_show (entry);
