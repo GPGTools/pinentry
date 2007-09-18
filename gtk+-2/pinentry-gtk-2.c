@@ -299,7 +299,7 @@ create_window (int confirm_mode)
   if (pinentry->quality_bar)
     {
       qualitybar = gtk_progress_bar_new();
-      gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), "<small>foo</small>");
+      gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), "");
       gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
       gtk_box_pack_start (GTK_BOX (box), qualitybar, TRUE, FALSE, 0);
     }
