@@ -1,5 +1,6 @@
 /* pinentrydialog.cpp - A secure KDE dialog for PIN entry.
    Copyright (C) 2002 Klarälvdalens Datakonsult AB
+   Copyright (C) 2007 g10 Code GmbH
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
    
    This program is free software; you can redistribute it and/or
@@ -17,16 +18,20 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
+
 #include <qlayout.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
 #include <qmessagebox.h>
+#include <qprogressbar.h>
 
 #include "secqlineedit.h"
 
 #include "pinentrydialog.h"
+#include "pinentry.h"
 
-PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
+PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, 
+                                bool modal, bool enable_quality_bar )
   : QDialog( parent, name, modal ), _grabbed( false )
 {
   QBoxLayout* top = new QVBoxLayout( this, 6 );
@@ -41,6 +46,16 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   _error = new QLabel( this );
   labelLayout->addWidget( _error );
 
+  if (enable_quality_bar)
+    {
+      _quality_bar = new QProgressBar (this);
+      _quality_bar->setCenterIndicator (true);
+      labelLayout->addWidget ( _quality_bar );
+      _have_quality_bar = true;
+    }
+  else
+    _have_quality_bar = false;
+  
   _desc = new QLabel( this );
   labelLayout->addWidget( _desc );
 
@@ -67,12 +82,12 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
 	   this, SIGNAL( accepted() ) );
   connect( _cancel, SIGNAL( clicked() ),
 	   this, SIGNAL( rejected() ) );
-
+  connect( _edit, SIGNAL( textModified(const SecQString&) ),
+	   this, SLOT( updateQuality(const SecQString&) ) );
   connect (this, SIGNAL (accepted ()),
 	   this, SLOT (accept ()));
   connect (this, SIGNAL (rejected ()),
 	   this, SLOT (reject ()));
-
   _edit->setFocus();
 }
 
@@ -103,6 +118,42 @@ void PinEntryDialog::keyPressEvent( QKeyEvent* e )
   QDialog::keyPressEvent( e );
 }
 
+
+void PinEntryDialog::updateQuality( const SecQString & txt )
+{
+  char *pin;
+  int length;
+  int percent;
+  QPalette pal;
+
+  if (!_have_quality_bar || !_pinentry_info)
+    return;
+  pin = (char*)txt.utf8();
+  length = strlen (pin);
+  percent = length? pinentry_inq_quality (_pinentry_info, pin, length) : 0;
+  ::secmem_free (pin);
+  if (!length)
+    {
+      _quality_bar->reset ();
+    }
+  else 
+    {
+      pal = _quality_bar->palette ();
+      if (percent < 0)
+        {
+          pal.setColor (QColorGroup::Highlight, QColor("red"));
+          percent = -percent;
+        }
+      else
+        {
+          pal.setColor (QColorGroup::Highlight, QColor("green"));
+        }
+      _quality_bar->setPalette (pal);
+      _quality_bar->setProgress (percent);
+    }
+}
+
+
 void PinEntryDialog::setDescription( const QString& txt ) 
 {
   _desc->setText( txt );
@@ -117,7 +168,8 @@ QString PinEntryDialog::description() const
 
 void PinEntryDialog::setError( const QString& txt ) 
 {
-  if( !txt.isNull() )_icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Critical ) );
+  if ( !txt.isNull() )
+    _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Critical ) );
   _error->setText( txt );
 }
 
@@ -154,4 +206,10 @@ void PinEntryDialog::setOkText( const QString& txt )
 void PinEntryDialog::setCancelText( const QString& txt )
 {
   _cancel->setText( txt );
+}
+
+
+void PinEntryDialog::setPinentryInfo (pinentry_t peinfo )
+{
+  _pinentry_info = peinfo;
 }

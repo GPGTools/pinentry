@@ -21,9 +21,11 @@
 #define __PINENTRYDIALOG_H__
 
 #include <qdialog.h>
+#include "pinentry.h"
 
 class QLabel;
 class QPushButton;
+class QProgressBar;
 class SecQLineEdit;
 class SecQString;
 
@@ -36,7 +38,8 @@ class PinEntryDialog : public QDialog {
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-  PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false );
+  PinEntryDialog( QWidget* parent = 0, const char* name = 0, 
+                  bool modal = false, bool enable_quality_bar = false );
 
   void setDescription( const QString& );
   QString description() const;
@@ -53,6 +56,11 @@ public:
   void setOkText( const QString& );
   void setCancelText( const QString& );
 
+  void setPinentryInfo (pinentry_t);
+
+public slots:
+  void updateQuality(const SecQString &);
+
 signals:
   void accepted();
   void rejected();
@@ -67,10 +75,13 @@ private:
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;
+  QProgressBar* _quality_bar;
   SecQLineEdit* _edit;
   QPushButton* _ok;
   QPushButton* _cancel;  
   bool       _grabbed;
+  bool       _have_quality_bar;
+  pinentry_t _pinentry_info;
 };
 
 

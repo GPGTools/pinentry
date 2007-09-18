@@ -288,6 +288,9 @@ struct SecQLineEditPrivate : public Qt
     the Return or Enter key is pressed the returnPressed() signal is
     emitted.
 
+    When the text changes the textModified() signal is emitted in all
+    cases.
+
     By default, SecQLineEdits have a frame as specified by the Windows
     and Motif style guides; you can turn it off by calling
     setFrame(FALSE).
@@ -1845,6 +1848,7 @@ void SecQLineEditPrivate::finishChange( int validateFromState, bool setModified 
 	    textDirty = FALSE;
 	    emit q->textChanged( text );
 	}
+        emit q->textModified( text );
 #if defined(QT_ACCESSIBILITY_SUPPORT)
 	QAccessible::updateAccessibility( q, 0, QAccessible::ValueChanged );
 #endif

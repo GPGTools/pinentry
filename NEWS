@@ -1,6 +1,9 @@
 Noteworthy changes in version 0.7.4
 ------------------------------------------------
 
+* Pinentry-gtk-2 and pinentry-qt now support a simple passphrase
+  quality indicator. 
+
 
 Noteworthy changes in version 0.7.3 (2007-07-06)
 ------------------------------------------------

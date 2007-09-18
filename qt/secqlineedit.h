@@ -184,6 +184,7 @@ public slots:
 
 signals:
     void textChanged( const SecQString &);
+    void textModified( const SecQString &);
     void returnPressed();
     void lostFocus();
     void selectionChanged();

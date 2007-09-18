@@ -68,8 +68,9 @@ qt_cmd_handler (pinentry_t pe)
       if (pe->parent_wid)
 	parent = new ForeignWidget (pe->parent_wid);
 
-      PinEntryDialog pinentry (parent, 0, true);
+      PinEntryDialog pinentry (parent, NULL, true, !!pe->quality_bar);
 
+      pinentry.setPinentryInfo (pe);
       pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
       pinentry.setDescription (QString::fromUtf8 (pe->description));
       /* If we reuse the same dialog window.  */

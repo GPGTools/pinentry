@@ -1,5 +1,12 @@
 2007-09-18  Werner Koch  <wk@g10code.com>
 
+	* qt/secqlineedit.h (SecQLineEdit): New signal textModified.
+	* qt/secqlineedit.cpp (finishChange): Emit it.
+	* qt/pinentrydialog.cpp (setPinentryInfo): New.
+	(PinEntryDialog): Add arg ENABLE_QUALITY_BAR.
+	* qt/pinentrydialog.h (setPinentryInfo): New.
+	(PinEntryDialog): Add arg ENABLE_QUALITY_BAR.
+
 	* pinentry/pinentry.h (struct pinentry): Add member QUALITY_BAR
 	and CTX_ASSUAN.
 	* pinentry/pinentry.c (cmd_setqualitybar): New.
