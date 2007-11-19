@@ -1,5 +1,14 @@
 2007-11-19  Werner Koch  <wk@g10code.com>
 
+	* doc/pinentry.texi (Protocol): Typo fixes by Bernhard Herzog.
+	Describe SETQUALITYBAR_TT.
+
+2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Fixed crash
+	
+2007-11-19  Werner Koch  <wk@g10code.com>
+
 	* gtk+-2/pinentry-gtk-2.c (create_window): Use again map-event and
 	unmap-event as this works on my setup far more reliable than
 	expose-event/no-expose-event.
@@ -18,6 +27,7 @@
 	(_quality_bar_label): New.
 	* qt/pinentrydialog.cpp (setQualityBar, setQualityBarTT): New.
 	(PinEntryDialog): Remove setting of tooltip.
+
 	* qt/main.cpp (qt_cmd_handler): Propagate quality bar label and tootip.
 
 2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)

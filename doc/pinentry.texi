@@ -288,10 +288,20 @@ displayed in red.
   S: OK
 @end example
 
-If a custom laber for the auality bar is required, just add that label
-as an argument as precent escaped string.  You will need this feature to
+If a custom label for the quality bar is required, just add that label
+as an argument as percent escaped string.  You will need this feature to
 translate the label because pinentry has no internal gettext except for
 stock strings from the toolkit library.
+
+If you want to show a tooltip for the quality bar, you may use
+@example
+  C: SETQUALITYBAR_TT string
+  S: OK
+@end example
+
+@noindent
+With STRING being a percent escaped string shown as the tooltip.
+
 
 @item Ask for a PIN
 The meat of this tool is to ask for a passphrase of PIN, it is done with

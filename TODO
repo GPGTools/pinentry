@@ -17,3 +17,7 @@
 * The gtk+-2 pinentry needs auditing.
 
 * Implement the one_button feature in Qt.
+
+* The format of the Assuan protocol description should be changed to
+  the one used by GnuPG.
+  
