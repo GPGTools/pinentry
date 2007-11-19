@@ -56,6 +56,9 @@ public:
   void setOkText( const QString& );
   void setCancelText( const QString& );
 
+  void setQualityBar( const QString& );
+  void setQualityBarTT( const QString& );
+
   void setPinentryInfo (pinentry_t);
 
 public slots:
@@ -75,6 +78,7 @@ private:
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;
+  QLabel*    _quality_bar_label;
   QProgressBar* _quality_bar;
   SecQLineEdit* _edit;
   QPushButton* _ok;

@@ -1,3 +1,33 @@
+2007-11-19  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use again map-event and
+	unmap-event as this works on my setup far more reliable than
+	expose-event/no-expose-event.
+
+	* gtk+-2/gtksecentry.c (get_cursor_time): s/time/blinktime/ t
+	avoid shadowing warning.
+
+	* pinentry/pinentry.h (struct pinentry): Change QUALITY_BAR to a
+	char ptr.
+	(struct pinentry): Add QUALITY_BAR_TT.
+	* pinentry/pinentry.c (cmd_setqualitybar): Allow to set a label text.
+	(cmd_setqualitybar_tt): New.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Take label and tooltip
+	from global.
+	* qt/pinentrydialog.h (setQualityBar, setQualityBarTT)
+	(_quality_bar_label): New.
+	* qt/pinentrydialog.cpp (setQualityBar, setQualityBarTT): New.
+	(PinEntryDialog): Remove setting of tooltip.
+	* qt/main.cpp (qt_cmd_handler): Propagate quality bar label and tootip.
+
+2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Move the quality bar
+	below the text entry and align them properly.  Show a tooltip.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Ditto.  Don't let it
+	change its height.
+	(QUALITYBAR_EMPTY_TEXT): New.
+
 2007-09-18  Werner Koch  <wk@g10code.com>
 
 	* qt/secqlineedit.h (SecQLineEdit): New signal textModified.

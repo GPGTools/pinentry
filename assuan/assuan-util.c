@@ -161,7 +161,7 @@ _assuan_log_print_buffer (FILE *fp, const void *buffer, size_t length)
 void
 _assuan_log_sanitized_string (const char *string)
 {
-  const unsigned char *s = string;
+  const unsigned char *s = (const unsigned char*)string;
 #ifdef HAVE_JNLIB_LOGGING
   FILE *fp = log_get_stream ();
 #else

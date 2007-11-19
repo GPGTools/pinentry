@@ -84,6 +84,10 @@ qt_cmd_handler (pinentry_t pe)
 	pinentry.setCancelText (QString::fromUtf8 (pe->cancel));
       if (pe->error)
 	pinentry.setError (QString::fromUtf8 (pe->error));
+      if (pe->quality_bar)
+	pinentry.setQualityBar (QString::fromUtf8 (pe->quality_bar));
+      if (pe->quality_bar_tt)
+	pinentry.setQualityBarTT (QString::fromUtf8 (pe->quality_bar_tt));
 
       bool ret = pinentry.exec ();
       if (!ret)

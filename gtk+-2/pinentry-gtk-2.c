@@ -59,10 +59,18 @@ static GtkWidget *entry;
 static GtkWidget *qualitybar;
 static GtkWidget *insure;
 static GtkWidget *time_out;
+static GtkTooltips *tooltips;
 
 /* Gnome hig small and large space in pixels.  */
 #define HIG_SMALL      6
 #define HIG_LARGE     12
+
+/* The text shown in the quality bar when no text is shown.  This is not
+ * the empty string, becase because with an empty string the height of
+ * the quality bar is less than with a non-empty string.  This results
+ * in ugly layout changes when the text changes from non-empty to empty
+ * and vice versa */
+#define QUALITYBAR_EMPTY_TEXT " "
 
 
 /* Constrain size of the window the window should not shrink beyond
@@ -203,7 +211,7 @@ changed_text_handler (GtkWidget *widget)
   percent = length? pinentry_inq_quality (pinentry, s, length) : 0;
   if (!length)
     {
-      *textbuf = 0;
+      strcpy(textbuf, QUALITYBAR_EMPTY_TEXT);
       color.red = 0xffff;
     }
   else if (percent < 0)
@@ -229,10 +237,12 @@ static GtkWidget *
 create_window (int confirm_mode)
 {
   GtkWidget *w;
-  GtkWidget *win, *box, *ebox;
+  GtkWidget *win, *box;
   GtkWidget *wvbox, *chbox, *bbox;
   GtkAccelGroup *acc;
   gchar *msg;
+
+  tooltips = gtk_tooltips_new ();
 
   /* FIXME: check the grabbing code against the one we used with the
      old gpg-agent */
@@ -251,10 +261,10 @@ create_window (int confirm_mode)
   if (!confirm_mode)
     {
       g_signal_connect (G_OBJECT (win),
-			pinentry->grab ? "expose-event" : "focus-in-event",
+			pinentry->grab ? "map-event" : "focus-in-event",
 			G_CALLBACK (grab_keyboard), NULL);
       g_signal_connect (G_OBJECT (win),
-			pinentry->grab ? "no-expose-event" : "focus-out-event",
+			pinentry->grab ? "unmap-event" : "focus-out-event",
 			G_CALLBACK (ungrab_keyboard), NULL);
     }
   gtk_window_add_accel_group (GTK_WINDOW (win), acc);
@@ -295,28 +305,23 @@ create_window (int confirm_mode)
       gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
       gtk_widget_modify_fg (w, GTK_STATE_NORMAL, &color);
     }
-  
-  if (pinentry->quality_bar)
-    {
-      qualitybar = gtk_progress_bar_new();
-      gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), "");
-      gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
-      gtk_box_pack_start (GTK_BOX (box), qualitybar, TRUE, FALSE, 0);
-    }
-  else
-    qualitybar = NULL;
-  
-  ebox = gtk_hbox_new (FALSE, HIG_SMALL);
-  gtk_box_pack_start (GTK_BOX(box), ebox, FALSE, FALSE, 0);
+
+  qualitybar = NULL;
 
   if (!confirm_mode)
     {
+      GtkWidget* table = gtk_table_new (pinentry->quality_bar ? 2 : 1, 2,
+					FALSE);
+      gtk_box_pack_start (GTK_BOX (box), table, FALSE, FALSE, 0);
+
       if (pinentry->prompt)
 	{
 	  msg = pinentry_utf8_validate (pinentry->prompt);
 	  w = gtk_label_new (msg);
 	  g_free (msg);
-	  gtk_box_pack_start (GTK_BOX (ebox), w, FALSE, FALSE, 0);
+	  gtk_misc_set_alignment (GTK_MISC (w), 1.0, 0.5);
+	  gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1,
+			    GTK_FILL, GTK_FILL, 4, 0);
 	}
 
       entry = gtk_secure_entry_new ();
@@ -325,9 +330,31 @@ create_window (int confirm_mode)
 			G_CALLBACK (enter_callback), entry);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
-      gtk_box_pack_start (GTK_BOX (ebox), entry, TRUE, TRUE, 0);
+      gtk_table_attach (GTK_TABLE (table), entry, 1, 2, 0, 1,
+                        GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
       gtk_widget_grab_focus (entry);
       gtk_widget_show (entry);
+
+      if (pinentry->quality_bar)
+	{
+          msg = pinentry_utf8_validate (pinentry->quality_bar);
+	  w = gtk_label_new (msg);
+          g_free (msg);
+	  gtk_misc_set_alignment (GTK_MISC (w), 1.0, 0.5);
+	  gtk_table_attach (GTK_TABLE (table), w, 0, 1, 1, 2,
+			    GTK_FILL, GTK_FILL, 4, 0);
+	  qualitybar = gtk_progress_bar_new();
+	  gtk_widget_add_events (qualitybar,
+				 GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+	  gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar),
+				     QUALITYBAR_EMPTY_TEXT);
+	  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
+          if (pinentry->quality_bar_tt)
+            gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), qualitybar,
+                                  pinentry->quality_bar_tt, "");
+	  gtk_table_attach (GTK_TABLE (table), qualitybar, 1, 2, 1, 2,
+	  		    GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
+	}
 
       if (pinentry->enhanced)
 	{

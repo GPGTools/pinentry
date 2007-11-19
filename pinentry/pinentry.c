@@ -69,7 +69,8 @@ struct pinentry pinentry =
     0,		/* Result.  */
     0,          /* Locale error flag. */
     0,          /* One-button flag.  */
-    0,          /* Quality-Bar flag.  */
+    NULL,       /* Quality-Bar flag and description.  */
+    NULL,       /* Quality-Bar tooltip.  */
     PINENTRY_COLOR_DEFAULT,
     0,
     PINENTRY_COLOR_DEFAULT,
@@ -640,7 +641,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 }
 
 
-/* note, that it is sufficient to allocate the target string D as
+/* Note, that it is sufficient to allocate the target string D as
    long as the source string S, i.e.: strlen(s)+1; */
 static void
 strcpy_escaped (char *d, const unsigned char *s)
@@ -749,7 +750,41 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
 {
-  pinentry.quality_bar = 1;
+  char *newval;
+
+  if (!*line)
+    line = "Quality:";
+
+  newval = malloc (strlen (line) + 1);
+  if (!newval)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy_escaped (newval, line);
+  if (pinentry.quality_bar)
+    free (pinentry.quality_bar);
+  pinentry.quality_bar = newval;
+  return 0;
+}
+
+/* Set the tooltip to be used for a quality bar.  */
+static int
+cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *newval;
+
+  if (*line)
+    {
+      newval = malloc (strlen (line) + 1);
+      if (!newval)
+        return ASSUAN_Out_Of_Core;
+      
+      strcpy_escaped (newval, line);
+    }
+  else
+    newval = NULL;
+  if (pinentry.quality_bar_tt)
+    free (pinentry.quality_bar_tt);
+  pinentry.quality_bar_tt = newval;
   return 0;
 }
 
@@ -881,6 +916,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "CONFIRM",    0,  cmd_confirm },
       { "MESSAGE",    0,  cmd_message },
       { "SETQUALITYBAR", 0,  cmd_setqualitybar },
+      { "SETQUALITYBAR_TT", 0,  cmd_setqualitybar_tt },
       { NULL }
     };
   int i, j, rc;

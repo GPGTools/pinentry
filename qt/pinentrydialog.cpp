@@ -24,6 +24,7 @@
 #include <qlabel.h>
 #include <qmessagebox.h>
 #include <qprogressbar.h>
+#include <qtooltip.h>
 
 #include "secqlineedit.h"
 
@@ -46,29 +47,34 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
   _error = new QLabel( this );
   labelLayout->addWidget( _error );
 
+  _desc = new QLabel( this );
+  labelLayout->addWidget( _desc );
+
+  QGridLayout* grid = new QGridLayout( labelLayout );
+
+  _prompt = new QLabel( this );
+  _prompt->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+  grid->addWidget( _prompt, 0, 0 );
+  _edit = new SecQLineEdit( this );
+  _edit->setMaxLength( 256 );
+  _edit->setEchoMode( SecQLineEdit::Password );
+  grid->addWidget( _edit, 0, 1 );
+
   if (enable_quality_bar)
     {
-      _quality_bar = new QProgressBar (this);
-      _quality_bar->setCenterIndicator (true);
-      labelLayout->addWidget ( _quality_bar );
+      QLabel* _quality_bar_label = new QLabel( this );
+      _quality_bar_label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+      grid->addWidget ( _quality_bar_label, 1, 0 );
+      _quality_bar = new QProgressBar( this );
+      _quality_bar->setCenterIndicator( true );
+      grid->addWidget( _quality_bar, 1, 1 );
       _have_quality_bar = true;
     }
   else
     _have_quality_bar = false;
-  
-  _desc = new QLabel( this );
-  labelLayout->addWidget( _desc );
 
   QBoxLayout* l = new QHBoxLayout( top );
-  _prompt = new QLabel( this );
-  l->addWidget( _prompt );
-  _edit = new SecQLineEdit( this );
-  _edit->setMaxLength( 256 );
-  _edit->setEchoMode( SecQLineEdit::Password );
-  l->addWidget( _edit );
 
-  l = new QHBoxLayout( top );
-  
   _ok = new QPushButton( tr("OK"), this );
   _cancel = new QPushButton( tr("Cancel"), this );
 
@@ -208,6 +214,17 @@ void PinEntryDialog::setCancelText( const QString& txt )
   _cancel->setText( txt );
 }
 
+void PinEntryDialog::setQualityBar( const QString& txt )
+{
+  if (_have_quality_bar)
+    _quality_bar_label->setText( txt );
+}
+
+void PinEntryDialog::setQualityBarTT( const QString& txt )
+{
+  if (_have_quality_bar)
+    QToolTip::add ( _quality_bar, txt );
+}
 
 void PinEntryDialog::setPinentryInfo (pinentry_t peinfo )
 {

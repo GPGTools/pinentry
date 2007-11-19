@@ -3210,11 +3210,11 @@ static gint
 get_cursor_time(GtkSecureEntry * entry)
 {
     GtkSettings *settings = gtk_widget_get_settings(GTK_WIDGET(entry));
-    gint time;
+    gint blinktime;
 
-    g_object_get(settings, "gtk-cursor-blink-time", &time, NULL);
+    g_object_get(settings, "gtk-cursor-blink-time", &blinktime, NULL);
 
-    return time;
+    return blinktime;
 }
 
 static void

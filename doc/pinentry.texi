@@ -288,6 +288,11 @@ displayed in red.
   S: OK
 @end example
 
+If a custom laber for the auality bar is required, just add that label
+as an argument as precent escaped string.  You will need this feature to
+translate the label because pinentry has no internal gettext except for
+stock strings from the toolkit library.
+
 @item Ask for a PIN
 The meat of this tool is to ask for a passphrase of PIN, it is done with
 this command:

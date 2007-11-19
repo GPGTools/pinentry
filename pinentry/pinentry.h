@@ -91,10 +91,14 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
-  /* If this is set, a passphrase quality indicator is shown.  There
-     will also be an inquiry back to the caller to get an indication
-     of the quality for the passphrase entered so far.  */
-  int quality_bar;
+  /* If this is not NULL, a passphrase quality indicator is shown.
+     There will also be an inquiry back to the caller to get an
+     indication of the quality for the passphrase entered so far.  The
+     string is used as a labe for the auality bar.  */
+  char *quality_bar;
+
+  /* The tooltip to be show for the qualitybar.  Malloced or NULL.  */
+  char *quality_bar_tt;
 
   /* For the curses pinentry, the color of error messages.  */
   pinentry_color_t color_fg;
