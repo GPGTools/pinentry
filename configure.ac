@@ -1,6 +1,6 @@
 # configure.ac
 # Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
-# Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
 # 
 # This file is part of PINENTRY.
 # 
@@ -24,7 +24,7 @@ min_automake_version="1.7.6"
 
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry, 0.7.4-cvs, [gnupg-devel@gnupg.org])
+AC_INIT(pinentry, 0.7.4, [gnupg-devel@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
