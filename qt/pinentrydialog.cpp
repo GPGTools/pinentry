@@ -62,7 +62,7 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
 
   if (enable_quality_bar)
     {
-      QLabel* _quality_bar_label = new QLabel( this );
+      _quality_bar_label = new QLabel( this );
       _quality_bar_label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
       grid->addWidget ( _quality_bar_label, 1, 0 );
       _quality_bar = new QProgressBar( this );
