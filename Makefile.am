@@ -65,4 +65,4 @@ install-exec-local:
 
 	(cd $(DESTDIR)$(bindir); \
 	rm -f pinentry; \
-	$(LN_S) $(PINENTRY_DEFAULT) pinentry)
+	$(LN_S) $(PINENTRY_DEFAULT)$(EXEEXT) pinentry)

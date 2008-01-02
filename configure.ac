@@ -24,7 +24,7 @@ min_automake_version="1.7.6"
 
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry, 0.7.4, [gnupg-devel@gnupg.org])
+AC_INIT(pinentry, 0.7.5-cvs, [gnupg-devel@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
@@ -252,8 +252,8 @@ AC_ARG_ENABLE(pinentry-gtk2,
 
 dnl check for pkg-config
 if test "$pinentry_gtk_2" != "no"; then
-	AC_CHECK_PROG(PKGCONFIG, pkg-config, [yes], [no])
-	if test x"$PKGCONFIG" != xyes ; then
+        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+	if test x"${PKG_CONFIG}" = xno ; then
 		pinentry_gtk_2=no
 	fi
 fi
@@ -261,7 +261,7 @@ fi
 dnl check if the module gtk+-2.0 exists
 if test "$pinentry_gtk_2" != "no"; then
 	AC_MSG_CHECKING([for gtk+-2])
-	pkg-config --exists gtk+-2.0
+	"${PKG_CONFIG}" --exists gtk+-2.0
 	if test $? -ne 0 ; then
 		AC_MSG_RESULT([no])
 		AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
@@ -269,15 +269,15 @@ if test "$pinentry_gtk_2" != "no"; then
 	else
 		AC_MSG_RESULT([yes])
 		AC_MSG_CHECKING([gtk+-2 version >= 2.4.0])
-		modvers=`pkg-config --modversion gtk+-2.0`
+		modvers=`"${PKG_CONFIG}" --modversion gtk+-2.0`
 		AC_MSG_RESULT([$modvers])
-		pkg-config --atleast-version=2.4.0 gtk+-2.0
+		"${PKG_CONFIG}" --atleast-version=2.4.0 gtk+-2.0
 		if test $? -ne 0 ; then
 			AC_MSG_WARN([building GTK+-2 pinentry disabled])
 			pinentry_gtk_2=no
 		else
-			GTK2CFLAGS=`pkg-config --cflags gtk+-2.0`
-			GTK2LIBS=`pkg-config --libs gtk+-2.0`
+			GTK2CFLAGS=`"${PKG_CONFIG}" --cflags gtk+-2.0`
+			GTK2LIBS=`"${PKG_CONFIG}" --libs gtk+-2.0`
 			AC_SUBST(GTK2CFLAGS)
 			AC_SUBST(GTK2LIBS)
 			pinentry_gtk_2=yes
