@@ -404,7 +404,7 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
   if (p==line)
-    return set_error (ctx, Invalid_Command, "leading white-space"); 
+    return set_error (ctx, Syntax_Error, "leading white-space"); 
   if (*p) 
     { /* Skip over leading WS after the keyword */
       *p++ = 0;
