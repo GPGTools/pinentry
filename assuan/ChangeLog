@@ -1,3 +1,7 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* assuan.h (ASSUAN_Parameter_Error): Add new alias.
+
 2008-01-10  Marcus Brinkmann  <marcus@g10code.de>
 
 	* assuan-handler.c (dispatch_command): Use Syntax_Error instead of

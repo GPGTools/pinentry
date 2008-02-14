@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002, 2003, 2007 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2007, 2008 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -14,9 +14,8 @@
    General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA  */
+   along with this program; if not, see <http://www.gnu.org/licenses/>.  
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -895,6 +894,36 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
                                       : 0);
 }
 
+/* GETINFO <what>
+
+   Multipurpose function to return a variety of information.
+   Supported values for WHAT are:
+
+     version     - Return the version of the program.
+     pid         - Return the process id of the server.
+ */
+static int
+cmd_getinfo (assuan_context_t ctx, char *line)
+{
+  int rc;
+
+  if (!strcmp (line, "version"))
+    {
+      const char *s = VERSION;
+      rc = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "pid"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else
+    rc = ASSUAN_Parameter_Error;
+  return rc;
+}
+
 
 /* Tell the assuan library about our commands.  */
 static int
@@ -917,6 +946,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "MESSAGE",    0,  cmd_message },
       { "SETQUALITYBAR", 0,  cmd_setqualitybar },
       { "SETQUALITYBAR_TT", 0,  cmd_setqualitybar_tt },
+      { "GETINFO",    0,  cmd_getinfo },
       { NULL }
     };
   int i, j, rc;

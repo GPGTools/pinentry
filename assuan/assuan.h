@@ -67,6 +67,9 @@ typedef enum {
 
 } assuan_error_t;
 
+#define ASSUAN_Parameter_Error ASSUAN_Parameter_Conflict
+
+
 typedef assuan_error_t AssuanError; /* Deprecated. */
 
 /* This is a list of pre-registered ASSUAN commands */

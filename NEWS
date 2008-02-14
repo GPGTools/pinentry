@@ -3,6 +3,8 @@ Noteworthy changes in version 0.7.5 (unreleased)
 
  * Fix cross compilation for Gtk+-2 pinentry.
 
+ * New Assuan command GETINFO with subcommands "version" and "pid".
+
 
 Noteworthy changes in version 0.7.4 (2007-11-29)
 ------------------------------------------------

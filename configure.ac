@@ -97,6 +97,16 @@ dnl Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
     CPPFLAGS="$CPPFLAGS -Wall"
+
+    AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wno-pointer-sign"
+    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_MSG_RESULT($_gcc_psign)
+    CFLAGS=$_gcc_cflags_save;
+    if test x"$_gcc_psign" = xyes ; then
+       CFLAGS="$CFLAGS -Wno-pointer-sign"
+    fi
 fi
 
 

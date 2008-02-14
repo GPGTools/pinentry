@@ -1,3 +1,10 @@
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for -Wno-pointer-sign.
+
+	* pinentry/pinentry.c (cmd_getinfo): New.
+	(register_commands): Register it.
+
 2008-01-02  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Use PKG_CONFIG instead of PKGCONFIG and
