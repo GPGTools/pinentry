@@ -89,8 +89,11 @@ if test "$1" = "--build-w32"; then
     ./configure --enable-maintainer-mode --prefix=${w32root} \
                 --host=${host} --build=${build} \
                 --disable-pinentry-gtk \
-                --disable-pinentry-gtk2 \
-                --disable-pinentry-qt "$@"
+                --enable-pinentry-gtk2 \
+                --disable-pinentry-qt  \
+                --with-lib-prefix=${w32root} \
+                --with-libiconv-prefix=${w32root} \
+                PKG_CONFIG_LIBDIR="$w32root/lib/pkgconfig" "$@"
 
     rc=$?
     exit $rc

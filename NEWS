@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.7.5 (unreleased)
+Noteworthy changes in version 0.7.5 (2008-02-15)
 ------------------------------------------------
 
  * Fix cross compilation for Gtk+-2 pinentry.

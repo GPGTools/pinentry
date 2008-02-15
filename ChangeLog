@@ -1,3 +1,7 @@
+2008-02-15  Werner Koch  <wk@g10code.com>
+
+	Release 0.7.4.
+
 2008-02-14  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Check for -Wno-pointer-sign.
