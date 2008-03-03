@@ -93,23 +93,56 @@ constrain_size (GtkWidget *win, GtkRequisition *req, gpointer data)
 				 GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
 }
 
+ 
+/* Realize the window as transient if we grab the keyboard.  This
+   makes the window a modal dialog to the root window, which helps the
+   window manager.  See the following quote from:
+   http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2512420
+
+   Implementing enhanced support for application transient windows
+
+   If the WM_TRANSIENT_FOR property is set to None or Root window, the
+   window should be treated as a transient for all other windows in
+   the same group. It has been noted that this is a slight ICCCM
+   violation, but as this behavior is pretty standard for many
+   toolkits and window managers, and is extremely unlikely to break
+   anything, it seems reasonable to document it as standard.  */
+
+static void
+make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
+{
+  GdkScreen *screen;
+  GdkWindow *root;
+
+  if (! pinentry->grab)
+    return;
+
+  /* Make window transient for the root window.  */
+  screen = gdk_screen_get_default ();
+  root = gdk_screen_get_root_window (screen);
+  gdk_window_set_transient_for (win->window, root);
+}
+
 
 /* Grab the keyboard for maximum security */
 static void
 grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
-  if (!pinentry->grab)
+  if (! pinentry->grab)
     return;
 
   if (gdk_keyboard_grab (win->window, FALSE, gdk_event_get_time (event)))
     g_error ("could not grab keyboard");
 }
 
+
 /* Remove grab.  */
 static void
 ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
   gdk_keyboard_ungrab (gdk_event_get_time (event));
+  /* Unmake window transient for the root window.  */
+  gdk_window_set_transient_for (win->window, NULL);
 }
 
 
@@ -260,6 +293,10 @@ create_window (int confirm_mode)
 		    G_CALLBACK (constrain_size), NULL);
   if (!confirm_mode)
     {
+      if (pinentry->grab)
+	g_signal_connect (G_OBJECT (win),
+			  "realize", G_CALLBACK (make_transient), NULL);
+
       g_signal_connect (G_OBJECT (win),
 			pinentry->grab ? "map-event" : "focus-in-event",
 			G_CALLBACK (grab_keyboard), NULL);

@@ -1,6 +1,7 @@
 Noteworthy changes in version 0.7.6
 ------------------------------------------------
 
+ * Make Gtk+-2 pinentry transient to the root window.
 
 Noteworthy changes in version 0.7.5 (2008-02-15)
 ------------------------------------------------
