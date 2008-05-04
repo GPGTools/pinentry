@@ -1,3 +1,9 @@
+2008-05-05  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* gtk+-2/gtksecentry.c (GMALLOC_SIZE): New symbol.
+	(g_malloc, g_malloc0, g_realloc): Use GMALLOC_SIZE instead of
+	gulong for size attribute.
+
 2008-03-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Install realize callback.

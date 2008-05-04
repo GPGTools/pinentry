@@ -269,8 +269,14 @@ gboolean g_use_secure_mem = FALSE;
 				} while(0)
 
 
+#if GLIB_CHECK_VERSION (2,15,5)
+GMALLOC_SIZE gsize
+#else
+GMALLOC_SIZE gulong
+#endif
+
 gpointer
-g_malloc(gulong size)
+g_malloc (GMALLOC_SIZE size)
 {
     gpointer p;
 
@@ -288,7 +294,7 @@ g_malloc(gulong size)
 }
 
 gpointer
-g_malloc0(gulong size)
+g_malloc0 (GMALLOC_SIZE size)
 {
     gpointer p;
 
@@ -308,7 +314,7 @@ g_malloc0(gulong size)
 }
 
 gpointer
-g_realloc(gpointer mem, gulong size)
+g_realloc (gpointer mem, GMALLOC_SIZE size)
 {
     gpointer p;
 
