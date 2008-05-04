@@ -270,9 +270,9 @@ gboolean g_use_secure_mem = FALSE;
 
 
 #if GLIB_CHECK_VERSION (2,15,5)
-GMALLOC_SIZE gsize
+#define GMALLOC_SIZE gsize
 #else
-GMALLOC_SIZE gulong
+#define GMALLOC_SIZE gulong
 #endif
 
 gpointer
