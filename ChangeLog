@@ -1,3 +1,8 @@
+2008-07-23  Werner Koch  <wk@g10code.com>
+
+	* secmem/secmem.c (secmem_init): Fix apostrophe in error
+	message. Reported by Petr Uzel.
+
 2008-05-05  Marcus Brinkmann  <marcus@ulysses.g10code.com>
 
 	* gtk+-2/gtksecentry.c (GMALLOC_SIZE): New symbol.
