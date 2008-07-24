@@ -47,6 +47,12 @@ else
 pinentry_qt = 
 endif
 
+if BUILD_PINENTRY_QT4
+pinentry_qt4 = qt4
+else
+pinentry_qt4 = 
+endif
+
 if BUILD_PINENTRY_W32
 pinentry_w32 = w32
 else
@@ -54,7 +60,8 @@ pinentry_w32 =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
-	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_w32} doc
+	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_qt4} \
+	${pinentry_w32} doc
 
 
 install-exec-local:

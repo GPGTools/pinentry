@@ -46,7 +46,7 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-# We need to check for cplusplus here becuase we may not do the test
+# We need to check for cplusplus here because we may not do the test
 # for Qt and autoconf does does not allow that.
 AC_PROG_CXX
 AC_PROG_LN_S
@@ -355,6 +355,56 @@ dnl dnl End of checks for Qt pinentry.
 dnl fi
 
 
+dnl
+dnl Check for Qt4 pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-qt4,
+            AC_HELP_STRING([--enable-pinentry-qt4], [build Qt4 pinentry]),
+            pinentry_qt4=$enableval, pinentry_qt4=maybe)
+
+
+dnl
+dnl Checks for Qt4 libraries.  Deal correctly with $pinentry_qt4 = maybe.
+dnl
+if test "$pinentry_qt4" != "no"; then
+PKG_CHECK_MODULES(QT4_CORE, QtCore,,
+if test "$pinentry_qt4" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Qt4 Core is required.
+***]])
+else
+    pinentry_qt4=no
+fi)
+fi
+
+if test "$pinentry_qt4" != "no"; then
+PKG_CHECK_MODULES(QT4_GUI, QtGui,,
+if test "$pinentry_qt4" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Qt4 Gui is required.
+***]])
+else
+    pinentry_qt4=no
+fi)
+fi
+
+dnl If we have come so far, Qt4 pinentry can be build.
+if test "$pinentry_qt4" != "no"; then
+    pinentry_qt4=yes
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_QT4, test "$pinentry_qt4" = "yes")
+if test "$pinentry_qt4" = "yes"; then
+  AC_DEFINE(PINENTRY_QT4, 1, [The Qt4 version of Pinentry is to be build])
+fi
+
+dnl if test "$pinentry_qt4" = "yes"; then
+dnl Additional checks for Qt4 pinentry.
+dnl End of additional checks for Qt4 pinentry.
+dnl fi
+
+
 #
 # Check whether we should build the W32 pinentry.  This is actually
 # the simplest check as we do this only for that platform.
@@ -399,6 +449,7 @@ curses/Makefile
 gtk/Makefile
 gtk+-2/Makefile
 qt/Makefile
+qt4/Makefile
 w32/Makefile
 doc/Makefile
 Makefile
@@ -413,6 +464,7 @@ AC_MSG_NOTICE([
 	GTK+ Pinentry: $pinentry_gtk
 	GTK+-2 Pinentry: $pinentry_gtk_2
 	Qt Pinentry: $pinentry_qt
+	Qt4 Pinentry: $pinentry_qt4
         W32 Pinentry: $pinentry_w32
 
 	Fallback to Curses: $fallback_curses
