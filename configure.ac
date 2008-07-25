@@ -414,25 +414,30 @@ test $have_w32_system = yes && pinentry_w32=yes
 AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
 
 
-#
-# Figure out the default pinentry
-#
-if test "$pinentry_gtk" = "yes"; then
-   PINENTRY_DEFAULT=pinentry-gtk
+# Figure out the default pinentry.  We are very conservative here.
+# Please change the order only after verifying that the preferred
+# pinentry really is better (more feature-complete and more secure).
+
+if test "$pinentry_gtk_2" = "yes"; then
+   PINENTRY_DEFAULT=pinentry-gtk-2
 else
-  if test "$pinentry_gtk_2" = "yes"; then
-    PINENTRY_DEFAULT=pinentry-gtk-2
+  if test "$pinentry_gtk" = "yes"; then
+    PINENTRY_DEFAULT=pinentry-gtk
   else
     if test "$pinentry_qt" = "yes"; then
       PINENTRY_DEFAULT=pinentry-qt
     else
-      if test "$pinentry_curses" = "yes"; then
-        PINENTRY_DEFAULT=pinentry-curses
+      if test "$pinentry_qt4" = "yes"; then
+        PINENTRY_DEFAULT=pinentry-qt4
       else
-        if test "$pinentry_w32" = "yes"; then
-          PINENTRY_DEFAULT=pinentry-w32
+        if test "$pinentry_curses" = "yes"; then
+          PINENTRY_DEFAULT=pinentry-curses
         else
-          AC_MSG_ERROR([[No pinentry enabled.]])
+          if test "$pinentry_w32" = "yes"; then
+            PINENTRY_DEFAULT=pinentry-w32
+          else
+            AC_MSG_ERROR([[No pinentry enabled.]])
+          fi
         fi
       fi
     fi
