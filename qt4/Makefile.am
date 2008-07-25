@@ -41,8 +41,9 @@ pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp 
 nodist_pinentry_qt4_SOURCES = pinentrydialog.moc
+BUILT_SOURCES = pinentrydialog.moc
 
-DISTCLEANFILES = $(nodist_pinentry_qt4_SOURCES)
+CLEANFILES = $(nodist_pinentry_qt4_SOURCES)
 
 %.moc: $(srcdir)/%.h
 	$(MOC) $< -o $@
