@@ -1,3 +1,9 @@
+2008-10-17  Werner Koch  <wk@g10code.com>
+
+	* secmem/memory.h: Add C++ extern declaration.
+
+	* secmem/secmem.c (secmem_get_max_size): New.
+
 2008-07-25  Marcus Brinkmann  <marcus@ulysses.g10code.com>
 
 	* qt4/Makefile.am (DISTCLEANFILES): Rename to CLEANFILES.

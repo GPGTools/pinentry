@@ -446,3 +446,9 @@ secmem_dump_stats()
 		(ulong)poollen, (ulong)poolsize );
 }
 
+
+size_t 
+secmem_get_max_size (void)
+{
+  return poolsize;
+}
