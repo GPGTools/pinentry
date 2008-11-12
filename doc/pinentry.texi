@@ -251,6 +251,15 @@ passphrase entry.
   S: OK
 @end example
 
+@item Set the window title
+This command may be used to change the default window title.  When
+using this feature you should take care that the window is still
+identifiable as the pinentry.
+@example
+  C: SETTITLE Tape Recorder Room
+  S: OK
+@end example
+
 @item Set the button texts
 There are two text with can be set to override the English defaults:
 

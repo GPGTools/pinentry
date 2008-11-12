@@ -321,6 +321,11 @@ create_window (int confirm_mode)
   box = gtk_vbox_new (FALSE, HIG_SMALL);
   gtk_box_pack_start (GTK_BOX (chbox), box, TRUE, TRUE, 0);
 
+  if (pinentry->title)
+    {
+      msg = pinentry_utf8_validate (pinentry->title);
+      gtk_window_set_title (GTK_WINDOW(win), msg);
+    }
   if (pinentry->description)
     {
       msg = pinentry_utf8_validate (pinentry->description);

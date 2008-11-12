@@ -38,6 +38,8 @@ typedef enum {
 
 struct pinentry
 {
+  /* The window title, or NULL.  */
+  char *title;
   /* The description to display, or NULL.  */
   char *description;
   /* The error message to display, or NULL.  */

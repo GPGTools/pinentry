@@ -48,6 +48,7 @@ static char this_pgmname[50];
 
 struct pinentry pinentry =
   {
+    NULL,	/* Title.  */
     NULL,	/* Description.  */
     NULL,	/* Error.  */
     NULL,	/* Prompt.  */
@@ -745,6 +746,21 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+static int
+cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *newt;
+  newt = malloc (strlen (line) + 1);
+  
+  if (!newt)
+    return ASSUAN_Out_Of_Core;
+  
+  strcpy_escaped (newt, line);
+  if (pinentry.title)
+    free (pinentry.title);
+  pinentry.title = newt;
+  return 0;
+}
 
 static int
 cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
@@ -947,6 +963,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "SETQUALITYBAR", 0,  cmd_setqualitybar },
       { "SETQUALITYBAR_TT", 0,  cmd_setqualitybar_tt },
       { "GETINFO",    0,  cmd_getinfo },
+      { "SETTITLE",   0,  cmd_settitle },
       { NULL }
     };
   int i, j, rc;
