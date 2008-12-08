@@ -1,3 +1,8 @@
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* qt/main.cpp (qt_cmd_handler) <!want_pass>: Translate from utf8.
+	* qt4/main.cpp (qt_cmd_handler) <!want_pass>: Translate from utf8.
+
 2008-11-12  Ludovic Rousseau <ludovic.rousseau@gmail.com>  (wk)
 
 	* pinentry/pinentry.h (struct pinentry): Add field TITLE.

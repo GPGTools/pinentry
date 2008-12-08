@@ -5,6 +5,9 @@ Noteworthy changes in version 0.7.6
 
  * Add Qt4 pinentry.
 
+ * Fix utf-8 problem in Qt pinentries.
+
+
 Noteworthy changes in version 0.7.5 (2008-02-15)
 ------------------------------------------------
 

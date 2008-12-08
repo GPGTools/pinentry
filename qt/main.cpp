@@ -113,9 +113,13 @@ qt_cmd_handler (pinentry_t pe)
     }
   else
     {
-      bool ret = QMessageBox::information (parent, "", pe->description,
-					   pe->ok ? pe->ok : "OK",
-					   pe->cancel ? pe->cancel : "Cancel");
+      QString desc = QString::fromUtf8 (pe->description? pe->description :"");
+      QString ok   = QString::fromUtf8 (pe->ok ? pe->ok : "OK");
+      QString can  = QString::fromUtf8 (pe->cancel ? pe->cancel : "Cancel");
+      bool ret;
+      
+      ret = QMessageBox::information (parent, "", desc, ok, can );
+      
       return !ret;
     }
 }
