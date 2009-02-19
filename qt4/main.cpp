@@ -1,12 +1,13 @@
 /* 
    main.cpp - A (not yet) secure Qt 4 dialog for PIN entry.
 
-   Copyright (C) 2002 Klarälvdalens Datakonsult AB
+   Copyright (C) 2002, 2008 Klar�lvdalens Datakonsult AB (KDAB)
    Copyright (C) 2003 g10 Code GmbH
    Copyright 2007 Ingo Klöcker
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
    Modified by Marcus Brinkmann <marcus@g10code.de>.
+   Modified by Marc Mutz <marc@kdab.com>
    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -24,25 +25,17 @@
 */
 
 
-#include <stdlib.h>
-#include <errno.h>
+#include "pinentrydialog.h"
+#include "pinentry.h"
 
 #include <qapplication.h>
 #include <QString>
 #include <qwidget.h>
 #include <qmessagebox.h>
-// #include "secqstring.h"
-
-#include "pinentrydialog.h"
-
-#include "pinentry.h"
-
-extern "C"
-{
-#include "memory.h"
-}
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
@@ -52,7 +45,7 @@ extern "C"
 class ForeignWidget : public QWidget
 {
 public:
-  ForeignWidget( WId wid ) : QWidget( 0 )
+  explicit ForeignWidget( WId wid ) : QWidget( 0 )
   {
     QWidget::destroy();
     create( wid, false, false );
@@ -82,9 +75,7 @@ qt_cmd_handler (pinentry_t pe)
       pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
       pinentry.setDescription (QString::fromUtf8 (pe->description));
       /* If we reuse the same dialog window.  */
-#if 0
-      pinentry.setText (SecQString::null);
-#endif
+      pinentry.setPin (secqstring());
 
       if (pe->ok)
 	pinentry.setOkText (QString::fromUtf8 (pe->ok));
@@ -97,8 +88,8 @@ qt_cmd_handler (pinentry_t pe)
       if (!ret)
 	return -1;
 
-      QByteArray pinUtf8 = pinentry.text().toUtf8();
-      char *pin = pinUtf8.data();
+      const secstring pinUtf8 = toUtf8( pinentry.pin() );
+      const char *pin = pinUtf8.data();
       if (!pin)
 	return -1;
 
@@ -109,11 +100,9 @@ qt_cmd_handler (pinentry_t pe)
 	  if (pe->pin)
 	    {
 	      strcpy (pe->pin, pin);
-	      // ::secmem_free (pin);
 	      return len;
 	    }
 	}
-      // ::secmem_free (pin);
       return -1;
     }
   else

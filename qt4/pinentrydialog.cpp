@@ -1,7 +1,7 @@
 /* 
    pinentrydialog.cpp - A (not yet) secure Qt 4 dialog for PIN entry.
 
-   Copyright (C) 2002 Klarälvdalens Datakonsult AB
+   Copyright (C) 2002, 2008 Klar�lvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Klöcker
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
@@ -21,20 +21,16 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+#include "pinentrydialog.h"
+
+#include "qsecurelineedit.h"
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMessageBox>
-
-#ifdef WITH_SECURE_QSTRING
-#include "secqlineedit.h"
-#else
-#include <QLineEdit>
-#endif
-
-#include "pinentrydialog.h"
 
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   : QDialog( parent ), _grabbed( false )
@@ -65,9 +61,8 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   top->addLayout( l );
   _prompt = new QLabel( this );
   l->addWidget( _prompt );
-  _edit = new SecQLineEdit( this );
+  _edit = new QSecureLineEdit( this );
   _edit->setMaxLength( 256 );
-  _edit->setEchoMode( SecQLineEdit::Password );
   l->addWidget( _edit );
 
   l = new QHBoxLayout();
@@ -95,15 +90,15 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal )
   _edit->setFocus();
 }
 
-void PinEntryDialog::paintEvent( QPaintEvent* ev )
+void PinEntryDialog::showEvent( QShowEvent* ev )
 {
   // Grab keyboard when widget is mapped to screen
   // It might be a little weird to do it here, but it works!
+  QDialog::showEvent( ev );
   if( !_grabbed ) {
     _edit->grabKeyboard();
     _grabbed = true;
   }
-  QDialog::paintEvent( ev );
 }
 
 void PinEntryDialog::hideEvent( QHideEvent* ev )
@@ -145,14 +140,14 @@ QString PinEntryDialog::error() const
   return _error->text();
 }
 
-void PinEntryDialog::setText( const SecQString& txt ) 
+void PinEntryDialog::setPin( const secqstring & txt ) 
 {
-  _edit->setText( txt );
+    _edit->setText( txt );
 }
 
-SecQString PinEntryDialog::text() const 
+secqstring PinEntryDialog::pin() const 
 {
-  return _edit->text();
+    return _edit->text();
 }
 
 void PinEntryDialog::setPrompt( const QString& txt ) 

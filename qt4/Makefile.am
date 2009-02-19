@@ -31,7 +31,7 @@ libcurses =
 endif
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
 	$(ncurses_include) -I$(top_srcdir)/pinentry
 AM_CXXFLAGS = $(QT4_CORE_CFLAGS) $(QT4_GUI_CFLAGS)
 pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
@@ -39,11 +39,4 @@ pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP)
 
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
-	main.cpp 
-nodist_pinentry_qt4_SOURCES = pinentrydialog.moc
-BUILT_SOURCES = pinentrydialog.moc
-
-CLEANFILES = $(nodist_pinentry_qt4_SOURCES)
-
-%.moc: $(srcdir)/%.h
-	$(MOC) $< -o $@
+	main.cpp secstring.h secstring.cpp qsecurelineedit.h qsecurelineedit.cpp

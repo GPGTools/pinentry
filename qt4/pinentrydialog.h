@@ -1,7 +1,7 @@
 /* 
    pinentrydialog.h - A (not yet) secure Qt 4 dialog for PIN entry.
 
-   Copyright (C) 2002 Klarälvdalens Datakonsult AB
+   Copyright (C) 2002, 2008 Klar�lvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Klöcker
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
@@ -26,28 +26,25 @@
 
 #include <QDialog>
 
+#include "secstring.h"
+
 class QLabel;
 class QPushButton;
-#ifdef WITH_SECURE_QSTRING
-class SecQLineEdit;
-class SecQString;
-#else
-class QLineEdit;
+class QSecureLineEdit;
 class QString;
-#define SecQLineEdit QLineEdit
-#define SecQString QString
-#endif
+
+
 
 class PinEntryDialog : public QDialog {
   Q_OBJECT
 
   Q_PROPERTY( QString description READ description WRITE setDescription )
   Q_PROPERTY( QString error READ error WRITE setError )
-    //  Q_PROPERTY( SecQString text READ text WRITE setText )
+  Q_PROPERTY( secqstring pin READ pin WRITE setPin )
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-  PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false );
+  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false );
 
   void setDescription( const QString& );
   QString description() const;
@@ -55,8 +52,8 @@ public:
   void setError( const QString& );
   QString error() const;
 
-  void setText( const SecQString& );
-  SecQString text() const;
+  void setPin( const secqstring & );
+  secqstring pin() const;
 
   void setPrompt( const QString& );
   QString prompt() const;
@@ -69,16 +66,16 @@ signals:
   void rejected();
 
 protected:
-  virtual void keyPressEvent( QKeyEvent *e );
-  virtual void hideEvent( QHideEvent* );
-  virtual void paintEvent( QPaintEvent* );
+  /* reimp */ void keyPressEvent( QKeyEvent *e );
+  /* reimp */ void hideEvent( QHideEvent* );
+  /* reimp */ void showEvent( QShowEvent* );
 
 private:
   QLabel*    _icon;
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;
-  SecQLineEdit* _edit;
+  QSecureLineEdit* _edit;
   QPushButton* _ok;
   QPushButton* _cancel;  
   bool       _grabbed;
