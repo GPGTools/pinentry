@@ -1,3 +1,14 @@
+2009-02-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* secmem/secmem++.h: New file.
+	* qt4/Makefile.am, qt4/main.cpp, qt4/pinentrydialog.cpp,
+	qt4/pinentrydialog.h: Changes to use secure memory.
+	* qt4/pinentrydialog.moc, qt4/qsecurelineedit.moc: New files.
+	* qt4/qsecurelineedit.cpp, qt4/qsecurelineedit.h,
+	qt4/qsecurelineedit_p.h, qt4/secstring.h, qt4/secstring.cpp: New
+	files.
+	Submitted by Marc Mutz <marc@kdab.net>.
+
 2008-12-08  Werner Koch  <wk@g10code.com>
 
 	* qt/main.cpp (qt_cmd_handler) <!want_pass>: Translate from utf8.
