@@ -819,6 +819,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
+  pinentry.user_closed = 0;
   pinentry.one_button = 0;
   pinentry.ctx_assuan = ctx;
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -875,6 +876,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   pinentry.one_button = !!strstr (line, "--one-button");
   pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
+  pinentry.user_closed = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
@@ -886,7 +888,9 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
                                       : (pinentry.one_button 
                                          ? 0
-                                         : ASSUAN_Not_Confirmed));
+                                         : (pinentry.user_closed
+                                            ? ASSUAN_Canceled
+                                            : ASSUAN_Not_Confirmed)));
 }
 
 
@@ -898,6 +902,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   pinentry.one_button = 1;
   pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
+  pinentry.user_closed = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {

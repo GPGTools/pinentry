@@ -7,6 +7,9 @@ Noteworthy changes in version 0.7.6
 
  * Fix utf-8 problem in Qt pinentries.
 
+ * Return GPG_ERR_CANCELED if during a "CONFIRM" command the user
+   closed the window.
+
 
 Noteworthy changes in version 0.7.5 (2008-02-15)
 ------------------------------------------------

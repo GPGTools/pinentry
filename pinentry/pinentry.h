@@ -84,6 +84,10 @@ struct pinentry
      and to the length of the PIN stored in pin otherwise.  */
   int result;
 
+  /* The user should set this is the pinentry window was closed by the
+     user without using a button.  */
+  int user_closed;
+
   /* The user should set this to true if an error with the local
      conversion occured. */
   int locale_err;

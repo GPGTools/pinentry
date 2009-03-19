@@ -54,6 +54,7 @@
 static pinentry_t pinentry;
 static int passphrase_ok;
 static int confirm_yes;
+static int window_closed;
 
 static GtkWidget *entry;
 static GtkWidget *qualitybar;
@@ -149,6 +150,7 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+  window_closed = 1;
   gtk_main_quit ();
   return TRUE;
 }
@@ -489,12 +491,16 @@ gtk_cmd_handler (pinentry_t pe)
 
   pinentry = pe;
   confirm_yes = 0;
+  window_closed = 0;
   passphrase_ok = 0;
   w = create_window (want_pass ? 0 : 1);
   gtk_main ();
   gtk_widget_destroy (w);
   while (gtk_events_pending ())
     gtk_main_iteration ();
+
+  if (window_closed)
+    pe->user_closed = 1;
 
   pinentry = NULL;
   if (want_pass)
