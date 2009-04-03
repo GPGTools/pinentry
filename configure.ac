@@ -31,18 +31,6 @@ min_automake_version="1.7.6"
 # specific feature can already be done under the assumption that the
 # SVN version is the most recent one in a branch.  To disable the SVN
 # version for the real release, set the my_issvn macro to no.
-m4_define(my_version, [1.1.9])
-m4_define(my_issvn, [yes])
-
-# Version number: Remember to change it immediately *after* a release.
-#                 Make sure to run  "svn up" and "./autogen.sh --force"
-#                  before a "make dist".  See below for the LT versions.
-#
-# The SVN version is usually the next intended release version with
-# the string "-svnNNN" appended.  The reason for this is that tests for a
-# specific feature can already be done under the assumption that the
-# SVN version is the most recent one in a branch.  To disable the SVN
-# version for the real release, set the my_issvn macro to no.
 m4_define(my_version, [0.7.6])
 m4_define(my_issvn, [yes])
 
