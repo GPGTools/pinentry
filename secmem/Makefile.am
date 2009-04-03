@@ -28,4 +28,5 @@ libsecmem_a_SOURCES = \
 	secmem-util.h \
 	util.h \
 	secmem.c \
-	util.c
+	util.c \
+	secmem++.h

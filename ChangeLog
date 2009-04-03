@@ -1,5 +1,6 @@
 2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* secmem/Makefile.am (libsecmem_a_SOURCES): Add secmem++.h.
 	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add pinentrydialog.moc
 	and qsecurelineedit.moc.
 
