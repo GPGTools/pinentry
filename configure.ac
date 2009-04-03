@@ -22,9 +22,37 @@
 AC_PREREQ(2.57)
 min_automake_version="1.7.6"
 
+# Version number: Remember to change it immediately *after* a release.
+#                 Make sure to run  "svn up" and "./autogen.sh --force"
+#                  before a "make dist".  See below for the LT versions.
+#
+# The SVN version is usually the next intended release version with
+# the string "-svnNNN" appended.  The reason for this is that tests for a
+# specific feature can already be done under the assumption that the
+# SVN version is the most recent one in a branch.  To disable the SVN
+# version for the real release, set the my_issvn macro to no.
+m4_define(my_version, [1.1.9])
+m4_define(my_issvn, [yes])
+
+# Version number: Remember to change it immediately *after* a release.
+#                 Make sure to run  "svn up" and "./autogen.sh --force"
+#                  before a "make dist".  See below for the LT versions.
+#
+# The SVN version is usually the next intended release version with
+# the string "-svnNNN" appended.  The reason for this is that tests for a
+# specific feature can already be done under the assumption that the
+# SVN version is the most recent one in a branch.  To disable the SVN
+# version for the real release, set the my_issvn macro to no.
+m4_define(my_version, [0.7.6])
+m4_define(my_issvn, [yes])
+
+m4_define([svn_revision], m4_esyscmd([echo -n $( (svn info 2>/dev/null \
+            || echo 'Revision: 0')|sed -n '/^Revision:/ {s/[^0-9]//gp;q;}')]))
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry, 0.7.6-cvs, [gnupg-devel@gnupg.org])
+AC_INIT(pinentry,
+        [my_version[]m4_if(my_issvn,[yes],[-svn[]svn_revision])],
+	[gnupg-devel@gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
