@@ -1,4 +1,4 @@
-/* 
+/*
    main.cpp - A (not yet) secure Qt 4 dialog for PIN entry.
 
    Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
@@ -8,17 +8,17 @@
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
    Modified by Marcus Brinkmann <marcus@g10code.de>.
    Modified by Marc Mutz <marc@kdab.com>
-   
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation; either version 2 of the
    License, or (at your option) any later version.
- 
+
    This program is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -50,7 +50,7 @@ public:
     QWidget::destroy();
     create( wid, false, false );
   }
- 
+
   ~ForeignWidget()
   {
     destroy( false, false );
@@ -70,8 +70,9 @@ qt_cmd_handler (pinentry_t pe)
       if (pe->parent_wid)
 	parent = new ForeignWidget ((HWND) pe->parent_wid);
 
-      PinEntryDialog pinentry (parent, 0, true);
+      PinEntryDialog pinentry (parent, 0, true, !!pe->quality_bar);
 
+      pinentry.setPinentryInfo (pe);
       pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
       pinentry.setDescription (QString::fromUtf8 (pe->description));
       /* If we reuse the same dialog window.  */
@@ -83,6 +84,10 @@ qt_cmd_handler (pinentry_t pe)
 	pinentry.setCancelText (QString::fromUtf8 (pe->cancel));
       if (pe->error)
 	pinentry.setError (QString::fromUtf8 (pe->error));
+      if (pe->quality_bar)
+	pinentry.setQualityBar (QString::fromUtf8 (pe->quality_bar));
+      if (pe->quality_bar_tt)
+	pinentry.setQualityBarTT (QString::fromUtf8 (pe->quality_bar_tt));
 
       bool ret = pinentry.exec ();
       if (!ret)
@@ -111,16 +116,16 @@ qt_cmd_handler (pinentry_t pe)
       QString ok   = QString::fromUtf8 (pe->ok ? pe->ok : "OK");
       QString can  = QString::fromUtf8 (pe->cancel ? pe->cancel : "Cancel");
       bool ret;
-      
+
       ret = QMessageBox::information (parent, "", desc, ok, can );
-      
+
       return !ret;
     }
 }
 
 pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler;
 
-int 
+int
 main (int argc, char *argv[])
 {
   pinentry_init ("pinentry-qt4");
@@ -149,7 +154,7 @@ main (int argc, char *argv[])
           fprintf (stderr, "pinentry-qt4: can't fixup argument list: %s\n",
                    strerror (errno));
           exit (EXIT_FAILURE);
-          
+
         }
       for (done=0,p=*new_argv,i=0; i < argc; i++)
         if (!done && !strcmp (argv[i], "--display"))
@@ -168,7 +173,7 @@ main (int argc, char *argv[])
       i = argc;
       new QApplication (i, new_argv);
     }
-  
+
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))

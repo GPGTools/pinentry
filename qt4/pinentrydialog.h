@@ -1,21 +1,21 @@
-/* 
+/*
    pinentrydialog.h - A (not yet) secure Qt 4 dialog for PIN entry.
 
    Copyright (C) 2002, 2008 Klar‰lvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Kl√∂cker
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
-   
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation; either version 2 of the
    License, or (at your option) any later version.
- 
+
    This program is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -24,9 +24,11 @@
 #ifndef __PINENTRYDIALOG_H__
 #define __PINENTRYDIALOG_H__
 
+#include <QProgressBar>
 #include <QDialog>
 
 #include "secstring.h"
+#include "pinentry.h"
 
 class QLabel;
 class QPushButton;
@@ -44,7 +46,7 @@ class PinEntryDialog : public QDialog {
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false );
+  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false, bool enable_quality_bar = false );
 
   void setDescription( const QString& );
   QString description() const;
@@ -57,9 +59,17 @@ public:
 
   void setPrompt( const QString& );
   QString prompt() const;
-  
+
   void setOkText( const QString& );
   void setCancelText( const QString& );
+
+  void setQualityBar( const QString& );
+  void setQualityBarTT( const QString& );
+
+  void setPinentryInfo (pinentry_t);
+
+public slots:
+  void updateQuality(const secqstring&);
 
 signals:
   void accepted();
@@ -68,17 +78,21 @@ signals:
 protected:
   /* reimp */ void keyPressEvent( QKeyEvent *e );
   /* reimp */ void hideEvent( QHideEvent* );
-  /* reimp */ void showEvent( QShowEvent* );
+  /* reimp */ void paintEvent( QPaintEvent* event );
 
 private:
   QLabel*    _icon;
   QLabel*    _desc;
   QLabel*    _error;
   QLabel*    _prompt;
+  QLabel*    _quality_bar_label;
+  QProgressBar* _quality_bar;
   QSecureLineEdit* _edit;
   QPushButton* _ok;
-  QPushButton* _cancel;  
+  QPushButton* _cancel;
   bool       _grabbed;
+  bool       _have_quality_bar;
+  pinentry_t _pinentry_info;
 };
 
 #endif // __PINENTRYDIALOG_H__

@@ -1,3 +1,11 @@
+2009-04-02  Till Adam <till@kdab.net>
+
+	* qt4/qsecurelineedit.moc, qt4/main.cpp, qt4/pinentrydialog.moc,
+	qt4/qsecurelineedit.cpp, qt4/pinentrydialog.cpp,
+	qt4/pinentrydialog.h: Implement quality bar and grabbing.
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Enable word wrapping.
+
 2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* qt4/main.cpp (qt_cmd_handler): Cast window handle ID.
