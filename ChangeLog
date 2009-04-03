@@ -1,3 +1,7 @@
+2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt4/main.cpp (qt_cmd_handler): Cast window handle ID.
+
 2009-03-19  Werner Koch  <wk@g10code.com>
 
 	* pinentry/pinentry.h (struct pinentry): Add field user_closed.
@@ -281,7 +285,7 @@
 2005-01-21  Marcus Brinkmann  <marcus@g10code.de>
 
 	* doc/pinentry.texi: Fix spelling errors.
-	Submitted by Ville Skytt‰.
+	Submitted by Ville Skytt√§.
 
 2004-12-23  Werner Koch  <wk@g10code.com>
 

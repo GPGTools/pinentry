@@ -68,7 +68,7 @@ qt_cmd_handler (pinentry_t pe)
     {
       /* FIXME: Add parent window ID to pinentry and GTK.  */
       if (pe->parent_wid)
-	parent = new ForeignWidget (pe->parent_wid);
+	parent = new ForeignWidget ((HWND) pe->parent_wid);
 
       PinEntryDialog pinentry (parent, 0, true);
 
