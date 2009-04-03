@@ -40,4 +40,5 @@ pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp secstring.h secstring.cpp qsecurelineedit.h \
-	qsecurelineedit.cpp pinentrydialog.moc qsecurelineedit.moc
+	qsecurelineedit.cpp pinentrydialog.moc qsecurelineedit.moc \
+	qsecurelineedit_p.h

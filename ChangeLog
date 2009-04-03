@@ -1,8 +1,10 @@
 2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
 
+	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add qsecurelineedit_p.h.
+
 	* secmem/Makefile.am (libsecmem_a_SOURCES): Add secmem++.h.
 	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add pinentrydialog.moc
-	and qsecurelineedit.moc.
+	and qsecurelineedit.
 
 	* configure.ac: Incorporate revision number in version string.
 
