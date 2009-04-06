@@ -1,3 +1,7 @@
+2009-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Portability fixes.
+
 2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
 
 	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add qsecurelineedit_p.h.
