@@ -90,7 +90,7 @@ class QStyleOptionFrame;
 class QAbstractSpinBox;
 class QDateTimeEdit;
 
-class Q_GUI_EXPORT QSecureLineEdit : public QWidget
+class QSecureLineEdit : public QWidget
 {
     Q_OBJECT
 
