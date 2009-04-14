@@ -53,8 +53,8 @@
 
 static pinentry_t pinentry;
 static int passphrase_ok;
-static int confirm_yes;
-static int window_closed;
+typedef enum { CONFIRM_CANCEL, CONFIRM_OK, CONFIRM_NOTOK } confirm_value_t;
+static confirm_value_t confirm_value;
 
 static GtkWidget *entry;
 static GtkWidget *qualitybar;
@@ -150,7 +150,6 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-  window_closed = 1;
   gtk_main_quit ();
   return TRUE;
 }
@@ -193,10 +192,7 @@ enter_callback (GtkWidget *widget, GtkWidget *anentry)
 static void
 confirm_button_clicked (GtkWidget *widget, gpointer data)
 {
-  if (data)
-    /* Okay button.  */
-    confirm_yes = 1;
-
+  confirm_value = (int) data;
   gtk_main_quit ();
 }
 
@@ -445,7 +441,21 @@ create_window (int confirm_mode)
       gtk_container_add (GTK_CONTAINER (bbox), w);
       g_signal_connect (G_OBJECT (w), "clicked",
                         G_CALLBACK (confirm_mode ? confirm_button_clicked
-                                    : button_clicked), NULL);
+                                    : button_clicked),
+			(gpointer) CONFIRM_CANCEL);
+      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+    }
+  
+  if (confirm_mode && !pinentry->one_button && pinentry->notok)
+    {
+      msg = pinentry_utf8_validate (pinentry->notok);
+      w = gtk_button_new_with_label (msg);
+      g_free (msg);
+
+      gtk_container_add (GTK_CONTAINER (bbox), w);
+      g_signal_connect (G_OBJECT (w), "clicked",
+                        G_CALLBACK (confirm_button_clicked),
+			(gpointer) CONFIRM_NOTOK);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
   
@@ -471,7 +481,8 @@ create_window (int confirm_mode)
   else
     {
       g_signal_connect (G_OBJECT (w), "clicked",
-			G_CALLBACK(confirm_button_clicked), "ok");
+			G_CALLBACK(confirm_button_clicked),
+			(gpointer) CONFIRM_OK);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
 
@@ -490,8 +501,7 @@ gtk_cmd_handler (pinentry_t pe)
   int want_pass = !!pe->pin;
 
   pinentry = pe;
-  confirm_yes = 0;
-  window_closed = 0;
+  confirm_value = CONFIRM_CANCEL;
   passphrase_ok = 0;
   w = create_window (want_pass ? 0 : 1);
   gtk_main ();
@@ -499,8 +509,8 @@ gtk_cmd_handler (pinentry_t pe)
   while (gtk_events_pending ())
     gtk_main_iteration ();
 
-  if (window_closed)
-    pe->user_closed = 1;
+  if (confirm_value == CONFIRM_CANCEL)
+    pe->canceled = 1;
 
   pinentry = NULL;
   if (want_pass)
@@ -511,7 +521,7 @@ gtk_cmd_handler (pinentry_t pe)
 	return -1;
     }
   else
-    return confirm_yes;
+    return (confirm_value == CONFIRM_OK) ? 1 : 0;
 }
 
 

@@ -1,3 +1,22 @@
+2009-04-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New member NOTOK.
+	Rename member USER_CLOSED to CANCELED.
+	* pinentry/pinentry.c: Add initializer for NOTOK.
+	(register_commands): Add SETNOTOK.
+	* pinentry/pinentry-curses.c (STRING_NOTOK): New macro.
+	(dialog_pos_t): New value DIALOG_POS_NOTOK.
+	(struct dialog): New members notok, notok_x, notok_y.
+	(dialog_create): Implement NOTOK.
+	(dialog_switch_pos): Likewise.
+	(dialog_run): Likewise.
+	* gtk+-2/pinentry-gtk-2.c: Rename confirm_yes to confirm_value.
+	(confirm_value_t): New type.  Use it for confirm_value.
+	(window_closed): Remove.
+	(confirm_button_clicked): Set confirm_value.
+	(create_window): Implement NOTOK.
+	(gtk_cmd_handler): Implement cancel behaviour a bit differently.
+
 2009-04-09  Marcus Brinkmann  <marcus@g10code.de>
 
 	* qt4/qsecurelineedit.h (QSecureLineEdit): Don't export.

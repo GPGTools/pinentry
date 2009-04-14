@@ -48,6 +48,8 @@ struct pinentry
   char *prompt;
   /* The OK button text to display, or NULL.  */
   char *ok;
+  /* The Not-OK button text to display, or NULL.  */
+  char *notok;
   /* The Cancel button text to display, or NULL.  */
   char *cancel;
   /* The buffer to store the secret into.  */
@@ -84,9 +86,8 @@ struct pinentry
      and to the length of the PIN stored in pin otherwise.  */
   int result;
 
-  /* The user should set this is the pinentry window was closed by the
-     user without using a button.  */
-  int user_closed;
+  /* The user should set this if the NOTOK button was pressed.  */
+  int canceled;
 
   /* The user should set this to true if an error with the local
      conversion occured. */

@@ -53,6 +53,7 @@ struct pinentry pinentry =
     NULL,	/* Error.  */
     NULL,	/* Prompt.  */
     NULL,	/* Ok button.  */
+    NULL,	/* Not-Ok button.  */
     NULL,	/* Cancel button.  */
     NULL,	/* PIN.  */
     2048,	/* PIN length.  */
@@ -67,6 +68,7 @@ struct pinentry pinentry =
     0,		/* Parent Window ID.  */
     NULL,       /* Touch file.  */
     0,		/* Result.  */
+    0,		/* Result Not-OK.  */
     0,          /* Locale error flag. */
     0,          /* One-button flag.  */
     NULL,       /* Quality-Bar flag and description.  */
@@ -730,6 +732,23 @@ cmd_setok (ASSUAN_CONTEXT ctx, char *line)
 
 
 static int
+cmd_setnotok (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *newo;
+  newo = malloc (strlen (line) + 1);
+
+  if (!newo)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy_escaped (newo, line);
+  if (pinentry.notok)
+    free (pinentry.notok);
+  pinentry.notok = newo;
+  return 0;
+}
+
+
+static int
 cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newc;
@@ -819,7 +838,6 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
-  pinentry.user_closed = 0;
   pinentry.one_button = 0;
   pinentry.ctx_assuan = ctx;
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -876,7 +894,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   pinentry.one_button = !!strstr (line, "--one-button");
   pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
-  pinentry.user_closed = 0;
+  pinentry.canceled = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
@@ -888,7 +906,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
                                       : (pinentry.one_button 
                                          ? 0
-                                         : (pinentry.user_closed
+                                         : (pinentry.canceled
                                             ? ASSUAN_Canceled
                                             : ASSUAN_Not_Confirmed)));
 }
@@ -902,7 +920,6 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   pinentry.one_button = 1;
   pinentry.quality_bar = 0;
   pinentry.locale_err = 0;
-  pinentry.user_closed = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
@@ -961,6 +978,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "SETPROMPT",  0,  cmd_setprompt },
       { "SETERROR",   0,  cmd_seterror },
       { "SETOK",      0,  cmd_setok },
+      { "SETNOTOK",   0,  cmd_setnotok },
       { "SETCANCEL",  0,  cmd_setcancel },
       { "GETPIN",     0,  cmd_getpin },
       { "CONFIRM",    0,  cmd_confirm },

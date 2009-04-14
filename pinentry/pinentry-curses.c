@@ -45,6 +45,7 @@
 #include "pinentry.h"
 
 #define STRING_OK "<OK>"
+#define STRING_NOTOK "<No>"
 #define STRING_CANCEL "<Cancel>"
 
 #define USE_COLORS		(has_colors () && COLOR_PAIRS >= 2)
@@ -58,6 +59,7 @@ typedef enum
     DIALOG_POS_NONE,
     DIALOG_POS_PIN,
     DIALOG_POS_OK,
+    DIALOG_POS_NOTOK,
     DIALOG_POS_CANCEL
   }
 dialog_pos_t;
@@ -82,6 +84,9 @@ struct dialog
   int cancel_y;
   int cancel_x;
   char *cancel;
+  int notok_y;
+  int notok_x;
+  char *notok;
 };
 typedef struct dialog *dialog_t;
 
@@ -195,6 +200,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     MAKE_BUTTON (cancel, STRING_CANCEL);
   else
     dialog->cancel = NULL;
+  if (!pinentry->one_button && pinentry->notok)
+    MAKE_BUTTON (notok, STRING_NOTOK);
+  else
+    dialog->notok = NULL;
 
   getmaxyx (stdscr, size_y, size_x);
 
@@ -281,13 +290,16 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       if (new_x > x)
 	x = new_x;
     }
-  /* We position the buttons after the first and second third of the
-     width.  Account for rounding.  */
-  if (x < 2 * strlen (dialog->ok))
-    x = 2 * strlen (dialog->ok);
+  /* We position the buttons after the first, second and third fourth
+     of the width.  Account for rounding.  */
+  if (x < 3 * strlen (dialog->ok))
+    x = 3 * strlen (dialog->ok);
   if (dialog->cancel)
-    if (x < 2 * strlen (dialog->cancel))
-      x = 2 * strlen (dialog->cancel);
+    if (x < 3 * strlen (dialog->cancel))
+      x = 3 * strlen (dialog->cancel);
+  if (dialog->notok)
+    if (x < 3 * strlen (dialog->notok))
+      x = 3 * strlen (dialog->notok);
 
   /* Add the frame.  */
   x += 4;
@@ -415,19 +427,30 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   move (ypos, xpos);
   addch (ACS_VLINE);
 
-  if (dialog->cancel)
+  if (dialog->cancel || dialog->notok)
     {
       dialog->ok_y = ypos;
       /* Calculating the left edge of the left button, rounding down.  */
-      dialog->ok_x = xpos + 2 + ((x - 4) / 2 - strlen (dialog->ok)) / 2;
+      dialog->ok_x = xpos + 2 + ((x - 4) / 3 - strlen (dialog->ok)) / 2;
       move (dialog->ok_y, dialog->ok_x);
       addstr (dialog->ok);
 
-      dialog->cancel_y = ypos;
-      /* Calculating the left edge of the right button, rounding up.  */
-      dialog->cancel_x = xpos + x - 2 - ((x - 4) / 2 + strlen (dialog->cancel)) / 2;
-      move (dialog->cancel_y, dialog->cancel_x);
-      addstr (dialog->cancel);
+      if (dialog->notok)
+	{
+	  dialog->notok_y = ypos;
+	  /* Calculating the left edge of the middle button, rounding up.  */
+	  dialog->notok_x = xpos + x / 2 - strlen (dialog->notok) / 2;
+	  move (dialog->notok_y, dialog->notok_x);
+	  addstr (dialog->notok);
+	}
+      if (dialog->cancel)
+	{
+	  dialog->cancel_y = ypos;
+	  /* Calculating the left edge of the right button, rounding up.  */
+	  dialog->cancel_x = xpos + x - 2 - ((x - 4) / 3 + strlen (dialog->cancel)) / 2;
+	  move (dialog->cancel_y, dialog->cancel_x);
+	  addstr (dialog->cancel);
+	}
     }
   else
     {
@@ -478,6 +501,13 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  move (diag->ok_y, diag->ok_x);
 	  addstr (diag->ok);
 	  break;
+	case DIALOG_POS_NOTOK:
+          if (diag->notok)
+            {
+              move (diag->notok_y, diag->notok_x);
+              addstr (diag->notok);
+            }
+	  break;
 	case DIALOG_POS_CANCEL:
           if (diag->cancel)
             {
@@ -502,6 +532,17 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  addstr (diag->ok);
 	  standend ();
 	  move (diag->ok_y, diag->ok_x);
+	  break;
+	case DIALOG_POS_NOTOK:
+          if (diag->notok)
+            {
+              set_cursor_state (0);
+              move (diag->notok_y, diag->notok_x);
+              standout ();
+              addstr (diag->notok);
+              standend ();
+              move (diag->notok_y, diag->notok_x);
+            }
 	  break;
 	case DIALOG_POS_CANCEL:
           if (diag->cancel)
@@ -665,8 +706,14 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      if (diag.pin)
 		dialog_switch_pos (&diag, DIALOG_POS_PIN);
 	      break;
-	    case DIALOG_POS_CANCEL:
+	    case DIALOG_POS_NOTOK:
 	      dialog_switch_pos (&diag, DIALOG_POS_OK);
+	      break;
+	    case DIALOG_POS_CANCEL:
+	      if (diag.notok)
+		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
+	      else
+		dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
 	    default:
 	      break;
@@ -681,6 +728,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
 	    case DIALOG_POS_OK:
+	      if (diag.notok)
+		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
+	      else
+		dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
+	      break;
+	    case DIALOG_POS_NOTOK:
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
 	      break;
 	    default:
@@ -695,6 +748,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
 	    case DIALOG_POS_OK:
+	      if (diag.notok)
+		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
+	      else
+		dialog_switch_pos (&diag, DIALOG_POS_CANCEL);	      
+	      break;
+	    case DIALOG_POS_NOTOK:
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
 	      break;
 	    case DIALOG_POS_CANCEL:
@@ -718,6 +777,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	    case DIALOG_POS_PIN:
 	    case DIALOG_POS_OK:
 	      done = 1;
+	      break;
+	    case DIALOG_POS_NOTOK:
+	      done = -1;
 	      break;
 	    case DIALOG_POS_CANCEL:
 	      done = -2;
@@ -745,7 +807,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     fclose (ttyfo);
   /* XXX Factor out into dialog_release or something.  */
   free (diag.ok);
-  free (diag.cancel);
+  if (diag.cancel)
+    free (diag.cancel);
+  if (diag.notok)
+    free (diag.notok);
 
   if (pinentry->pin)
     {
@@ -760,6 +825,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  pinentry->locale_err = 0;
 	}
     }
+
+  if (done == -2)
+    pinentry->canceled = 1;
 
   return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
 }
