@@ -1,3 +1,7 @@
+2009-05-04  Till Adam <till@kdab.net>
+
+	* qt4/main.cpp (qt_cmd_handler): Use WId instead of HWND.
+
 2009-04-14  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (struct pinentry): New member NOTOK.
