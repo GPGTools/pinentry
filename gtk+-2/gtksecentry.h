@@ -173,6 +173,16 @@ void
 gtk_secure_entry_get_layout_offsets(GtkSecureEntry * entry,
 				    gint * x, gint * y);
 
+#if GLIB_CHECK_VERSION (2,15,5)
+#define GMALLOC_SIZE gsize
+#else
+#define GMALLOC_SIZE gulong
+#endif
+
+gpointer secentry_malloc (GMALLOC_SIZE size);
+gpointer secentry_realloc (gpointer mem, GMALLOC_SIZE size);
+void secentry_free (gpointer mem);
+
 #ifdef __cplusplus
 }
 #endif				/* __cplusplus */

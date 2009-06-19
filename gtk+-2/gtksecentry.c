@@ -269,14 +269,8 @@ gboolean g_use_secure_mem = FALSE;
 				} while(0)
 
 
-#if GLIB_CHECK_VERSION (2,15,5)
-#define GMALLOC_SIZE gsize
-#else
-#define GMALLOC_SIZE gulong
-#endif
-
 gpointer
-g_malloc (GMALLOC_SIZE size)
+secentry_malloc (GMALLOC_SIZE size)
 {
     gpointer p;
 
@@ -293,28 +287,9 @@ g_malloc (GMALLOC_SIZE size)
     return p;
 }
 
-gpointer
-g_malloc0 (GMALLOC_SIZE size)
-{
-    gpointer p;
-
-    if (size == 0)
-	return NULL;
-
-    if (g_use_secure_mem) {
-	p = (gpointer) secmem_malloc(size);
-	if (p)
-	    memset(p, 0, size);
-    } else
-	p = (gpointer) calloc(size, 1);
-    if (!p)
-	g_error("could not allocate %ld bytes", size);
-
-    return p;
-}
 
 gpointer
-g_realloc (gpointer mem, GMALLOC_SIZE size)
+secentry_realloc (gpointer mem, GMALLOC_SIZE size)
 {
     gpointer p;
 
@@ -344,7 +319,7 @@ g_realloc (gpointer mem, GMALLOC_SIZE size)
 }
 
 void
-g_free(gpointer mem)
+secentry_free(gpointer mem)
 {
     if (mem) {
 	if (m_is_secure(mem))

@@ -1,3 +1,14 @@
+2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	Suggested by Simon McVittie:
+	* gtk+-2/gtksecentry.c (g_malloc, g_realloc, g_free): Renamed to
+	secentry_malloc, secentry_realloc.
+	(g_malloc0): Removed.
+	(GMALLOC_SIZE): Move to ...
+	* gtk+-2/gtksecentry.h (GMALLOC_SIZE): ... here.
+	(secentry_malloc, secentry_realloc, secentry_free): New prototypes.
+	* gtk+-2/pinentry-gtk-2.c (main): Set memory allocation vtable.
+
 2009-05-04  Till Adam <till@kdab.net>
 
 	* qt4/main.cpp (qt_cmd_handler): Use WId instead of HWND.

@@ -531,6 +531,18 @@ pinentry_cmd_handler_t pinentry_cmd_handler = gtk_cmd_handler;
 int
 main (int argc, char *argv[])
 {
+  static GMemVTable secure_mem =
+    {
+      secentry_malloc,
+      secentry_realloc,
+      secentry_free,
+      NULL,
+      NULL,
+      NULL
+    };
+
+  g_mem_set_vtable (&secure_mem);
+
   pinentry_init (PGMNAME);
     
 #ifdef FALLBACK_CURSES
