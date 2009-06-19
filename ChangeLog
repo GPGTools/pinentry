@@ -1,5 +1,7 @@
 2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
 
+	* configure.ac: Post-release changes.
+
 	Release version 0.7.6.
 
 	* configure.ac: Bump version.
