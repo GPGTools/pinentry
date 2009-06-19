@@ -1,15 +1,18 @@
-Noteworthy changes in version 0.7.6
+Noteworthy changes in version 0.7.6 (2009-06-19)
 ------------------------------------------------
 
  * Make Gtk+-2 pinentry transient to the root window.
 
  * Add Qt4 pinentry.
 
+ * Add native W32 pinentry.
+
  * Fix utf-8 problem in Qt pinentries.
 
  * Return GPG_ERR_CANCELED if during a "CONFIRM" command the user
    closed the window.
 
+ * Add quality bar.
 
 Noteworthy changes in version 0.7.5 (2008-02-15)
 ------------------------------------------------

@@ -32,7 +32,7 @@ min_automake_version="1.7.6"
 # SVN version is the most recent one in a branch.  To disable the SVN
 # version for the real release, set the my_issvn macro to no.
 m4_define(my_version, [0.7.6])
-m4_define(my_issvn, [yes])
+m4_define(my_issvn, [no])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
            | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
