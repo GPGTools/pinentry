@@ -191,12 +191,12 @@ Note, that this is not fully supported by all flavors of @pinentry{}.
 @item --display @var{string}
 @itemx --ttyname @var{string}
 @itemx --ttytype @var{string}
-@itemx --lc-type @var{string}
+@itemx --lc-ctype @var{string}
 @itemx --lc-messages @var{string}
 @opindex display 
 @opindex ttyname 
 @opindex ttytype 
-@opindex lc-type 
+@opindex lc-ctype 
 @opindex lc-messa
 These options are used to pass localization information to
 @pinentry{}.  They are required because @pinentry{} is usually called

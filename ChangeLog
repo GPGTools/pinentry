@@ -1,3 +1,7 @@
+2009-01-29  Bernhard Reiter  <bernhard@intevation.de>
+
+	* doc/pinentry.texi (Using pinentry): Fix typo.
+
 2009-04-24  Guido Guenther <agx@sigxcpu.org>
 
 	* gtk+-2/gtksecentry.c (gtk_secure_entry_class_init): Don't
