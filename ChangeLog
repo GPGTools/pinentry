@@ -1,3 +1,12 @@
+2009-04-24  Guido Guenther <agx@sigxcpu.org>
+
+	* gtk+-2/gtksecentry.c (gtk_secure_entry_class_init): Don't
+	install "gtk-entry-select-on-focus" settings property since it
+	clashes with the one from GtkEntry.
+	(gtk_secure_entry_grab_focus): Create a temporary GtkEntry widget
+	to read that value instead. Allows to have GtkEntry and
+	GtkSecureEntry in the same process.
+
 2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	Suggested by Simon McVittie:
