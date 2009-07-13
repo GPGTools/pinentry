@@ -1,3 +1,8 @@
+2009-07-10  Till Adam  <till@kdab.com>
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Redesign the dialog to
+	be prettier.
+
 2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
 
 	* configure.ac: Post-release changes.

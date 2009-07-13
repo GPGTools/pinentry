@@ -44,22 +44,22 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
   QBoxLayout* top = new QVBoxLayout( this );
   top->setMargin( 6 );
   QBoxLayout* upperLayout = new QHBoxLayout();
-  top->addLayout( upperLayout );
+  top->addLayout( upperLayout, 1 );
 
   _icon = new QLabel( this );
   _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Information ) );
   upperLayout->addWidget( _icon );
 
   QBoxLayout* labelLayout = new QVBoxLayout();
-  upperLayout->addLayout( labelLayout );
+  upperLayout->addLayout( labelLayout, 5 );
 
   _error = new QLabel( this );
   _error->setWordWrap(true);
-  labelLayout->addWidget( _error );
+  labelLayout->addWidget( _error, 1 );
 
   _desc = new QLabel( this );
   _desc->setWordWrap(true);
-  labelLayout->addWidget( _desc );
+  labelLayout->addWidget( _desc, 5 );
 
   QGridLayout* grid = new QGridLayout;
   top->addLayout( grid );
@@ -107,6 +107,8 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
 	   this, SLOT (reject ()));
 
   _edit->setFocus();
+  setMinimumWidth( 450 );
+  resize( minimumSizeHint() );
 }
 
 void PinEntryDialog::hideEvent( QHideEvent* ev )
