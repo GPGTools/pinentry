@@ -28,6 +28,8 @@ extern "C" {
 #endif
 #endif
 
+#undef ENABLE_ENHANCED
+
 typedef enum {
   PINENTRY_COLOR_NONE, PINENTRY_COLOR_DEFAULT,
   PINENTRY_COLOR_BLACK, PINENTRY_COLOR_RED,
@@ -70,8 +72,12 @@ struct pinentry
 
   /* True if debug mode is requested.  */
   int debug;
+
+#ifdef ENABLE_ENHANCED
   /* True if enhanced mode is requested.  */
   int enhanced;
+#endif
+
   /* True if caller should grab the keyboard.  */
   int grab;
   /* The window ID of the parent window over which the pinentry window

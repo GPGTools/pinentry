@@ -1,3 +1,13 @@
+2009-08-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c [!ENABLE_ENHANCED]: Remove option enhanced.
+	* pinentry/pinentry.h (struct pinentry) [!ENABLE_ENHANCED]: Remove
+	member enhanced.
+	* gtk+-2/pinentry-gtk-2.c: New macro.
+	(button_clicked, create_window) [!ENABLE_ENHANCED]: Disable code.
+	* gtk/pinentry-gtk.c (button_clicked, create_window): Likewise.
+	* doc/pinentry.texi (Using pinentry): Comment out enhanced option.
+
 2009-07-10  Till Adam  <till@kdab.com>
 
 	* qt4/pinentrydialog.cpp (PinEntryDialog): Redesign the dialog to

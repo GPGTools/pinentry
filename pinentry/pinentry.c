@@ -63,7 +63,9 @@ struct pinentry pinentry =
     0,		/* TTY LC_CTYPE.  */
     0,		/* TTY LC_MESSAGES.  */
     0,		/* Debug mode.  */
+#ifdef ENABLE_ENHANCED
     0,		/* Enhanced mode.  */
+#endif
     1,		/* Global grab.  */
     0,		/* Parent Window ID.  */
     NULL,       /* Touch file.  */
@@ -396,7 +398,9 @@ usage (void)
 "      --ttytype NAME    Set the tty terminal type\n"
 "      --lc-ctype        Set the tty LC_CTYPE value\n"
 "      --lc-messages     Set the tty LC_MESSAGES value\n"
+#ifdef ENABLE_ENHANCED
 "  -e, --enhanced        Ask for timeout and insurance, too\n"
+#endif
 "  -g, --no-global-grab  Grab keyboard only while window is focused\n"
 "      --parent-wid	 Parent window ID (for positioning)\n"
 "  -d, --debug           Turn on debugging output\n"
@@ -471,7 +475,9 @@ pinentry_parse_opts (int argc, char *argv[])
      { "ttytype", required_argument,     0, 'N' },
      { "lc-ctype", required_argument,    0, 'C' },
      { "lc-messages", required_argument, 0, 'M' },
+#ifdef ENABLE_ENHANCED
      { "enhanced", no_argument,          0, 'e' },
+#endif
      { "no-global-grab", no_argument,    0, 'g' },
      { "parent-wid", required_argument,  0, 'W' },
      { "colors", required_argument,	 0, 'c' },
@@ -489,9 +495,11 @@ pinentry_parse_opts (int argc, char *argv[])
         case 'd':
           pinentry.debug = 1;
           break;
+#ifdef ENABLE_ENHANCED
         case 'e':
           pinentry.enhanced = 1;
           break;
+#endif
         case 'g':
           pinentry.grab = 0;
           break;

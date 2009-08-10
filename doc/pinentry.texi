@@ -167,12 +167,12 @@ Print a usage message summarizing the most useful command line options.
 Turn on some debugging.  Mostly useful for the maintainers.  Note that
 this may reveal sensitive information like the entered passphrase.
 
-@item --enhanced
-@itemx -e
-@opindex enhanced
-@opindex e
-Ask for timeouts and insurance, too.  Note that this is currently not
-fully supported.
+@c @item --enhanced
+@c @itemx -e
+@c @opindex enhanced
+@c @opindex e
+@c Ask for timeouts and insurance, too.  Note that this is currently not
+@c fully supported.
 
 @item --no-global-grab
 @itemx -g

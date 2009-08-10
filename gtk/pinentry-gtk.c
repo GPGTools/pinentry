@@ -136,6 +136,7 @@ button_clicked (GtkWidget *widget, gpointer data)
       char *s_utf8;
       char *s_buffer;
 
+#ifdef ENABLE_ENHANCED
       if (pinentry->enhanced)
         {
           printf("Options: %s\nTimeout: %d\n\n",
@@ -144,6 +145,7 @@ button_clicked (GtkWidget *widget, gpointer data)
                  : "",
                  gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(time_out)));
         }
+#endif
 
       pinentry->locale_err = 1;
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY(entry));
@@ -293,6 +295,7 @@ create_window (int confirm_mode)
       gtk_widget_grab_focus (entry);
       gtk_widget_show (entry);
 
+#ifdef ENABLE_ENHANCED
       if (pinentry->enhanced)
         {
           sbox = gtk_hbox_new(FALSE, 5);
@@ -318,6 +321,7 @@ create_window (int confirm_mode)
           gtk_box_pack_start (GTK_BOX(box), insure, FALSE, FALSE, 0);
           gtk_widget_show (insure);
         }
+#endif
     }
 
 

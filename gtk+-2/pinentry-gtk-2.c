@@ -163,12 +163,15 @@ button_clicked (GtkWidget *widget, gpointer data)
       const char *s;
 
       /* Okay button or enter used in text field.  */
-
+#ifdef ENABLE_ENHANCED
+      /* FIXME: This is not compatible with assuan.  We can't just
+	 print stuff on stdout.  */
       if (pinentry->enhanced)
 	printf ("Options: %s\nTimeout: %d\n\n",
 		gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (insure))
 		? "insure" : "",
 		gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (time_out)));
+#endif
 
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (entry));
       if (!s)
@@ -396,6 +399,7 @@ create_window (int confirm_mode)
 	  		    GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
 	}
 
+#ifdef ENABLE_ENHANCED
       if (pinentry->enhanced)
 	{
 	  GtkWidget *sbox = gtk_hbox_new (FALSE, HIG_SMALL);
@@ -421,6 +425,7 @@ create_window (int confirm_mode)
 	  gtk_box_pack_start (GTK_BOX (box), insure, FALSE, FALSE, 0);
 	  gtk_widget_show (insure);
 	}
+#endif
     }
 
   bbox = gtk_hbutton_box_new ();
