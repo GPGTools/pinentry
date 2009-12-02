@@ -107,7 +107,7 @@ struct pinentry
   /* If this is not NULL, a passphrase quality indicator is shown.
      There will also be an inquiry back to the caller to get an
      indication of the quality for the passphrase entered so far.  The
-     string is used as a labe for the auality bar.  */
+     string is used as a label for the quality bar.  */
   char *quality_bar;
 
   /* The tooltip to be show for the qualitybar.  Malloced or NULL.  */

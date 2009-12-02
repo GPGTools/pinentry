@@ -32,37 +32,36 @@
 
 #include "util.h"
 
-#ifndef TEMP_FAILURE_RETRY
-#define TEMP_FAILURE_RETRY(expression) \
-  (__extension__							      \
-    ({ long int __result;						      \
-       do __result = (long int) (expression);				      \
-       while (__result == -1L && errno == EINTR);			      \
-       __result; }))
-#endif
-
 #ifndef HAVE_DOSISH_SYSTEM
 static int uid_set = 0;
 static uid_t real_uid, file_uid;
 #endif /*!HAVE_DOSISH_SYSTEM*/
 
-/* write DATA of size BYTES to FD, until all is written or an error occurs */
-ssize_t xwrite(int fd, const void *data, size_t bytes)
+/* Write DATA of size BYTES to FD, until all is written or an error
+   occurs.  */
+ssize_t 
+xwrite(int fd, const void *data, size_t bytes)
 {
   char *ptr;
   size_t todo;
   ssize_t written = 0;
 
   for (ptr = (char *)data, todo = bytes; todo; ptr += written, todo -= written)
-    if ((written = TEMP_FAILURE_RETRY(write(fd, ptr, todo))) < 0)
-      break;
+    {
+      do
+        written = write (fd, ptr, todo);
+      while (written == -1 && errno == EINTR);
+      if (written < 0)
+        break;
+    }
   return written;
 }
 
 #if 0
 extern int debug;
 
-int debugmsg(const char *fmt, ...)
+int 
+debugmsg(const char *fmt, ...)
 {
   va_list va;
   int ret;
@@ -81,7 +80,8 @@ int debugmsg(const char *fmt, ...)
 
 /* initialize uid variables */
 #ifndef HAVE_DOSISH_SYSTEM
-static void init_uids(void)
+static void 
+init_uids(void)
 {
   real_uid = getuid();
   file_uid = geteuid();
@@ -92,7 +92,8 @@ static void init_uids(void)
 
 #if 0 /* Not used. */
 /* lower privileges to the real user's */
-void lower_privs()
+void 
+lower_privs()
 {
   if (!uid_set)
     init_uids();
@@ -111,7 +112,8 @@ void lower_privs()
 
 #if 0 /* Not used. */
 /* raise privileges to the effective user's */
-void raise_privs()
+void 
+raise_privs()
 {
   assert(real_uid >= 0);	/* lower_privs() must be called before this */
 #ifdef HAVE_SETEUID
@@ -123,7 +125,8 @@ void raise_privs()
 #endif /* if 0 */
 
 /* drop all additional privileges */
-void drop_privs()
+void 
+drop_privs()
 {
 #ifndef HAVE_DOSISH_SYSTEM
   if (!uid_set)

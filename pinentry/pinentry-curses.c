@@ -767,7 +767,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	    }
 	  break;
   
-	case '\e':
+	case '\005':
 	  done = -2;
 	  break;
 
