@@ -42,11 +42,6 @@
 #include "gtksecentry.h"
 #include "memory.h"
 
-#ifndef _
-#  include <libintl.h>
-#  define _(x) gettext(x)
-#endif
-
 #define MIN_SECURE_ENTRY_WIDTH  150
 #define DRAW_TIMEOUT     20
 #define INNER_BORDER     2
@@ -433,27 +428,24 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
     g_object_class_install_property(gobject_class,
 				    PROP_CURSOR_POSITION,
 				    g_param_spec_int("cursor_position",
-						     _("Cursor Position"),
-						     _
-						     ("The current position of the insertion cursor in chars"),
+						     "Cursor Position",
+						     "The current position of the insertion cursor in chars",
 						     0, MAX_SIZE, 0,
 						     G_PARAM_READABLE));
 
     g_object_class_install_property(gobject_class,
 				    PROP_SELECTION_BOUND,
 				    g_param_spec_int("selection_bound",
-						     _("Selection Bound"),
-						     _
-						     ("The position of the opposite end of the selection from the cursor in chars"),
+						     "Selection Bound",
+						     "The position of the opposite end of the selection from the cursor in chars",
 						     0, MAX_SIZE, 0,
 						     G_PARAM_READABLE));
 
     g_object_class_install_property(gobject_class,
 				    PROP_MAX_LENGTH,
 				    g_param_spec_int("max_length",
-						     _("Maximum length"),
-						     _
-						     ("Maximum number of characters for this entry. Zero if no maximum"),
+						     "Maximum length",
+						     "Maximum number of characters for this entry. Zero if no maximum",
 						     0, MAX_SIZE, 0,
 						     G_PARAM_READABLE |
 						     G_PARAM_WRITABLE));
@@ -461,9 +453,8 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
     g_object_class_install_property(gobject_class,
 				    PROP_HAS_FRAME,
 				    g_param_spec_boolean("has_frame",
-							 _("Has Frame"),
-							 _
-							 ("FALSE removes outside bevel from entry"),
+							 "Has Frame",
+							 "FALSE removes outside bevel from entry",
 							 TRUE,
 							 G_PARAM_READABLE |
 							 G_PARAM_WRITABLE));
@@ -471,10 +462,8 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
     g_object_class_install_property(gobject_class,
 				    PROP_INVISIBLE_CHAR,
 				    g_param_spec_unichar("invisible_char",
-							 _
-							 ("Invisible character"),
-							 _
-							 ("The character to use when masking entry contents (in \"password mode\")"),
+							 "Invisible character",
+							 "The character to use when masking entry contents (in \"password mode\")",
 							 '*',
 							 G_PARAM_READABLE |
 							 G_PARAM_WRITABLE));
@@ -483,16 +472,14 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
 				    PROP_ACTIVATES_DEFAULT,
 				    g_param_spec_boolean
 				    ("activates_default",
-				     _("Activates default"),
-				     _
-				     ("Whether to activate the default widget (such as the default button in a dialog) when Enter is pressed"),
+				     "Activates default",
+				     "Whether to activate the default widget (such as the default button in a dialog) when Enter is pressed",
 				     FALSE,
 				     G_PARAM_READABLE | G_PARAM_WRITABLE));
     g_object_class_install_property(gobject_class, PROP_WIDTH_CHARS,
 				    g_param_spec_int("width_chars",
-						     _("Width in chars"),
-						     _
-						     ("Number of characters to leave space for in the entry"),
+						     "Width in chars",
+						     "Number of characters to leave space for in the entry",
 						     -1, G_MAXINT, -1,
 						     G_PARAM_READABLE |
 						     G_PARAM_WRITABLE));
@@ -500,18 +487,16 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
     g_object_class_install_property(gobject_class,
 				    PROP_SCROLL_OFFSET,
 				    g_param_spec_int("scroll_offset",
-						     _("Scroll offset"),
-						     _
-						     ("Number of pixels of the entry scrolled off the screen to the left"),
+						     "Scroll offset",
+						     "Number of pixels of the entry scrolled off the screen to the left",
 						     0, G_MAXINT, 0,
 						     G_PARAM_READABLE));
 
     g_object_class_install_property(gobject_class,
 				    PROP_TEXT,
 				    g_param_spec_string("text",
-							_("Text"),
-							_
-							("The contents of the entry"),
+							"Text",
+							"The contents of the entry",
 							"",
 							G_PARAM_READABLE |
 							G_PARAM_WRITABLE));
