@@ -22,6 +22,9 @@
 
 bin_PROGRAMS = pinentry-qt4
 
+EXTRA_DIST = document-encrypt.png gtk-cancel.png gtk-ok.png
+
+
 if FALLBACK_CURSES
 ncurses_include = $(NCURSES_INCLUDE)
 libcurses = ../pinentry/libpinentry-curses.a $(LIBCURSES) $(LIBICONV)
