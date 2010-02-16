@@ -1,3 +1,77 @@
+2010-02-16  Werner Koch  <wk@g10code.com>
+
+	* qt4/document-encrypt.png, qt4/gtk-cancel.png, qt4/gtk-ok.png: New.
+	* qt4/Makefile.am (EXTRA_DIST): Add them.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/main.cpp, qt/pinentrydialog.cpp: If the style says so,
+	set (GTK) icons on OK and Cancel buttons.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/main.cpp: Use an explicit QMessageBox instead of the
+	'information' convenience method.  We do this for two reasons:
+	1. So we can set our own icon (icon()).  2. So we can call our
+	raiseWindow() function on it.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>
+
+	* qt4/main.cpp: Use title. Use Qt translation of "OK" and "Cancel"
+
+	* qt4/pinentrydialog.cpp: Don't show the question-mark icon in the
+	window title.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp: Use the
+	document-encrypt icon instead of the
+	QMessageBox::{Information,Critical} ones.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/pinentrydialog.cpp: Properly show/hide optional widgets.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>
+
+	* qt4/pinentrydialog.cpp: Set text color or error label to red.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/pinentrydialog.cpp: Gather scattered layouting code, use a
+	single gridlayout for all, and use QDialogButtonBox.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.cpp: Call SetForegroundWindow on showEvent()
+	and set a fixed size on the dialog.
+
+	* qt4/main.cpp: Set document-encrypt as the window icon.
+
+2010-02-15  Marc Mutz <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp: Load the correct Qt translation file based on
+	either lc_messages or the current locale.
+
+	* qt4/main.cpp: Use pinentry_t->parent_wid also for message-box
+	case.
+
+	* qt4/main.cpp: Properly delete the QApplication.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/main.cpp: Remove guard clause with impossible condition.
+
+	* qt4/main.cpp: Respect pinentry_t->title.
+
+	* qt4/main.cpp: Include config.h.
+
 2009-12-16  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gtk+-2/gtksecentry.c: Don't translate properties.

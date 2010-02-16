@@ -23,8 +23,8 @@ static const uint qt_meta_data_PinEntryDialog[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-       3,   10, // methods
-       4,   25, // properties
+       4,   10, // methods
+       4,   30, // properties
        0,    0, // enums/sets
 
  // signals: signature, parameters, type, tag, flags
@@ -33,21 +33,22 @@ static const uint qt_meta_data_PinEntryDialog[] = {
 
  // slots: signature, parameters, type, tag, flags
       38,   15,   15,   15, 0x0a,
+      64,   15,   15,   15, 0x08,
 
  // properties: name, type, flags
-      72,   64, 0x0a095103,
-      84,   64, 0x0a095103,
-     101,   90, 0x0009510b,
-     105,   64, 0x0a095103,
+      87,   79, 0x0a095103,
+      99,   79, 0x0a095103,
+     116,  105, 0x0009510b,
+     120,   79, 0x0a095103,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_PinEntryDialog[] = {
     "PinEntryDialog\0\0accepted()\0rejected()\0"
-    "updateQuality(secqstring)\0QString\0"
-    "description\0error\0secqstring\0pin\0"
-    "prompt\0"
+    "updateQuality(secqstring)\0setFixedSize()\0"
+    "QString\0description\0error\0secqstring\0"
+    "pin\0prompt\0"
 };
 
 const QMetaObject PinEntryDialog::staticMetaObject = {
@@ -78,8 +79,9 @@ int PinEntryDialog::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 0: accepted(); break;
         case 1: rejected(); break;
         case 2: updateQuality((*reinterpret_cast< const secqstring(*)>(_a[1]))); break;
+        case 3: setFixedSize(); break;
         }
-        _id -= 3;
+        _id -= 4;
     }
 #ifndef QT_NO_PROPERTIES
       else if (_c == QMetaObject::ReadProperty) {

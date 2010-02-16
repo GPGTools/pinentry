@@ -26,75 +26,118 @@
 
 #include "qsecurelineedit.h"
 
+#include <QApplication>
+#include <QStyle>
+#include <QPainter>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QDialogButtonBox>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMessageBox>
+#include <QTextDocument>
+#include <QPalette>
+
+#ifdef Q_WS_WIN
+#include <windows.h>
+#endif
+
+#ifdef Q_WS_WIN
+void SetForegroundWindowEx( HWND hWnd )
+{
+   //Attach foreground window thread to our thread
+   const DWORD ForeGroundID = GetWindowThreadProcessId(::GetForegroundWindow(),NULL);
+   const DWORD CurrentID   = GetCurrentThreadId();
+ 
+   AttachThreadInput ( ForeGroundID, CurrentID, TRUE );
+   //Do our stuff here
+   HWND hLastActivePopupWnd = GetLastActivePopup( hWnd );
+   SetForegroundWindow( hLastActivePopupWnd );
+ 
+   //Detach the attached thread
+   AttachThreadInput ( ForeGroundID, CurrentID, FALSE );
+}// End SetForegroundWindowEx
+#endif
+
+void raiseWindow( QWidget* w )
+{
+#ifdef Q_WS_WIN
+    SetForegroundWindowEx( w->winId() );
+#endif
+    w->raise();
+    w->activateWindow();
+}
+
+QPixmap icon( QStyle::StandardPixmap which )
+{
+    QPixmap pm = qApp->windowIcon().pixmap( 48, 48 );
+   
+    if ( which != QStyle::SP_CustomBase ) {
+        const QIcon ic = qApp->style()->standardIcon( which );
+        QPainter painter( &pm );
+        const int emblemSize = 22;
+        painter.drawPixmap( pm.width()-emblemSize, 0,
+                            ic.pixmap( emblemSize, emblemSize ) );
+    }
+
+    return pm;
+}
 
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
                                 bool enable_quality_bar )
   : QDialog( parent ), _grabbed( false )
 {
+  setWindowFlags( windowFlags() & ~Qt::WindowContextHelpButtonHint );
+
   if ( modal ) {
     setWindowModality( Qt::ApplicationModal );
   }
 
-  QBoxLayout* top = new QVBoxLayout( this );
-  top->setMargin( 6 );
-  QBoxLayout* upperLayout = new QHBoxLayout();
-  top->addLayout( upperLayout, 1 );
-
   _icon = new QLabel( this );
-  _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Information ) );
-  upperLayout->addWidget( _icon );
-
-  QBoxLayout* labelLayout = new QVBoxLayout();
-  upperLayout->addLayout( labelLayout, 5 );
+  _icon->setPixmap( icon() );
 
   _error = new QLabel( this );
   _error->setWordWrap(true);
-  labelLayout->addWidget( _error, 1 );
+  QPalette pal;
+  pal.setColor( QPalette::WindowText, Qt::red );
+  _error->setPalette( pal );
+  _error->hide();
 
   _desc = new QLabel( this );
   _desc->setWordWrap(true);
-  labelLayout->addWidget( _desc, 5 );
-
-  QGridLayout* grid = new QGridLayout;
-  top->addLayout( grid );
+  _desc->hide();
 
   _prompt = new QLabel( this );
-  grid->addWidget( _prompt, 0, 0 );
+  _prompt->hide();
+
   _edit = new QSecureLineEdit( this );
   _edit->setMaxLength( 256 );
-  grid->addWidget( _edit, 0, 1 );
 
   if (enable_quality_bar)
   {
     _quality_bar_label = new QLabel( this );
     _quality_bar_label->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-    grid->addWidget ( _quality_bar_label, 1, 0 );
     _quality_bar = new QProgressBar( this );
     _quality_bar->setAlignment( Qt::AlignCenter );
-    grid->addWidget( _quality_bar, 1, 1 );
     _have_quality_bar = true;
   }
   else
     _have_quality_bar = false;
 
-  QBoxLayout* l = new QHBoxLayout();
-  top->addLayout( l );
-
-  _ok = new QPushButton( tr("OK"), this );
-  _cancel = new QPushButton( tr("Cancel"), this );
-
-  l->addWidget( _ok );
-  l->addStretch();
-  l->addWidget( _cancel );
+  QDialogButtonBox* const buttons = new QDialogButtonBox( this );
+  buttons->setStandardButtons( QDialogButtonBox::Ok | QDialogButtonBox::Cancel );
+  _ok = buttons->button( QDialogButtonBox::Ok );
+  _cancel = buttons->button( QDialogButtonBox::Cancel );
 
   _ok->setDefault(true);
 
+  if ( style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
+    {
+      _ok->setIcon( QIcon( QLatin1String( ":/gtk-ok.png" ) ) );
+      _cancel->setIcon( QIcon( QLatin1String( ":/gtk-cancel.png" ) ) );
+    }
+ 
   connect( _ok, SIGNAL( clicked() ),
 	   this, SIGNAL( accepted() ) );
   connect( _cancel, SIGNAL( clicked() ),
@@ -107,6 +150,25 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
 	   this, SLOT (reject ()));
 
   _edit->setFocus();
+
+  QBoxLayout* const labels = new QVBoxLayout;
+  labels->addWidget( _error );
+  labels->addWidget( _desc );
+  labels->addItem( new QSpacerItem( 0, 1, QSizePolicy::Minimum, QSizePolicy::Expanding ) );
+
+  QGridLayout* const grid = new QGridLayout( this );
+  grid->addWidget( _icon, 0, 0, 4, 1, Qt::AlignTop|Qt::AlignLeft );
+  grid->addLayout( labels, 0, 1, 1, 2 );
+  grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
+  grid->addWidget( _prompt, 2, 1 );
+  grid->addWidget( _edit, 2, 2 );
+  if( enable_quality_bar )
+  {
+    grid->addWidget( _quality_bar_label, 3, 1 );
+    grid->addWidget( _quality_bar, 3, 2 );
+  }
+  grid->addWidget( buttons, 4, 0, 1, 3 );
+
   setMinimumWidth( 450 );
   resize( minimumSizeHint() );
 }
@@ -117,6 +179,27 @@ void PinEntryDialog::hideEvent( QHideEvent* ev )
     _edit->releaseKeyboard();
   _grabbed = false;
   QDialog::hideEvent( ev );
+}
+
+void PinEntryDialog::showEvent( QShowEvent* event )
+{
+    QDialog::showEvent( event );
+    QMetaObject::invokeMethod( this, "setFixedSize", Qt::QueuedConnection );
+}
+
+void PinEntryDialog::setFixedSize()
+{
+    QTextDocument doc;
+    doc.setDefaultFont( _desc->font() );
+    doc.setHtml( _desc->text() );
+    doc.setTextWidth( _desc->width() );
+    _desc->setFixedSize( doc.size().toSize() );
+   
+    layout()->activate();
+    setFixedHeight( minimumSizeHint().height() + 5 );
+    QDialog::setFixedSize( size() );
+    
+    raiseWindow( this );
 }
 
 void PinEntryDialog::keyPressEvent( QKeyEvent* e )
@@ -130,8 +213,9 @@ void PinEntryDialog::keyPressEvent( QKeyEvent* e )
 
 void PinEntryDialog::setDescription( const QString& txt )
 {
+  _desc->setVisible( !txt.isEmpty() );
   _desc->setText( txt );
-  _icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Information ) );
+  _icon->setPixmap( icon() );
   setError( QString::null );
 }
 
@@ -142,8 +226,9 @@ QString PinEntryDialog::description() const
 
 void PinEntryDialog::setError( const QString& txt )
 {
-  if( !txt.isNull() )_icon->setPixmap( QMessageBox::standardIcon( QMessageBox::Critical ) );
+  if( !txt.isNull() )_icon->setPixmap( icon( QStyle::SP_MessageBoxCritical ) );
   _error->setText( txt );
+  _error->setVisible( !txt.isEmpty() );
 }
 
 QString PinEntryDialog::error() const
@@ -164,6 +249,7 @@ secqstring PinEntryDialog::pin() const
 void PinEntryDialog::setPrompt( const QString& txt )
 {
   _prompt->setText( txt );
+  _prompt->setVisible( !txt.isEmpty() );
 }
 
 QString PinEntryDialog::prompt() const
@@ -174,11 +260,13 @@ QString PinEntryDialog::prompt() const
 void PinEntryDialog::setOkText( const QString& txt )
 {
   _ok->setText( txt );
+  _ok->setVisible( !txt.isEmpty() );
 }
 
 void PinEntryDialog::setCancelText( const QString& txt )
 {
   _cancel->setText( txt );
+  _cancel->setVisible( !txt.isEmpty() );
 }
 
 void PinEntryDialog::setQualityBar( const QString& txt )

@@ -24,18 +24,28 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "pinentrydialog.h"
 #include "pinentry.h"
 
 #include <qapplication.h>
+#include <QIcon>
 #include <QString>
 #include <qwidget.h>
 #include <qmessagebox.h>
+#include <QLocale>
+#include <QTranslator>
+#include <QDialogButtonBox>
+#include <QPushButton>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#include <memory>
 
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
@@ -62,19 +72,27 @@ qt_cmd_handler (pinentry_t pe)
 {
   QWidget *parent = 0;
 
+  QTranslator trans;
+  const QString lang = pe->lc_messages ? QString::fromLatin1 (pe->lc_messages) : QLocale ().name () ;
+  if( trans.load (QString::fromLatin1(":/qt_%1").arg(lang)) )
+    qApp->installTranslator (&trans);
+
+  /* FIXME: Add parent window ID to pinentry and GTK.  */
+  if (pe->parent_wid)
+    parent = new ForeignWidget ((WId) pe->parent_wid);
+
   int want_pass = !!pe->pin;
 
   if (want_pass)
     {
-      /* FIXME: Add parent window ID to pinentry and GTK.  */
-      if (pe->parent_wid)
-	parent = new ForeignWidget ((WId) pe->parent_wid);
-
       PinEntryDialog pinentry (parent, 0, true, !!pe->quality_bar);
 
       pinentry.setPinentryInfo (pe);
       pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
       pinentry.setDescription (QString::fromUtf8 (pe->description));
+      if ( pe->title )
+          pinentry.setWindowTitle( QString::fromUtf8( pe->title ) );
+
       /* If we reuse the same dialog window.  */
       pinentry.setPin (secqstring());
 
@@ -95,8 +113,6 @@ qt_cmd_handler (pinentry_t pe)
 
       const secstring pinUtf8 = toUtf8( pinentry.pin() );
       const char *pin = pinUtf8.data();
-      if (!pin)
-	return -1;
 
       int len = strlen (pin);
       if (len >= 0)
@@ -112,14 +128,48 @@ qt_cmd_handler (pinentry_t pe)
     }
   else
     {
-      QString desc = QString::fromUtf8 (pe->description? pe->description :"");
-      QString ok   = QString::fromUtf8 (pe->ok ? pe->ok : "OK");
-      QString can  = QString::fromUtf8 (pe->cancel ? pe->cancel : "Cancel");
-      bool ret;
+      const QString title = pe->title       ? QString::fromUtf8 ( pe->title )       : QString();
+      const QString desc  = pe->description ? QString::fromUtf8 ( pe->description ) : QString();
+      const QString ok    = pe->ok          ? QString::fromUtf8 ( pe->ok )          : QDialogButtonBox::tr( "&OK" );
+      const QString can   = pe->cancel      ? QString::fromUtf8 ( pe->cancel )      : QDialogButtonBox::tr( "Cancel" );
 
-      ret = QMessageBox::information (parent, "", desc, ok, can );
+      QMessageBox box( parent );
 
-      return !ret;
+      if ( !title.isEmpty() )
+        box.setWindowTitle( title );
+
+      if ( !ok.isEmpty() )
+          if ( !can.isEmpty() )
+              box.setStandardButtons( QMessageBox::Ok|QMessageBox::Cancel );
+          else
+              box.setStandardButtons( QMessageBox::Ok );
+      else
+          if ( !can.isEmpty() )
+              box.setStandardButtons( QMessageBox::Cancel );
+          else
+              box.setStandardButtons( QMessageBox::NoButton );
+
+      if ( !ok.isEmpty() )
+        {
+          box.button( QMessageBox::Ok )->setText( ok );
+          if ( box.style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
+            box.button( QMessageBox::Ok )->setIcon( QIcon( QLatin1String( ":/gtk-ok.png" ) ) );
+        }
+
+      if ( !can.isEmpty() )
+        {
+          box.button( QMessageBox::Cancel )->setText( can );
+          if ( box.style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
+            box.button( QMessageBox::Cancel )->setIcon( QIcon( QLatin1String( ":/gtk-cancel.png" ) ) );
+        }
+
+      box.setText( desc );
+      box.setIconPixmap( icon() );
+
+      box.show();
+      raiseWindow( &box );
+
+      return box.exec() == QMessageBox::Ok ;
     }
 }
 
@@ -129,6 +179,8 @@ int
 main (int argc, char *argv[])
 {
   pinentry_init ("pinentry-qt4");
+
+  std::auto_ptr<QApplication> app;
 
 #ifdef FALLBACK_CURSES
   if (!pinentry_have_display (argc, argv))
@@ -171,7 +223,9 @@ main (int argc, char *argv[])
       /* We use a modal dialog window, so we don't need the application
          window anymore.  */
       i = argc;
-      new QApplication (i, new_argv);
+      app.reset (new QApplication (i, new_argv));
+      const QIcon icon( QLatin1String( ":/document-encrypt.png" ) );
+      app->setWindowIcon( icon );
     }
 
 
@@ -179,11 +233,11 @@ main (int argc, char *argv[])
   if (pinentry_parse_opts (argc, argv))
     {
       printf ("pinentry-qt4 (pinentry) " /* VERSION */ "\n");
-      exit (EXIT_SUCCESS);
+      return EXIT_SUCCESS;
+    }
+  else
+    {
+      return pinentry_loop () ? EXIT_FAILURE : EXIT_SUCCESS ;
     }
 
-  if (pinentry_loop ())
-    return 1;
-
-  return 0;
 }

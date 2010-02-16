@@ -26,6 +26,7 @@
 
 #include <QProgressBar>
 #include <QDialog>
+#include <QStyle>
 
 #include "secstring.h"
 #include "pinentry.h"
@@ -35,7 +36,9 @@ class QPushButton;
 class QSecureLineEdit;
 class QString;
 
+QPixmap icon( QStyle::StandardPixmap which = QStyle::SP_CustomBase );
 
+void raiseWindow( QWidget* w );
 
 class PinEntryDialog : public QDialog {
   Q_OBJECT
@@ -76,9 +79,13 @@ signals:
   void rejected();
 
 protected:
+  /* reimp */ void showEvent( QShowEvent* event );
   /* reimp */ void keyPressEvent( QKeyEvent *e );
   /* reimp */ void hideEvent( QHideEvent* );
   /* reimp */ void paintEvent( QPaintEvent* event );
+
+private Q_SLOTS:
+  void setFixedSize();
 
 private:
   QLabel*    _icon;
