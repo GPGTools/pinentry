@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002, 2003, 2007, 2008 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2007, 2008, 2010 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -80,7 +80,9 @@ struct pinentry pinentry =
     PINENTRY_COLOR_DEFAULT,
     PINENTRY_COLOR_DEFAULT,
     0,
-    NULL        /* Assuan context.  */
+    NULL,        /* default_ok  */
+    NULL,        /* default_cancel  */
+    NULL         /* Assuan context.  */
   };
 
 
@@ -578,6 +580,20 @@ pinentry_parse_opts (int argc, char *argv[])
 }
 
 
+static char *
+noprefix_strdup (const char *string)
+{
+  const char *s;
+
+  if (*string == '|' && (s = strchr (string+1, '|')))
+    s++;
+  else
+    s = string;
+
+  return strdup (s);
+}
+
+
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
@@ -645,6 +661,18 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       if (!pinentry.touch_file)
 	return ASSUAN_Out_Of_Core;
     }
+  else if (!strcmp (key, "default-ok"))
+    {
+      pinentry.default_ok = noprefix_strdup (value);
+      if (!pinentry.default_ok)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "default-cancel"))
+    {
+      pinentry.default_cancel = noprefix_strdup (value);
+      if (!pinentry.default_cancel)
+	return ASSUAN_Out_Of_Core;
+    }
   else
     return ASSUAN_Invalid_Option;
   return 0;
@@ -654,7 +682,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 /* Note, that it is sufficient to allocate the target string D as
    long as the source string S, i.e.: strlen(s)+1; */
 static void
-strcpy_escaped (char *d, const unsigned char *s)
+strcpy_escaped (char *d, const char *s)
 {
   while (*s)
     {

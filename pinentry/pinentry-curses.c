@@ -44,6 +44,9 @@
 
 #include "pinentry.h"
 
+/* FIXME: We should allow configuration of these button labels and in
+   any case use the default_ok, default_cancel values if available.
+   However, I have no clue about curses and localization.  */
 #define STRING_OK "<OK>"
 #define STRING_NOTOK "<No>"
 #define STRING_CANCEL "<Cancel>"

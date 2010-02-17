@@ -1,3 +1,11 @@
+2010-02-17  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add default_ok and
+	default_cancel.
+	* pinentry/pinentry.c (noprefix_strdup): New.
+	(option_handler): Support "default-ok" and "default-cancel".
+	(strcpy_escaped): Change second arg from unsigend char to char.
+
 2010-02-16  Werner Koch  <wk@g10code.com>
 
 	* qt4/document-encrypt.png, qt4/gtk-cancel.png, qt4/gtk-ok.png: New.

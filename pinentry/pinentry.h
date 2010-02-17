@@ -1,5 +1,5 @@
 /* pinentry.h - The interface for the PIN entry support library.
-   Copyright (C) 2002, 2003 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2010 g10 Code GmbH
    
    This file is part of PINENTRY.
    
@@ -14,9 +14,8 @@
    General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA  */
+   along with this program; if not, see <http://www.gnu.org/licenses/>. 
+ */
 
 #ifndef PINENTRY_H
 #define PINENTRY_H
@@ -120,9 +119,16 @@ struct pinentry
   pinentry_color_t color_so;
   int color_so_bright;
 
-  /* Fo the quality indicator we need to do an inquiry.  Thus we need
+  /* Malloced and i18ned default strings or NULL.  These strings may
+     include an underscore character to indicate an accelerator
+     key.  */
+  char *default_ok;
+  char *default_cancel;
+
+  /* For the quality indicator we need to do an inquiry.  Thus we need
      to save the assuan ctx.  */
   void *ctx_assuan;
+
 };
 typedef struct pinentry *pinentry_t;
 
