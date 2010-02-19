@@ -58,8 +58,10 @@ static confirm_value_t confirm_value;
 
 static GtkWidget *entry;
 static GtkWidget *qualitybar;
+#ifdef ENABLE_ENHANCED
 static GtkWidget *insure;
 static GtkWidget *time_out;
+#endif
 static GtkTooltips *tooltips;
 
 /* Gnome hig small and large space in pixels.  */
@@ -67,10 +69,10 @@ static GtkTooltips *tooltips;
 #define HIG_LARGE     12
 
 /* The text shown in the quality bar when no text is shown.  This is not
- * the empty string, becase because with an empty string the height of
+ * the empty string, because with an empty string the height of
  * the quality bar is less than with a non-empty string.  This results
  * in ugly layout changes when the text changes from non-empty to empty
- * and vice versa */
+ * and vice versa.  */
 #define QUALITYBAR_EMPTY_TEXT " "
 
 
@@ -360,7 +362,7 @@ create_window (int confirm_mode)
       if (pinentry->prompt)
 	{
 	  msg = pinentry_utf8_validate (pinentry->prompt);
-	  w = gtk_label_new (msg);
+	  w = gtk_label_new_with_mnemonic (msg);
 	  g_free (msg);
 	  gtk_misc_set_alignment (GTK_MISC (w), 1.0, 0.5);
 	  gtk_table_attach (GTK_TABLE (table), w, 0, 1, 0, 1,
@@ -438,7 +440,7 @@ create_window (int confirm_mode)
       if (pinentry->cancel)
         {
           msg = pinentry_utf8_validate (pinentry->cancel);
-          w = gtk_button_new_with_label (msg);
+          w = gtk_button_new_with_mnemonic (msg);
           g_free (msg);
         }
       else
@@ -454,7 +456,7 @@ create_window (int confirm_mode)
   if (confirm_mode && !pinentry->one_button && pinentry->notok)
     {
       msg = pinentry_utf8_validate (pinentry->notok);
-      w = gtk_button_new_with_label (msg);
+      w = gtk_button_new_with_mnemonic (msg);
       g_free (msg);
 
       gtk_container_add (GTK_CONTAINER (bbox), w);
@@ -467,7 +469,7 @@ create_window (int confirm_mode)
   if (pinentry->ok)
     {
       msg = pinentry_utf8_validate (pinentry->ok);
-      w = gtk_button_new_with_label (msg);
+      w = gtk_button_new_with_mnemonic (msg);
       g_free (msg);
     }
   else

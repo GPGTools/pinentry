@@ -120,10 +120,11 @@ struct pinentry
   int color_so_bright;
 
   /* Malloced and i18ned default strings or NULL.  These strings may
-     include an underscore character to indicate an accelerator
-     key.  */
+     include an underscore character to indicate an accelerator key.
+     A double underscore represents a plain one.  */
   char *default_ok;
   char *default_cancel;
+  char *default_prompt;
 
   /* For the quality indicator we need to do an inquiry.  Thus we need
      to save the assuan ctx.  */

@@ -82,6 +82,7 @@ struct pinentry pinentry =
     0,
     NULL,        /* default_ok  */
     NULL,        /* default_cancel  */
+    NULL,        /* default_prompt  */
     NULL         /* Assuan context.  */
   };
 
@@ -673,6 +674,12 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       if (!pinentry.default_cancel)
 	return ASSUAN_Out_Of_Core;
     }
+  else if (!strcmp (key, "default-prompt"))
+    {
+      pinentry.default_prompt = noprefix_strdup (value);
+      if (!pinentry.default_prompt)
+	return ASSUAN_Out_Of_Core;
+    }
   else
     return ASSUAN_Invalid_Option;
   return 0;
@@ -870,7 +877,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     return ASSUAN_Out_Of_Core;
   if (!pinentry.prompt)
     {
-      pinentry.prompt = "PIN:";
+      pinentry.prompt = pinentry.default_prompt?pinentry.default_prompt:"PIN:";
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
