@@ -26,17 +26,14 @@
 
 #include "qsecurelineedit.h"
 
+#include <QProgressBar>
 #include <QApplication>
 #include <QStyle>
 #include <QPainter>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QKeyEvent>
 #include <QLabel>
-#include <QMessageBox>
-#include <QTextDocument>
 #include <QPalette>
 
 #ifdef Q_WS_WIN
@@ -114,6 +111,8 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
   _edit = new QSecureLineEdit( this );
   _edit->setMaxLength( 256 );
 
+  _prompt->setBuddy( _edit );
+
   if (enable_quality_bar)
   {
     _quality_bar_label = new QLabel( this );
@@ -134,43 +133,32 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
 
   if ( style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
     {
-      _ok->setIcon( QIcon( QLatin1String( ":/gtk-ok.png" ) ) );
-      _cancel->setIcon( QIcon( QLatin1String( ":/gtk-cancel.png" ) ) );
+      _ok->setIcon( style()->standardIcon( QStyle::SP_DialogOkButton ) );
+      _cancel->setIcon( style()->standardIcon( QStyle::SP_DialogCancelButton ) );
     }
  
-  connect( _ok, SIGNAL( clicked() ),
-	   this, SIGNAL( accepted() ) );
-  connect( _cancel, SIGNAL( clicked() ),
-	   this, SIGNAL( rejected() ) );
+  connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
+  connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
   connect( _edit, SIGNAL( textChanged(secqstring) ),
 	   this, SLOT( updateQuality(secqstring) ) );
-  connect (this, SIGNAL (accepted ()),
-	   this, SLOT (accept ()));
-  connect (this, SIGNAL (rejected ()),
-	   this, SLOT (reject ()));
 
   _edit->setFocus();
 
-  QBoxLayout* const labels = new QVBoxLayout;
-  labels->addWidget( _error );
-  labels->addWidget( _desc );
-  labels->addItem( new QSpacerItem( 0, 1, QSizePolicy::Minimum, QSizePolicy::Expanding ) );
-
   QGridLayout* const grid = new QGridLayout( this );
-  grid->addWidget( _icon, 0, 0, 4, 1, Qt::AlignTop|Qt::AlignLeft );
-  grid->addLayout( labels, 0, 1, 1, 2 );
-  grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
-  grid->addWidget( _prompt, 2, 1 );
-  grid->addWidget( _edit, 2, 2 );
+  grid->addWidget( _icon, 0, 0, 5, 1, Qt::AlignTop|Qt::AlignLeft );
+  grid->addWidget( _error, 1, 1, 1, 2 );
+  grid->addWidget( _desc,  2, 1, 1, 2 );
+  //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
+  grid->addWidget( _prompt, 3, 1 );
+  grid->addWidget( _edit, 3, 2 );
   if( enable_quality_bar )
   {
-    grid->addWidget( _quality_bar_label, 3, 1 );
-    grid->addWidget( _quality_bar, 3, 2 );
+    grid->addWidget( _quality_bar_label, 4, 1 );
+    grid->addWidget( _quality_bar, 4, 2 );
   }
-  grid->addWidget( buttons, 4, 0, 1, 3 );
+  grid->addWidget( buttons, 5, 0, 1, 3 );
 
-  setMinimumWidth( 450 );
-  resize( minimumSizeHint() );
+  grid->setSizeConstraint( QLayout::SetFixedSize );
 }
 
 void PinEntryDialog::hideEvent( QHideEvent* ev )
@@ -184,31 +172,7 @@ void PinEntryDialog::hideEvent( QHideEvent* ev )
 void PinEntryDialog::showEvent( QShowEvent* event )
 {
     QDialog::showEvent( event );
-    QMetaObject::invokeMethod( this, "setFixedSize", Qt::QueuedConnection );
-}
-
-void PinEntryDialog::setFixedSize()
-{
-    QTextDocument doc;
-    doc.setDefaultFont( _desc->font() );
-    doc.setHtml( _desc->text() );
-    doc.setTextWidth( _desc->width() );
-    _desc->setFixedSize( doc.size().toSize() );
-   
-    layout()->activate();
-    setFixedHeight( minimumSizeHint().height() + 5 );
-    QDialog::setFixedSize( size() );
-    
     raiseWindow( this );
-}
-
-void PinEntryDialog::keyPressEvent( QKeyEvent* e )
-{
-  if ( e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Escape ) {
-    emit rejected();
-    return;
-  }
-  QDialog::keyPressEvent( e );
 }
 
 void PinEntryDialog::setDescription( const QString& txt )

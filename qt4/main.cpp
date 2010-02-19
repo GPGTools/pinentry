@@ -36,9 +36,6 @@
 #include <QString>
 #include <qwidget.h>
 #include <qmessagebox.h>
-#include <QLocale>
-#include <QTranslator>
-#include <QDialogButtonBox>
 #include <QPushButton>
 
 #include <stdio.h>
@@ -50,6 +47,44 @@
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
 #endif
+
+static QString escape_accel( const QString & s ) {
+
+  QString result;
+  result.reserve( s.size() );
+
+  bool afterUnderscore = false;
+
+  for ( unsigned int i = 0, end = s.size() ; i != end ; ++i ) {
+    const QChar ch = s[i];
+    if ( ch == QLatin1Char( '_' ) )
+      {
+        if ( afterUnderscore ) // escaped _
+          {
+            result += QLatin1Char( '_' );
+            afterUnderscore = false;
+          }
+        else // accel
+          {
+            afterUnderscore = true;
+          }
+      }
+    else
+      {
+        if ( afterUnderscore || // accel
+             ch == QLatin1Char( '&' ) ) // escape & from being interpreted by Qt
+          result += QLatin1Char( '&' );
+        result += ch;
+        afterUnderscore = false;
+      }
+  }
+
+  if ( afterUnderscore )
+    // trailing single underscore: shouldn't happen, but deal with it robustly:
+    result += QLatin1Char( '_' );
+
+  return result;
+}
 
 /* Hack for creating a QWidget with a "foreign" window ID */
 class ForeignWidget : public QWidget
@@ -72,23 +107,31 @@ qt_cmd_handler (pinentry_t pe)
 {
   QWidget *parent = 0;
 
-  QTranslator trans;
-  const QString lang = pe->lc_messages ? QString::fromLatin1 (pe->lc_messages) : QLocale ().name () ;
-  if( trans.load (QString::fromLatin1(":/qt_%1").arg(lang)) )
-    qApp->installTranslator (&trans);
-
   /* FIXME: Add parent window ID to pinentry and GTK.  */
   if (pe->parent_wid)
     parent = new ForeignWidget ((WId) pe->parent_wid);
 
   int want_pass = !!pe->pin;
 
+  const QString ok =
+      pe->ok             ?               QString::fromUtf8( pe->ok ) :
+      pe->default_ok     ? escape_accel( QString::fromUtf8( pe->default_ok ) ) :
+      /* else */           QLatin1String( "&OK" ) ;
+  const QString cancel =
+      pe->cancel         ?               QString::fromUtf8( pe->cancel ) :
+      pe->default_cancel ? escape_accel( QString::fromUtf8( pe->default_cancel ) ) :
+      /* else */           QLatin1String( "&Cancel" ) ;
+  const QString title =
+      pe->title ? QString::fromUtf8( pe->title ) :
+      /* else */  QLatin1String( "pinentry-qt4" ) ;
+      
+
   if (want_pass)
     {
       PinEntryDialog pinentry (parent, 0, true, !!pe->quality_bar);
 
       pinentry.setPinentryInfo (pe);
-      pinentry.setPrompt (QString::fromUtf8 (pe->prompt));
+      pinentry.setPrompt (escape_accel (QString::fromUtf8 (pe->prompt)) );
       pinentry.setDescription (QString::fromUtf8 (pe->description));
       if ( pe->title )
           pinentry.setWindowTitle( QString::fromUtf8( pe->title ) );
@@ -96,10 +139,8 @@ qt_cmd_handler (pinentry_t pe)
       /* If we reuse the same dialog window.  */
       pinentry.setPin (secqstring());
 
-      if (pe->ok)
-	pinentry.setOkText (QString::fromUtf8 (pe->ok));
-      if (pe->cancel)
-	pinentry.setCancelText (QString::fromUtf8 (pe->cancel));
+      pinentry.setOkText (ok);
+      pinentry.setCancelText (cancel);
       if (pe->error)
 	pinentry.setError (QString::fromUtf8 (pe->error));
       if (pe->quality_bar)
@@ -128,48 +169,45 @@ qt_cmd_handler (pinentry_t pe)
     }
   else
     {
-      const QString title = pe->title       ? QString::fromUtf8 ( pe->title )       : QString();
       const QString desc  = pe->description ? QString::fromUtf8 ( pe->description ) : QString();
-      const QString ok    = pe->ok          ? QString::fromUtf8 ( pe->ok )          : QDialogButtonBox::tr( "&OK" );
-      const QString can   = pe->cancel      ? QString::fromUtf8 ( pe->cancel )      : QDialogButtonBox::tr( "Cancel" );
+      const QString notok = pe->notok       ? QString::fromUtf8 ( pe->notok )       : QString();
 
-      QMessageBox box( parent );
+      const QMessageBox::StandardButtons buttons =
+          pe->one_button ? QMessageBox::Ok :
+          pe->notok      ? QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel :
+          /* else */       QMessageBox::Ok|QMessageBox::Cancel ;
 
-      if ( !title.isEmpty() )
-        box.setWindowTitle( title );
+      QMessageBox box( QMessageBox::Information, title, desc, buttons, parent );
 
-      if ( !ok.isEmpty() )
-          if ( !can.isEmpty() )
-              box.setStandardButtons( QMessageBox::Ok|QMessageBox::Cancel );
-          else
-              box.setStandardButtons( QMessageBox::Ok );
-      else
-          if ( !can.isEmpty() )
-              box.setStandardButtons( QMessageBox::Cancel );
-          else
-              box.setStandardButtons( QMessageBox::NoButton );
+      const struct {
+          QMessageBox::StandardButton button;
+          QString label;
+      } buttonLabels[] = {
+          { QMessageBox::Ok,     ok     },
+          { QMessageBox::Yes,    ok     },
+          { QMessageBox::No,     notok  },
+          { QMessageBox::Cancel, cancel },
+      };
 
-      if ( !ok.isEmpty() )
-        {
-          box.button( QMessageBox::Ok )->setText( ok );
-          if ( box.style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
-            box.button( QMessageBox::Ok )->setIcon( QIcon( QLatin1String( ":/gtk-ok.png" ) ) );
-        }
+      for ( size_t i = 0 ; i < sizeof buttonLabels / sizeof *buttonLabels ; ++i )
+        if ( (buttons & buttonLabels[i].button) && !buttonLabels[i].label.isEmpty() )
+            box.button( buttonLabels[i].button )->setText( buttonLabels[i].label );
 
-      if ( !can.isEmpty() )
-        {
-          box.button( QMessageBox::Cancel )->setText( can );
-          if ( box.style()->styleHint( QStyle::SH_DialogButtonBox_ButtonsHaveIcons ) )
-            box.button( QMessageBox::Cancel )->setIcon( QIcon( QLatin1String( ":/gtk-cancel.png" ) ) );
-        }
-
-      box.setText( desc );
       box.setIconPixmap( icon() );
+
+      if ( !pe->one_button )
+        box.setDefaultButton( QMessageBox::Cancel );
 
       box.show();
       raiseWindow( &box );
 
-      return box.exec() == QMessageBox::Ok ;
+      const int rc = box.exec();
+
+      if ( rc == QMessageBox::Cancel )
+        pe->canceled = true;
+
+      return rc == QMessageBox::Ok || rc == QMessageBox::Yes ;
+
     }
 }
 

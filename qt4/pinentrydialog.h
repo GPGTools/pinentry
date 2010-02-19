@@ -24,7 +24,6 @@
 #ifndef __PINENTRYDIALOG_H__
 #define __PINENTRYDIALOG_H__
 
-#include <QProgressBar>
 #include <QDialog>
 #include <QStyle>
 
@@ -35,6 +34,7 @@ class QLabel;
 class QPushButton;
 class QSecureLineEdit;
 class QString;
+class QProgressBar;
 
 QPixmap icon( QStyle::StandardPixmap which = QStyle::SP_CustomBase );
 
@@ -74,18 +74,10 @@ public:
 public slots:
   void updateQuality(const secqstring&);
 
-signals:
-  void accepted();
-  void rejected();
-
 protected:
   /* reimp */ void showEvent( QShowEvent* event );
-  /* reimp */ void keyPressEvent( QKeyEvent *e );
   /* reimp */ void hideEvent( QHideEvent* );
   /* reimp */ void paintEvent( QPaintEvent* event );
-
-private Q_SLOTS:
-  void setFixedSize();
 
 private:
   QLabel*    _icon;

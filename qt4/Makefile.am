@@ -22,7 +22,7 @@
 
 bin_PROGRAMS = pinentry-qt4
 
-EXTRA_DIST = document-encrypt.png gtk-cancel.png gtk-ok.png
+EXTRA_DIST = document-encrypt.png pinentry.qrc
 
 
 if FALLBACK_CURSES
@@ -44,4 +44,5 @@ pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp secstring.h secstring.cpp qsecurelineedit.h \
 	qsecurelineedit.cpp pinentrydialog.moc qsecurelineedit.moc \
+	qrc_pinentry.cpp \
 	qsecurelineedit_p.h

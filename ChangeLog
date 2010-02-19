@@ -1,3 +1,52 @@
+2010-02-19  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (qt_cmd_handler), qt4/pinentrydialog.cpp
+	(PinentryDialog::PinEntryDialog): Use the button icons that come
+	with Qt.
+
+	* qt4/pinentry_qrc, qt4/qrc_pinentry.cpp: New.
+	* qt4/gtk-cancel.png, qt4/gtk-ok.png: Removed.
+	* qt4/Makefile.am (EXTRA_DIST): Remove the GTK icons, add
+	pinentry.qrc.
+	(pinentry_qt4_SOURCES): add qrc_pinentry.cpp.
+
+	* qt4/main.cpp (qt_cmd_handler): Remove i18n support again.
+
+	* qt4/pinentrydialog.cpp (PinentryDialog::PinentryDialog):
+	set PIN entry field as buddy of its prompt
+
+	* qt4/main.cpp (escape_accel): New.
+	(qt_cmd_handler): use it on default_cancel, default_ok, prompt.
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp
+	(PinEntryDialog::PinEntryDialog): don't use a nested vbox layout.
+
+	* qt4/pinentrydialog.h: replace include file with forward decl.
+	* qt4/pinentrydialog.cpp: add include file here.
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp
+	(PinentryDialog::keyPressEvent()): Removed.
+
+	* qt/4pinentrydialog.cpp (PinEntryDialog::PinEntryDialog): use
+	QLayout::SetFixedSize instead of rolling our own solution.
+	* qt4/pinentrydialog.h: (PinentryDialog::setFixedSize): Removed.
+	* qt4/pinentrydialog.moc: Re-created.
+
+	* qt4/main.cpp: (qt_cmd_handler) make Cancel the default button
+	for CONFIRM
+
+	* qt4/main.cpp: (qt_cmd_handler) implement the confirm/message
+	logic correctly
+
+	* qt4/pinentrydialog.h (accepted, rejected): Removed; already
+	provided by base class.
+	* qt4/pinentrydialog.cpp (PinEntryDialog::PinEntryDialog): Use
+	QDialog::{accepted,rejected}.
+	* qt4/pinentrydialog.moc: Re-created.
+
+	* qt4/pinentrydialog.moc, qt4/qsecurelineedit.moc: Make compatible
+	with newer Qt version.
+
 2010-02-19  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Allow mnemonics in
