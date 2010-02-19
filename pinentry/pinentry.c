@@ -581,20 +581,6 @@ pinentry_parse_opts (int argc, char *argv[])
 }
 
 
-static char *
-noprefix_strdup (const char *string)
-{
-  const char *s;
-
-  if (*string == '|' && (s = strchr (string+1, '|')))
-    s++;
-  else
-    s = string;
-
-  return strdup (s);
-}
-
-
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
@@ -664,19 +650,19 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "default-ok"))
     {
-      pinentry.default_ok = noprefix_strdup (value);
+      pinentry.default_ok = strdup (value);
       if (!pinentry.default_ok)
 	return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "default-cancel"))
     {
-      pinentry.default_cancel = noprefix_strdup (value);
+      pinentry.default_cancel = strdup (value);
       if (!pinentry.default_cancel)
 	return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "default-prompt"))
     {
-      pinentry.default_prompt = noprefix_strdup (value);
+      pinentry.default_prompt = strdup (value);
       if (!pinentry.default_prompt)
 	return ASSUAN_Out_Of_Core;
     }

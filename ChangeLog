@@ -6,6 +6,7 @@
 	* pinentry/pinentry.h (struct pinentry): Add default_prompt.
 	* pinentry/pinentry.c (option_handler): Support "default-prompt".
 	(cmd_getpin): Use it.
+	(noprefix_strdup): Remove; should be done by caller.
 
 2010-02-17  Werner Koch  <wk@g10code.com>
 
