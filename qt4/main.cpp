@@ -43,6 +43,7 @@
 #include <errno.h>
 
 #include <memory>
+#include <stdexcept>
 
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
@@ -102,6 +103,29 @@ public:
   }
 };
 
+namespace {
+    class InvalidUtf8 : public std::invalid_argument {
+    public:
+        InvalidUtf8() : std::invalid_argument( "invalid utf8" ) {}
+        ~InvalidUtf8() throw() {}
+    };
+}
+
+static const bool GPG_AGENT_IS_PORTED_TO_ONLY_SEND_UTF8 = false;
+
+static QString from_utf8( const char * s ) {
+    const QString result = QString::fromUtf8( s );
+    if ( result.contains( QChar::ReplacementCharacter ) )
+      {
+        if ( GPG_AGENT_IS_PORTED_TO_ONLY_SEND_UTF8 )
+            throw InvalidUtf8();
+        else
+            return QString::fromLocal8Bit( s );
+      }
+    
+    return result;
+}
+
 static int
 qt_cmd_handler (pinentry_t pe)
 {
@@ -114,15 +138,15 @@ qt_cmd_handler (pinentry_t pe)
   int want_pass = !!pe->pin;
 
   const QString ok =
-      pe->ok             ?               QString::fromUtf8( pe->ok ) :
-      pe->default_ok     ? escape_accel( QString::fromUtf8( pe->default_ok ) ) :
+      pe->ok             ? escape_accel( from_utf8( pe->ok ) ) :
+      pe->default_ok     ? escape_accel( from_utf8( pe->default_ok ) ) :
       /* else */           QLatin1String( "&OK" ) ;
   const QString cancel =
-      pe->cancel         ?               QString::fromUtf8( pe->cancel ) :
-      pe->default_cancel ? escape_accel( QString::fromUtf8( pe->default_cancel ) ) :
+      pe->cancel         ? escape_accel( from_utf8( pe->cancel ) ) :
+      pe->default_cancel ? escape_accel( from_utf8( pe->default_cancel ) ) :
       /* else */           QLatin1String( "&Cancel" ) ;
   const QString title =
-      pe->title ? QString::fromUtf8( pe->title ) :
+      pe->title ? from_utf8( pe->title ) :
       /* else */  QLatin1String( "pinentry-qt4" ) ;
       
 
@@ -131,10 +155,10 @@ qt_cmd_handler (pinentry_t pe)
       PinEntryDialog pinentry (parent, 0, true, !!pe->quality_bar);
 
       pinentry.setPinentryInfo (pe);
-      pinentry.setPrompt (escape_accel (QString::fromUtf8 (pe->prompt)) );
-      pinentry.setDescription (QString::fromUtf8 (pe->description));
+      pinentry.setPrompt (escape_accel (from_utf8 (pe->prompt)) );
+      pinentry.setDescription (from_utf8 (pe->description));
       if ( pe->title )
-          pinentry.setWindowTitle( QString::fromUtf8( pe->title ) );
+          pinentry.setWindowTitle( from_utf8( pe->title ) );
 
       /* If we reuse the same dialog window.  */
       pinentry.setPin (secqstring());
@@ -142,11 +166,11 @@ qt_cmd_handler (pinentry_t pe)
       pinentry.setOkText (ok);
       pinentry.setCancelText (cancel);
       if (pe->error)
-	pinentry.setError (QString::fromUtf8 (pe->error));
+	pinentry.setError (from_utf8 (pe->error));
       if (pe->quality_bar)
-	pinentry.setQualityBar (QString::fromUtf8 (pe->quality_bar));
+	pinentry.setQualityBar (from_utf8 (pe->quality_bar));
       if (pe->quality_bar_tt)
-	pinentry.setQualityBarTT (QString::fromUtf8 (pe->quality_bar_tt));
+	pinentry.setQualityBarTT (from_utf8 (pe->quality_bar_tt));
 
       bool ret = pinentry.exec ();
       if (!ret)
@@ -169,8 +193,8 @@ qt_cmd_handler (pinentry_t pe)
     }
   else
     {
-      const QString desc  = pe->description ? QString::fromUtf8 ( pe->description ) : QString();
-      const QString notok = pe->notok       ? QString::fromUtf8 ( pe->notok )       : QString();
+      const QString desc  = pe->description ? from_utf8 ( pe->description ) : QString();
+      const QString notok = pe->notok       ? escape_accel (from_utf8 ( pe->notok )) : QString();
 
       const QMessageBox::StandardButtons buttons =
           pe->one_button ? QMessageBox::Ok :
@@ -211,7 +235,21 @@ qt_cmd_handler (pinentry_t pe)
     }
 }
 
-pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler;
+static int
+qt_cmd_handler_ex (pinentry_t pe)
+{
+  try {
+    return qt_cmd_handler (pe);
+  } catch ( const InvalidUtf8 & ) {
+    pe->locale_err = true;
+    return pe->pin ? -1 : false ;
+  } catch ( ... ) {
+    pe->canceled = true;
+    return pe->pin ? -1 : false ;
+  }
+}
+
+pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler_ex;
 
 int
 main (int argc, char *argv[])
@@ -249,7 +287,8 @@ main (int argc, char *argv[])
       for (done=0,p=*new_argv,i=0; i < argc; i++)
         if (!done && !strcmp (argv[i], "--display"))
           {
-            new_argv[i] = "-display";
+            new_argv[i] = strcpy (p, argv[i]+1);
+            p += strlen (argv[i]+1) + 1;
             done = 1;
           }
         else

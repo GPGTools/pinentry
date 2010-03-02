@@ -1,3 +1,25 @@
+2010-03-02  Werner Koch  <wk@g10code.com>
+
+	* qt4/main.cpp (from_utf8): Add extra braces for clarity.
+	(main): Copy the fixed --display string.
+
+2010-02-25  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (from_utf8): don't throw InvalidUtf8(); for now,
+	fall back to QString::fromLocal8Bit()
+
+2010-02-22  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (InvalidUtf8): New exception class.
+	(from_utf8): wrapper around QString::fromUtf8 throwing
+	InvalidUtf8.
+	(qt_cmd_handler): Use from_utf8 instead of QString::fromUtf8.
+	(qt_cmd_handler_ex): New wrapper around qt_cmd_handler.
+	(pinentry_cmd_handler): Use qt_cmd_handler_ex.
+
+	* qt4/main.cpp (qt_cmd_handler): Also handle accels in
+	SET{OK,NOTOK,CANCEL} string.
+
 2010-02-19  Marc Mutz  <marc@kdab.com>  (wk)
 
 	* qt4/main.cpp (qt_cmd_handler), qt4/pinentrydialog.cpp
