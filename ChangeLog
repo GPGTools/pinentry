@@ -1,3 +1,7 @@
+2010-03-03  Werner Koch  <wk@g10code.com>
+
+	Release 0.8.0. 
+
 2010-03-02  Werner Koch  <wk@g10code.com>
 
 	* qt4/main.cpp (from_utf8): Add extra braces for clarity.
