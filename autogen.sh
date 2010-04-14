@@ -98,6 +98,7 @@ if [ "$myhost" = "w32" ]; then
 
     case $myhostsub in
         ce)
+          w32root="$w32ce_root"
           [ -z "$w32ce_root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
           extraoptions="$w32ce_extraoptions --disable-pinentry-gtk2"
