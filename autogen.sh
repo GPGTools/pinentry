@@ -45,10 +45,48 @@ if test x"$1" = x"--force"; then
   shift
 fi
 
+# Begin list of optional variables sourced from ~/.gnupg-autogen.rc
+w32_toolprefixes=
+w32_extraoptions=
+w32ce_toolprefixes=
+w32ce_extraoptions=
+amd64_toolprefixes=
+# End list of optional variables sourced from ~/.gnupg-autogen.rc
+# What follows are variables which are sourced but default to 
+# environment variables or lacking them hardcoded values.
+#w32root=
+#w32ce_root=
+#amd64root=
+
+if [ -f "$HOME/.gnupg-autogen.rc" ]; then
+    echo "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
+    . "$HOME/.gnupg-autogen.rc"
+fi
+
+# Convenience option to use certain configure options for some hosts.
+myhost="" 
+myhostsub=""
+case "$1" in
+    --build-w32)
+        myhost="w32"
+        ;;
+    --build-w32ce)
+        myhost="w32"
+        myhostsub="ce"
+        ;;
+    --build*)
+        echo "**Error**: invalid build option $1" >&2
+        exit 1
+        ;;
+    *)
+     ;;
+esac
+
+
 
 # ***** W32 build script *******
 # Used to cross-compile for Windows.
-if test "$1" = "--build-w32"; then
+if [ "$myhost" = "w32" ]; then
     tmp=`dirname $0`
     tsdir=`cd "$tmp"; pwd`
     shift
@@ -58,13 +96,26 @@ if test "$1" = "--build-w32"; then
     fi
     build=`$tsdir/config.guess`
 
-    [ -z "$w32root" ] && w32root="$HOME/w32root"
+    case $myhostsub in
+        ce)
+          [ -z "$w32ce_root" ] && w32root="$HOME/w32ce_root"
+          toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
+          extraoptions="$w32ce_extraoptions --disable-pinentry-gtk2"
+          extraoptions="$extraoptions --disable-pinentry-qt4"
+          ;;
+        *)
+          [ -z "$w32root" ] && w32root="$HOME/w32root"
+          toolprefixes="$w32_toolprefixes i586-mingw32msvc"
+          toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
+          extraoptions="$w32_extraoptions --enable-pinentry-gtk2"
+          ;;
+    esac
     echo "Using $w32root as standard install directory" >&2
     
 
     # Locate the cross compiler
     crossbindir=
-    for host in i586-mingw32msvc i386-mingw32msvc mingw32; do
+    for host in $toolprefixes; do
         if ${host}-gcc --version >/dev/null 2>&1 ; then
             crossbindir=/usr/${host}/bin
             conf_CC="CC=${host}-gcc"
@@ -73,8 +124,10 @@ if test "$1" = "--build-w32"; then
     done
     if [ -z "$crossbindir" ]; then
         echo "Cross compiler kit not installed" >&2
-        echo "Under Debian GNU/Linux, you may install it using" >&2
-        echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        if [ -z "$sub" ]; then 
+          echo "Under Debian GNU/Linux, you may install it using" >&2
+          echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        fi
         echo "Stop." >&2
         exit 1
     fi
@@ -89,11 +142,10 @@ if test "$1" = "--build-w32"; then
     ./configure --enable-maintainer-mode --prefix=${w32root} \
                 --host=${host} --build=${build} \
                 --disable-pinentry-gtk \
-                --enable-pinentry-gtk2 \
                 --disable-pinentry-qt  \
-                --with-lib-prefix=${w32root} \
                 --with-libiconv-prefix=${w32root} \
-                PKG_CONFIG_LIBDIR="$w32root/lib/pkgconfig" "$@"
+                PKG_CONFIG_LIBDIR="$w32root/lib/pkgconfig" \
+                ${extraoptions} "$@"
 
     rc=$?
     exit $rc
@@ -158,4 +210,6 @@ $AUTOMAKE --gnu
 echo "Running autoconf${FORCE}..."
 $AUTOCONF${FORCE}
 
-echo "You may now run \"./configure --enable-maintainer-mode && make\"."
+echo "You may now run:
+  ./configure --enable-maintainer-mode && make
+"

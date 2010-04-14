@@ -21,7 +21,9 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef HAVE_W32CE_SYSTEM
 #include <errno.h>
+#endif
 #include <stdarg.h>
 #include <unistd.h>
 #if defined(HAVE_MLOCK) || defined(HAVE_MMAP)

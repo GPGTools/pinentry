@@ -1,5 +1,5 @@
-/* dialog.rc - Resource definitions
-   Copyright (C) 2004 g10 Code GmbH
+/* dialog.rc - Resource definitions                             -*- c -*-
+   Copyright (C) 2004, 2010 g10 Code GmbH
    
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -16,13 +16,33 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA  */
 
-
+#include <config.h>
 #include <winuser.h>
 #include "resource.h"
 
 /* 
  * Main dialog 
  */
+
+#ifdef HAVE_W32CE_SYSTEM
+
+IDD_PINENT DIALOG DISCARDABLE  0, 0, 150, 100
+STYLE DS_MODALFRAME | DS_SYSMODAL | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Pinentry"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_PINENT_DESC, 2, 2, 140, 24
+    LTEXT           "", IDC_PINENT_ERR, 2, 30, 140, 12
+
+    LTEXT           "", IDC_PINENT_PROMPT, 2, 56, 20, 12
+    EDITTEXT        IDC_PINENT_TEXT, 30, 56, 100, 12, ES_PASSWORD | ES_AUTOHSCROLL
+
+    DEFPUSHBUTTON   "O&K", IDOK, 2, 70, 50, 14
+    PUSHBUTTON      "&Cancel", IDCANCEL, 60, 70, 50, 14
+
+END
+
+#else /* Standard Windows.  */
 
 IDD_PINENT DIALOG DISCARDABLE  0, 0, 186, 125
 STYLE DS_MODALFRAME | DS_SYSMODAL | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -37,5 +57,6 @@ BEGIN
     LTEXT           "", IDC_PINENT_ERR, 6, 82, 170, 9
 END
 
+#endif /* Standard Windows.  */
 
 

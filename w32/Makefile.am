@@ -36,5 +36,5 @@ pinentry_w32_LDADD = pinentry-w32.o \
 
 
 pinentry-w32.o: pinentry-w32.rc resource.h
-	$(WINDRES) -v -o $@ $< 
+	$(WINDRES) -I.. -v -o $@ $< 
 

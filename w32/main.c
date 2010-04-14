@@ -21,6 +21,10 @@
 #include <stdlib.h>
 #define WINVER 0x0403  /* Required for SendInput.  */
 #include <windows.h>
+#ifdef HAVE_W32CE_SYSTEM
+# include <winioctl.h>
+# include <sipapi.h>
+#endif
 
 #include "pinentry.h"
 #include "memory.h"
@@ -37,8 +41,9 @@
 
 
 /* This function pointer gets initialized in main.  */
+#ifndef HAVE_W32CE_SYSTEM
 static WINUSERAPI BOOL WINAPI (*lock_set_foreground_window)(UINT);
-
+#endif
 
 static int w32_cmd_handler (pinentry_t pe);
 static void ok_button_clicked (HWND dlg, pinentry_t pe);
@@ -51,10 +56,12 @@ static int confirm_mode;
 static int passphrase_ok;
 static int confirm_yes;
 
-static FILE *debugfp;
+/* The file descriptors for the loop.  */
+static int w32_infd;
+static int w32_outfd;
 
 
-/* Connect this module to the pinnetry framework.  */
+/* Connect this module to the pinentry framework.  */
 pinentry_cmd_handler_t pinentry_cmd_handler = w32_cmd_handler;
 
 
@@ -66,11 +73,49 @@ w32_strerror (int ec)
   
   if (ec == -1)
     ec = (int)GetLastError ();
+#ifdef HAVE_W32CE_SYSTEM
+  /* There is only a wchar_t FormatMessage.  It does not make much
+     sense to play the conversion game; we print only the code.  */
+  snprintf (strerr, sizeof strerr, "ec=%d", ec);
+#else
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, sizeof strerr - 1, NULL);
+#endif
   return strerr;    
 }
+
+
+
+#ifdef HAVE_W32CE_SYSTEM
+/* Create a pipe.  WRITE_END shall have the opposite value of the one
+   pssed to _assuan_w32ce_prepare_pipe; see there for more
+   details.  */
+#define GPGCEDEV_IOCTL_MAKE_PIPE                                        \
+  CTL_CODE (FILE_DEVICE_STREAMS, 2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
+static HANDLE
+w32ce_finish_pipe (int rvid, int write_end)
+{
+  HANDLE hd;
+
+  hd = CreateFile (L"GPG1:", write_end? GENERIC_WRITE : GENERIC_READ,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE,
+                   NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL,NULL);
+  if (hd != INVALID_HANDLE_VALUE)
+    {
+      if (!DeviceIoControl (hd, GPGCEDEV_IOCTL_MAKE_PIPE,
+                            &rvid, sizeof rvid, NULL, 0, NULL, NULL))
+        {
+          DWORD lastrc = GetLastError ();
+          CloseHandle (hd);
+          hd = INVALID_HANDLE_VALUE;
+          SetLastError (lastrc);
+        }
+    }
+
+  return hd;
+}
+#endif /*HAVE_W32CE_SYSTEM*/
 
 
 /* static HWND */
@@ -161,11 +206,32 @@ utf8_to_wchar (const char *string)
 }
 
 
+/* Raie the software input panel.  */
+#ifdef HAVE_W32CE_SYSTEM
+static void
+raise_sip (HWND dlg)
+{
+  SIPINFO si;
+
+  SetForegroundWindow (dlg);
+
+  memset (&si, 0, sizeof si);
+  si.cbSize = sizeof si;
+
+  if (SipGetInfo (&si)) 
+    {
+      si.fdwFlags |= SIPF_ON;
+      SipSetInfo (&si);
+    }
+}
+#endif
+
 /* Center the window CHILDWND with the desktop as its parent
    window.  STYLE is passed as second arg to SetWindowPos.*/
 static void
 center_window (HWND childwnd, HWND style) 
 {     
+#ifndef HAVE_W32CE_SYSTEM
   HWND parwnd;
   RECT rchild, rparent;    
   HDC hdc;
@@ -199,6 +265,7 @@ center_window (HWND childwnd, HWND style)
   if (style == HWND_TOPMOST || style == HWND_NOTOPMOST)
     flags = SWP_NOMOVE | SWP_NOSIZE;
   SetWindowPos (childwnd, style? style : NULL, xnew, ynew, 0, 0, flags);
+#endif
 }
 
 
@@ -206,6 +273,7 @@ center_window (HWND childwnd, HWND style)
 static void
 move_mouse_and_click (HWND hwnd)
 {
+#ifndef HAVE_W32CE_SYSTEM
   RECT rect;
   HDC hdc;
   int wscreen, hscreen, x, y, normx, normy;
@@ -250,6 +318,7 @@ move_mouse_and_click (HWND hwnd)
 
   if ( SendInput (idx, inp, sizeof (INPUT)) != idx && debugfp )
     fprintf (debugfp, "SendInput failed: %s\n", w32_strerror (-1));
+#endif
 }
 
 
@@ -278,14 +347,14 @@ static void
 set_dlg_item_text (HWND dlg, int item, const char *string)
 {
   if (!string || !*string)
-    SetDlgItemText (dlg, item, "");
+    SetDlgItemTextW (dlg, item, L"");
   else
     {
       wchar_t *wbuf;
       
       wbuf = utf8_to_wchar (string);
       if (!wbuf)
-        SetDlgItemText (dlg, item, "[out of core]");
+        SetDlgItemTextW (dlg, item, L"[out of core]");
       else
         {
           SetDlgItemTextW (dlg, item, wbuf);
@@ -364,7 +433,7 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
       ShowWindow (dlg, SW_SHOW);
       move_mouse_and_click ( GetDlgItem (dlg, IDC_PINENT_PROMPT) );
-
+      raise_sip (dlg);
       break;
 
     case WM_COMMAND:
@@ -384,6 +453,18 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 	  break;
 	}
       break;
+
+     case WM_KEYDOWN: 
+       if (wparam == VK_RETURN)
+         {
+           if (confirm_mode)
+             confirm_yes = 1;
+           else
+             ok_button_clicked (dlg, pe);
+           EndDialog (dlg, TRUE);
+         }
+       break;
+
     }
   return FALSE;
 }
@@ -451,19 +532,99 @@ w32_cmd_handler (pinentry_t pe)
 }
 
 
+/* WindowsCE uses a very strange way of handling the standard streams.
+   There is a function SetStdioPath to associate a standard stream
+   with a file or a device but what we really want is to use pipes as
+   standard streams.  Despite that we implement pipes using a device,
+   we would have some limitations on the number of open pipes due to
+   the 3 character limit of device file name.  Thus we don't take this
+   path.  Another option would be to install a file system driver with
+   support for pipes; this would allow us to get rid of the device
+   name length limitation.  However, with GnuPG we can get away be
+   redefining the standard streams and passing the handles to be used
+   on the command line.  This has also the advantage that it makes
+   creating a process much easier and does not require the
+   SetStdioPath set and restore game.  The caller needs to pass the
+   rendezvous ids using up to three options:
+
+     -&S0=<rvid> -&S1=<rvid> -&S2=<rvid>
+
+   They are all optional but they must be the first arguments on the
+   command line.  Parsing stops as soon as an invalid option is found.
+   These rendezvous ids are then used to finish the pipe creation.*/
+#ifdef HAVE_W32CE_SYSTEM
+static void
+parse_std_file_handles (int *argcp, char ***argvp)
+{
+  int argc = *argcp;
+  char **argv = *argvp;
+  const char *s;
+  int fd;
+  int i;
+  int fixup = 0;
+
+  if (!argc)
+    return;
+
+  for (argc--, argv++; argc; argc--, argv++)
+    {
+      s = *argv;
+      if (*s == '-' && s[1] == '&' && s[2] == 'S'
+          && (s[3] == '0' || s[3] == '1' || s[3] == '2')
+          && s[4] == '=' 
+          && (strchr ("-01234567890", s[5]) || !strcmp (s+5, "null")))
+        {
+          if (s[5] == 'n')
+            fd = (int)(-1);
+          else
+            fd = (int)w32ce_finish_pipe (atoi (s+5), s[3] != '0');
+          if (s[3] == '0' && fd != -1)
+            w32_infd = fd;
+          else if (s[3] == '1' && fd != -1)
+            w32_outfd = fd;
+          fixup++;
+        }
+      else
+        break;
+    }
+
+  if (fixup)
+    {
+      argc = *argcp;
+      argc -= fixup;
+      *argcp = argc;
+
+      argv = *argvp;
+      for (i=1; i < argc; i++)
+        argv[i] = argv[i + fixup];
+      for (; i < argc + fixup; i++)
+        argv[i] = NULL;
+    }
+
+
+}
+#endif /*HAVE_W32CE_SYSTEM*/
+
+
 int
 main (int argc, char **argv)
 {
+#ifndef HAVE_W32CE_SYSTEM
   void *handle;
+#endif
+
+  w32_infd = STDIN_FILENO;
+  w32_outfd = STDOUT_FILENO;
+
+#ifdef HAVE_W32CE_SYSTEM
+  parse_std_file_handles (&argc, &argv);
+#endif
 
   pinentry_init (PGMNAME);
 
   /* Consumes all arguments.  */
   if (pinentry_parse_opts (argc, argv))
-    {
-      printf ("pinentry-w32 (pinentry) " VERSION "\n");
-      exit (EXIT_SUCCESS);
-    }
+    exit (EXIT_SUCCESS);
 
 /*   debugfp = fopen ("pinentry.log", "w"); */
 /*   if (!debugfp) */
@@ -471,6 +632,7 @@ main (int argc, char **argv)
 
   /* We need to load a function because that one is only available
      since W2000 but not in older NTs.  */
+#ifndef HAVE_W32CE_SYSTEM
   handle = LoadLibrary ("user32.dll");
   if (handle)
     {
@@ -481,9 +643,13 @@ main (int argc, char **argv)
       else
         CloseHandle (handle);
     }
+#endif
 
-  if (pinentry_loop ())
+  if (pinentry_loop2 (w32_infd, w32_outfd))
     return 1;
 
+#ifdef HAVE_W32CE_SYSTEM
+  Sleep (400);
+#endif
   return 0;
 }

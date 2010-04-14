@@ -147,6 +147,9 @@ typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
    error.  Otherwise, 0 is returned.  */
 int pinentry_loop (void);
 
+/* The same as above but allows to specify the i/o descriptors. */
+int pinentry_loop2 (int infd, int outfd);
+
 
 /* Convert the UTF-8 encoded string TEXT to the encoding given in
    LC_CTYPE.  Return NULL on error. */

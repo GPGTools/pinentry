@@ -1,3 +1,9 @@
+Noteworthy changes in version 0.8.1 (unreleased)
+------------------------------------------------
+
+ * The W32 pinentry now supports WindowsCE.
+
+
 Noteworthy changes in version 0.8.0 (2010-03-03)
 ------------------------------------------------
 

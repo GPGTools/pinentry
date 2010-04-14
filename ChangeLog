@@ -1,6 +1,38 @@
+2010-04-12  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c (dlg_proc): Act on VK_RETURN.
+
+	* w32/pinentry-w32.rc: Include config.h. Add basic support for
+	small screens as used with WindowsCE.
+
+	* w32/Makefile.am (pinentry-w32.o): Add -I.. to the command.
+
+2010-04-08  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.c [W32CE]: Do not include errno.h and
+	locale.h.
+	(pinentry_have_display) [W32CE]: Do not use getenv.
+	(pinentry_parse_opts) [W32CE]: No error diagnostics due to missing
+	errno.
+	(sleep) [W32CE]: New.
+	(option_handler) [W32CE]: Ignore option --debug-wait.
+	(getpid) [W32CE]: New.
+	(pinentry_loop): Use STDIN_FILENO and STDOUT_FILENO.
+	(pinentry_loop): Factor code out to ...
+	(pinentry_loop2): New.
+	* w32/main.c (w32_strerror) [W32CE]: Do not use FormatMessage.
+	(main) [W32CE]: Do not use LockSetForegroundWindow.
+	(set_dlg_item_text): Use wchar_t for static string.
+	* secmem/util.c [W32CE]: Do not include errno.h.
+	(xwrite) [W32CE]: Shortcut EINTR loop.
+
+2010-04-07  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Modernized.
+
 2010-03-03  Werner Koch  <wk@g10code.com>
 
-	Release 0.8.0. 
+	Release 0.8.0.
 
 2010-03-02  Werner Koch  <wk@g10code.com>
 
@@ -384,7 +416,7 @@
 2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)
 
 	* qt/pinentrydialog.cpp (PinEntryDialog): Fixed crash
-	
+
 2007-11-19  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Use again map-event and
@@ -552,7 +584,7 @@
 2005-01-27  Werner Koch  <wk@g10code.com>
 
 	Released 0.7.2.
-	
+
 	* gtk+-2/Makefile.am: Removed padlock-keyhole.xpm.
 
 	* configure.ac: Use AC_GNU_SOURCE instead of the custom define.
@@ -576,21 +608,21 @@
 	(dlg_proc): Set 'result' to -1 to indicate cancel.
 	(ok_button_clicked): Adjusted. Set 'result' to the len of
 	the PIN to indicate success.
-	
+
 2004-12-22  Werner Koch  <wk@g10code.com>
 
 	* w32/main.c: Simplified.
 	* w32/dialog.h, w32/dialog.c, w32/controller.h, w32/controller.c:
 	Removed
-	
+
 	* w32/resource.h, w32/pinentry-w32.rc, w32/main.c, w32/dialog.h
 	* w32/dialog.c, w32/controller.h, w32/controller.c
 	* w32/Makefile.am: New.  Based on Timo's work.
 
 	Update to automake 1.9.
-	
+
 	* autogen.sh (configure_ac): Add --build-w32 option.
-	* Makefile.am: Support for the W32 pinentry. 
+	* Makefile.am: Support for the W32 pinentry.
 	* configure.ac: Ditto.  Reformatted some error messages.
 	Define the usual conditionals for W32.
 	Check for a couple of more usually required headers.
@@ -601,7 +633,7 @@
 	(pinentry_loop) [DOSISH]: Don't do uid check.
 
 	* secmem/util.c [DOSISH]: Disable UID stuff.
-	
+
 2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
 
 	* acinclude.m4 (IU_LIB_NCURSES, IU_LIB_CURSES, IU_LIB_TERMCAP):
@@ -642,7 +674,7 @@
 	(SUBDIRS): Add pinentry_gtk_2.
 
 	Submitted by Albrecht Dress albrecht.dress@arcor.de.
-	
+
 2004-08-04  Werner Koch  <wk@g10code.de>
 
 	* pinentry/pinentry.c (usage): Print help to stdout.
@@ -748,9 +780,9 @@
 	(pinentry_init): Add arg PGMNAME and store it.  Use it at all
 	marked placed instead of the constant "pinentry".
 	(usage): Use it here too.
-	* curses/pinentry-curses.c (main): Call pinentry_init with our name. 
+	* curses/pinentry-curses.c (main): Call pinentry_init with our name.
 	* qt/main.cpp (main): Ditto.
-	* gtk/pinentry-gtk.c (main): Ditto. 
+	* gtk/pinentry-gtk.c (main): Ditto.
 
 	* configure.ac: Check for mmap.
 
@@ -768,7 +800,7 @@
 	* qt/main.cpp (main): Ditto. Fixed typo.
 
 	* gtk/pinentry-gtk.c: Include memory.h.
-	
+
 2003-12-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.h (struct pinentry): New member PARENT_WID.
@@ -834,7 +866,7 @@
 	* qt/pinentrydialog.h: Declare SecQString and SecQLineEdit classes.
 	(class PinEntryDialog): Disable property text (for now).  Adjust
 	argument of setText and return value of text, as well as type of
-	_edit.	
+	_edit.
 
 2003-12-09  Werner Koch  <wk@gnupg.org>
 
@@ -862,7 +894,7 @@
 
 2003-02-15  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
-	* qt/pinentrydialog.h, qt/pinentrydialog.cpp: Added icons 
+	* qt/pinentrydialog.h, qt/pinentrydialog.cpp: Added icons
 	  for error/non-error messages.
 
 2003-02-07  Marcus Brinkmann  <marcus@g10code.de>
@@ -871,7 +903,7 @@
 
 2003-02-04  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
-	* qt/main.cpp: Work around '--display' option. This fixes 
+	* qt/main.cpp: Work around '--display' option. This fixes
 	  the pinentry-qt problem reported by several people lately.
 
 2003-01-24  Werner Koch  <wk@gnupg.org>
@@ -905,7 +937,7 @@
 
 2002-11-08  Werner Koch  <wk@gnupg.org>
 
-	* pinentry/pinentry-curses.c (convert_utf8_string): Renamed to 
+	* pinentry/pinentry-curses.c (convert_utf8_string): Renamed to
 	* pinentry/pinentry.c (pinentry_utf8_to_local): this. Changed
 	callers.
 	(pinentry_local_to_utf8): New.
@@ -930,7 +962,7 @@
 	* pinentry/pinentry.c: Include headers for getpid and sleep
 	prototypes.
 
-	* secmem/util.h: Correctly declare functions taking no args. 
+	* secmem/util.h: Correctly declare functions taking no args.
 
 	* gtk/pinentry-gtk.c: Move gtk headers to the top to avoid
 	compiler warnings about shadowing index etc.
@@ -956,7 +988,7 @@
 2002-09-30  Werner Koch  <wk@gnupg.org>
 
         Released 0.6.5.
-	
+
 	* qt/pinentrycontroller.cpp (optionHandler): Make sure that a
 	value is returned.
 	* configure.ac: Use -Wall also for C++.
@@ -976,12 +1008,12 @@
 2002-05-24  Werner Koch  <wk@gnupg.org>
 
 	* AUTHORS: Added Marcus
-	* README: Fixed spelling of Quintuple-Agent. 
+	* README: Fixed spelling of Quintuple-Agent.
 
 2002-05-13  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.6.2.
-	
+
 	* configure.ac: Set version number to 0.6.2.
 	* NEWS: Add information for 0.6.2.
 	* README: Update for release.
@@ -1121,7 +1153,7 @@
 	* configure.ac: Use the new Qt checks instead the KDE checks.
 	Replace "kde" with "qt" everywhere.
 	* Makefile.am: Replace "kde" with "qt" everywhere.
-	
+
 2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
 
 	* acinclude.m4: Reworked the Qt and KDE checks, cutting out a lot
@@ -1137,7 +1169,7 @@
 2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
 
 	Released 0.6.0.
-	
+
 	* configure.ac: Set version number to 0.6.
 	* NEWS: Add information for 0.6.0.
 	* secmem/Makefile.am (libsecmem_a_SOURCES): Replace secmem.h with memory.
@@ -1295,7 +1327,7 @@
 2002-01-04  Werner Koch  <wk@gnupg.org>
 
         Released 0.5.0.
-	
+
 	* configure.ac: Bumbed version
 
 	* util.h (xtoi_1, xtoi_2): New.
@@ -1308,7 +1340,7 @@
 2001-12-07  Werner Koch  <wk@gnupg.org>
 
         New package gpinentry based on quintuple-agent.
-	
+
         Removed all stuff except for the basic configuration stuff and
 	what is needed to build gpinentry.  Also removed i18n support.
 	* gpinentry.c: Renamed from secret-query.c
@@ -1409,7 +1441,7 @@
 	Close stdout (and stderr unless debugging) even when not forking,
 	so that normal usage inside eval is still possible.
 	(agent): Exit gracefully on HUP, so that logging out now kills the
-	agent. 
+	agent.
 
 	* README (Contact Information): Old URL - duh!
 	(Using Secret Agent): We no longer fork per default.
@@ -1495,7 +1527,7 @@
 
 1999-11-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
 
-	* agent.h (request_put): Add flags, deadline. Increase REQUEST_MAGIC. 
+	* agent.h (request_put): Add flags, deadline. Increase REQUEST_MAGIC.
 	(reply_get): Ditto, and increase REPLY_MAGIC.
 	* agent.c (store): Store flags, deadline in reply.
 	(do_put): Hand flags, deadline from request on to store().
@@ -1546,7 +1578,7 @@
 	(store): Set magic number in stored reply.
 	(do_put): Set magic number in reply.
 	(do_delete): Ditto.
-	(do_list): Ditto. 
+	(do_list): Ditto.
 	(agent): Check magic number in request.
 	* agentlib.c: Adapted.
 	(send_request): Set magic number in request. Check it in reply.
@@ -1762,7 +1794,7 @@
 	(main): Use it.
 
 	* Makefile.am (INCLUDES): Put GTK_FLAGS and GLIB_FLAGS here. It
-	is the easiest way for sources needing it, and it won't hurt those 
+	is the easiest way for sources needing it, and it won't hurt those
 	that don't.
 	(agent.o): Explicit command removed accordingly.
 
@@ -1848,7 +1880,7 @@
 	Make --debug switch cumulative.
  	(cleanup): Shutdown secmem.
 	(do_put): Use secmem for storage of secrets.
-	(do_delete): Use secmem_free(). Since this wipes the memory on its 
+	(do_delete): Use secmem_free(). Since this wipes the memory on its
 	own, wipe() is superflous now.
 	(agent): Use secmem for inbound requests.
 	(delete_secret): New function, takes part of do_delete's
@@ -1880,7 +1912,7 @@
 	Include i18n.h.
 
 	* agentlib.c: Include i18n.h
-	
+
 	* client.c (usage): New function.
 	Usage-message made gettext-friendly.
 	(xgetpass): Use perror() instead of fprintf().
@@ -1921,8 +1953,8 @@
 	Check for socklen_t.
 	* acconfig.h: Added a definition for it.
 
-	* client.c: Include packaged getopt.h if the system doesn't provide 
-	one. 
+	* client.c: Include packaged getopt.h if the system doesn't provide
+	one.
 	* agent.c: Ditto.
 	(create_socket): Replace AF_FILE, PF_FILE with AF_LOCAL, PF_LOCAL
 	for portability.
@@ -1944,7 +1976,7 @@
 
 	* NEWS: Updated.
 
-	* Makefile.am (agent.o): Mentioning the source explicitly does not 
+	* Makefile.am (agent.o): Mentioning the source explicitly does not
 	work for srcdir!=builddir.
 
 	* client.c (main): Function arguments are not always evaluated in
@@ -1973,7 +2005,7 @@
 	* Makefile.am (client_SOURCES): Added agentlib.c, agentlib.h.
 
 	* Makefile.am (INCLUDES): GLIB_CFLAGS moved again, this time to
-	the agent.o target. 
+	the agent.o target.
 
 1999-06-15  Robert Bihlmeyer  <robbe@orcus.priv.at>
 
@@ -2005,7 +2037,7 @@
 	(do_list): Use it.
 	(do_put): The hash key was overwritten - strdup it.
 	Construct a GET reply and save that in the hash.
-	(do_get): Just send the preconstructed reply if the id is present, 
+	(do_get): Just send the preconstructed reply if the id is present,
 	and failed_reply otherwise.
 	(do_delete): Actually free the hashed stuff.
 
@@ -2014,10 +2046,10 @@
 	* Makefile.am (EXTRA_DIST): Added autogen.sh, Thoughts,
 	client-test.
 	(TESTS): Added client-test.
-	(AUTOMAKE_OPTIONS): Added gnits. 
+	(AUTOMAKE_OPTIONS): Added gnits.
 
-	
- Copyright 2002, 2003 g10 Code GmbH
+
+ Copyright 2002, 2003, 2010 g10 Code GmbH
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

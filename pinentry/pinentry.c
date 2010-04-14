@@ -21,16 +21,23 @@
 #include <config.h>
 #endif
 
-#include <errno.h>
+#ifndef HAVE_W32CE_SYSTEM
+# include <errno.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #include <unistd.h>
-#include <locale.h>
+#ifndef HAVE_W32CE_SYSTEM
+# include <locale.h>
+#endif
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif
 #include <limits.h>
+#ifdef HAVE_W32CE_SYSTEM
+# include <windows.h>
+#endif
 
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
 #include <iconv.h>
@@ -41,6 +48,9 @@
 #include "secmem-util.h"
 #include "pinentry.h"
 
+#ifdef HAVE_W32CE_SYSTEM
+#define getpid() GetCurrentProcessId ()
+#endif
 
 /* Keep the name of our program here. */
 static char this_pgmname[50]; 
@@ -87,7 +97,6 @@ struct pinentry pinentry =
   };
 
 
-
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
 char *
 pinentry_utf8_to_local (char *lc_ctype, char *text)
@@ -377,11 +386,13 @@ pinentry_init (const char *pgmname)
 int
 pinentry_have_display (int argc, char **argv)
 {
+#ifndef HAVE_W32CE_SYSTEM
   const char *s;
 
   s = getenv ("DISPLAY");
   if (s && *s)
     return 1;
+#endif
   for (; argc; argc--, argv++)
     if (!strcmp (*argv, "--display"))
       return 1;
@@ -516,7 +527,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.display = strdup (optarg);
 	  if (!pinentry.display)
 	    {
+#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break; 
@@ -524,7 +537,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttyname = strdup (optarg);
 	  if (!pinentry.ttyname)
 	    {
+#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -532,7 +547,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttytype = strdup (optarg);
 	  if (!pinentry.ttytype)
 	    {
+#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -540,7 +557,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_ctype = strdup (optarg);
 	  if (!pinentry.lc_ctype)
 	    {
+#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -548,7 +567,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_messages = strdup (optarg);
 	  if (!pinentry.lc_messages)
 	    {
+#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -590,10 +611,12 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     pinentry.grab = 1;
   else if (!strcmp (key, "debug-wait"))
     {
+#ifndef HAVE_W32CE_SYSTEM
       fprintf (stderr, "%s: waiting for debugger - my pid is %u ...\n",
 	       this_pgmname, (unsigned int) getpid());
       sleep (*value?atoi (value):5);
       fprintf (stderr, "%s: ... okay\n", this_pgmname);
+#endif
     }
   else if (!strcmp (key, "display"))
     {
@@ -908,7 +931,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-/* Note that the option --one-button is hack to allow the use of old
+/* Note that the option --one-button is a hack to allow the use of old
    pinentries while the caller is ignoring the result.  Given that
    options have never been used or flagged as an error the new option
    is an easy way to enable the messsage mode while not requiring to
@@ -1033,11 +1056,8 @@ register_commands (ASSUAN_CONTEXT ctx)
 }
 
 
-/* Start the pinentry event loop.  The program will start to process
-   Assuan commands until it is finished or an error occurs.  If an
-   error occurs, -1 is returned.  Otherwise, 0 is returned.  */
 int
-pinentry_loop (void)
+pinentry_loop2 (int infd, int outfd)
 {
   int rc;
   int filedes[2];
@@ -1052,8 +1072,8 @@ pinentry_loop (void)
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and
      wait for requests on a Unix domain socket.  */
-  filedes[0] = 0;
-  filedes[1] = 1;
+  filedes[0] = infd;
+  filedes[1] = outfd;
   rc = assuan_init_pipe_server (&ctx, filedes);
   if (rc)
     {
@@ -1097,4 +1117,14 @@ pinentry_loop (void)
 
   assuan_deinit_server (ctx);
   return 0;
+}
+
+
+/* Start the pinentry event loop.  The program will start to process
+   Assuan commands until it is finished or an error occurs.  If an
+   error occurs, -1 is returned.  Otherwise, 0 is returned.  */
+int
+pinentry_loop (void)
+{
+  return pinentry_loop2 (STDIN_FILENO, STDOUT_FILENO);
 }

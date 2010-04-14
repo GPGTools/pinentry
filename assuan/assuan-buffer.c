@@ -22,16 +22,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
+#ifndef HAVE_W32CE_SYSTEM
+# include <errno.h>
+#endif
 #include <unistd.h>
 #include <assert.h>
 #ifdef USE_GNU_PTH
 # include <pth.h>
 #endif
+#ifdef HAVE_W32CE_SYSTEM
+# include <windows.h>
+#endif
+
 #include "assuan-defs.h"
 
 #ifdef HAVE_JNLIB_LOGGING
 #include "../jnlib/logging.h"
+#endif
+
+#ifdef HAVE_W32CE_SYSTEM
+const char *
+strerror (int e)
+{
+  return "error";
+}
+static int errno;
 #endif
 
 
@@ -51,16 +66,25 @@ writen ( int fd, const char *buffer, size_t length )
 {
   while (length)
     {
-#ifdef USE_GNU_PTH
-      int nwritten = pth_write (fd, buffer, length);
+      int nwritten;
+#ifdef HAVE_W32CE_SYSTEM
+      do 
+        {
+          if (!WriteFile ((HANDLE)fd, buffer, length, &nwritten, NULL))
+            nwritten = -1;
+        }
+      while (nwritten == -1 && GetLastError () == ERROR_PIPE_NOT_CONNECTED);
+#elif defined(USE_GNU_PTH)
+      nwritten = pth_write (fd, buffer, length);
 #else
-      int nwritten = write (fd, buffer, length);
+      nwritten = write (fd, buffer, length);
 #endif
-      
       if (nwritten < 0)
         {
+#ifndef HAVE_W32CE_SYSTEM
           if (errno == EINTR)
             continue;
+#endif
           return -1; /* write error */
         }
       length -= nwritten;
@@ -79,15 +103,25 @@ readline (int fd, char *buf, size_t buflen, int *r_nread, int *iseof)
   *r_nread = 0;
   while (nleft > 0)
     {
-#ifdef USE_GNU_PTH
-      int n = pth_read (fd, buf, nleft);
+      int n;
+#ifdef HAVE_W32CE_SYSTEM
+      do
+        {
+          if (!ReadFile ((HANDLE)fd, buf, nleft, &n, NULL))
+            n = -1;
+        }
+      while (n == -1 && GetLastError () == ERROR_PIPE_NOT_CONNECTED);
+#elif defined(USE_GNU_PTH)
+      n = pth_read (fd, buf, nleft);
 #else
-      int n = read (fd, buf, nleft);
+      n = read (fd, buf, nleft);
 #endif
       if (n < 0)
         {
+#ifndef HAVE_W32CE_SYSTEM
           if (errno == EINTR)
             continue;
+#endif
           return -1; /* read error */
         }
       else if (!n)

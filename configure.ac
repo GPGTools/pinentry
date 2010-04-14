@@ -31,8 +31,8 @@ min_automake_version="1.7.6"
 # specific feature can already be done under the assumption that the
 # SVN version is the most recent one in a branch.  To disable the SVN
 # version for the real release, set the my_issvn macro to no.
-m4_define(my_version, [0.8.0])
-m4_define(my_issvn, [no])
+m4_define(my_version, [0.8.1])
+m4_define(my_issvn, [yes])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
            | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
@@ -71,14 +71,22 @@ AC_CHECK_TOOL(WINDRES, windres, :)
 
 have_dosish_system=no
 have_w32_system=no
+have_w32ce_system=no
 case "${host}" in
     *-mingw32*)
         AC_DEFINE(USE_ONLY_8DOT3,1,
-                  [set this to limit filenames to the 8.3 format])
-        AC_DEFINE(HAVE_DRIVE_LETTERS,1,
-                  [defined if we must run on a stupid file system])
+                  [Set this to limit filenames to the 8.3 format])
         have_dosish_system=yes
         have_w32_system=yes
+        case "${host}" in 
+          *-mingw32ce*)
+            have_w32ce_system=yes
+            ;;
+          *)
+            AC_DEFINE(HAVE_DRIVE_LETTERS,1,
+                      [Defined if the OS supports drive letters.])
+            ;;
+        esac
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -103,8 +111,12 @@ AM_CONDITIONAL(HAVE_DOSISH_SYSTEM, test "$have_dosish_system" = yes)
 
 if test "$have_w32_system" = yes; then
    AC_DEFINE(HAVE_W32_SYSTEM,1, [Defined if we run on a W32 API based system])
+   if test "$have_w32ce_system" = yes; then
+      AC_DEFINE(HAVE_W32CE_SYSTEM,1,[Defined if we run on WindowsCE])
+   fi
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
+AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 
 
