@@ -19,7 +19,7 @@
 #define _GNU_SOURCE 1
 
 #include <unistd.h>
-#ifdef HAVE_W32CE_SYSTEM
+#ifndef HAVE_W32CE_SYSTEM
 # include <errno.h>
 #endif
 #include <stdarg.h>
