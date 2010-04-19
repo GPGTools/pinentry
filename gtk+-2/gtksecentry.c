@@ -277,7 +277,7 @@ secentry_malloc (GMALLOC_SIZE size)
     else
 	p = (gpointer) malloc(size);
     if (!p)
-	g_error("could not allocate %ld bytes", size);
+      g_error("could not allocate %lu bytes", (unsigned long)size);
 
     return p;
 }
@@ -1844,21 +1844,21 @@ gtk_secure_entry_delete_from_cursor(GtkSecureEntry * entry,
     gtk_secure_entry_pend_cursor_blink(entry);
 }
 
-static void
-gtk_secure_entry_delete_cb(GtkSecureEntry * entry)
-{
-    GtkEditable *editable = GTK_EDITABLE(entry);
-    gint start, end;
+/* static void */
+/* gtk_secure_entry_delete_cb(GtkSecureEntry * entry) */
+/* { */
+/*     GtkEditable *editable = GTK_EDITABLE(entry); */
+/*     gint start, end; */
 
-    if (gtk_editable_get_selection_bounds(editable, &start, &end))
-      gtk_editable_delete_text(editable, start, end);
-}
+/*     if (gtk_editable_get_selection_bounds(editable, &start, &end)) */
+/*       gtk_editable_delete_text(editable, start, end); */
+/* } */
 
-static void
-gtk_secure_entry_toggle_overwrite(GtkSecureEntry * entry)
-{
-    entry->overwrite_mode = !entry->overwrite_mode;
-}
+/* static void */
+/* gtk_secure_entry_toggle_overwrite(GtkSecureEntry * entry) */
+/* { */
+/*     entry->overwrite_mode = !entry->overwrite_mode; */
+/* } */
 
 static void
 gtk_secure_entry_real_activate(GtkSecureEntry * entry)
@@ -3119,13 +3119,13 @@ gtk_secure_entry_get_layout_offsets(GtkSecureEntry * entry,
 
 /* Quick hack of a popup menu
  */
-static void
-activate_cb(GtkWidget * menuitem, GtkSecureEntry * entry)
-{
-    const gchar *signal =
-	g_object_get_data(G_OBJECT(menuitem), "gtk-signal");
-    g_signal_emit_by_name(entry, signal);
-}
+/* static void */
+/* activate_cb(GtkWidget * menuitem, GtkSecureEntry * entry) */
+/* { */
+/*   const gchar *asignal = */
+/*     g_object_get_data(G_OBJECT(menuitem), "gtk-signal"); */
+/*   g_signal_emit_by_name(entry, asignal); */
+/* } */
 
 
 static gboolean
@@ -3137,13 +3137,13 @@ gtk_secure_entry_mnemonic_activate(GtkWidget * widget,
 }
 
 
-static void
-unichar_chosen_func(const char *text, gpointer data)
-{
-    GtkSecureEntry *entry = GTK_SECURE_ENTRY(data);
+/* static void */
+/* unichar_chosen_func(const char *text, gpointer data) */
+/* { */
+/*     GtkSecureEntry *entry = GTK_SECURE_ENTRY(data); */
 
-    gtk_secure_entry_enter_text(entry, text);
-}
+/*     gtk_secure_entry_enter_text(entry, text); */
+/* } */
 
 /* We display the cursor when
  *

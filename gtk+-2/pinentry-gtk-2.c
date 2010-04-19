@@ -145,7 +145,11 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
   gdk_keyboard_ungrab (gdk_event_get_time (event));
   /* Unmake window transient for the root window.  */
-  gdk_window_set_transient_for (win->window, NULL);
+  /* gdk_window_set_transient_for cannot be used with parent = NULL to
+     unset transient hint (unlike gtk_ version which can).  Replacement
+     code is taken from gtk_window_transient_parent_unrealized.  */
+  gdk_property_delete (win->window,
+                       gdk_atom_intern_static_string ("WM_TRANSIENT_FOR"));
 }
 
 
