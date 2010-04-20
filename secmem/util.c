@@ -16,6 +16,10 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #define _GNU_SOURCE 1
 
 #include <unistd.h>
@@ -27,10 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "util.h"
 
