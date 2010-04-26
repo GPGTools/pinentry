@@ -52,6 +52,7 @@
 #endif
 
 static pinentry_t pinentry;
+static int grab_failed;
 static int passphrase_ok;
 typedef enum { CONFIRM_CANCEL, CONFIRM_OK, CONFIRM_NOTOK } confirm_value_t;
 static confirm_value_t confirm_value;
@@ -135,7 +136,11 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
     return;
 
   if (gdk_keyboard_grab (win->window, FALSE, gdk_event_get_time (event)))
-    g_error ("could not grab keyboard");
+    {
+      g_critical ("could not grab keyboard");
+      grab_failed = 1;
+      gtk_main_quit ();
+    }
 }
 
 
@@ -520,7 +525,7 @@ gtk_cmd_handler (pinentry_t pe)
   while (gtk_events_pending ())
     gtk_main_iteration ();
 
-  if (confirm_value == CONFIRM_CANCEL)
+  if (confirm_value == CONFIRM_CANCEL || grab_failed)
     pe->canceled = 1;
 
   pinentry = NULL;

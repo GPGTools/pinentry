@@ -1,3 +1,9 @@
+2010-04-26  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (grab_failed): New.
+	(grab_keyboard): s/g_error/g_critical/.  Set GRAB_FAILED.
+	(gtk_cmd_handler): Return Cancel if a grab failed.
+
 2010-04-20  Marcus Brinkmann  <marcus@g10code.de>
 
 	* pinentry/pinentry.c: Move include config.h to top!
