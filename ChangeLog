@@ -1,3 +1,8 @@
+2010-05-07  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Keep the window above
+	and make sure it has the focus.  Fixes bug#1162.
+
 2010-05-03  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Use

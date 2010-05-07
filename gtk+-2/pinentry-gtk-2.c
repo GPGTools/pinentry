@@ -510,8 +510,9 @@ create_window (int confirm_mode)
     }
 
   gtk_window_set_position (GTK_WINDOW (win), GTK_WIN_POS_CENTER);
-  
-  gtk_widget_show_all(win);
+  gtk_window_set_keep_above (GTK_WINDOW (win), TRUE);
+  gtk_widget_show_all (win);
+  gtk_window_present (GTK_WINDOW (win));  /* Make sure it has the focus.  */
   
   return win;
 }

@@ -3,6 +3,9 @@ Noteworthy changes in version 0.8.1 (unreleased)
 
  * The W32 pinentry now supports WindowsCE.
 
+ * The GTK pinentry now always sticks to the top and properly grabs
+   the keyboard.
+
 
 Noteworthy changes in version 0.8.0 (2010-03-03)
 ------------------------------------------------
