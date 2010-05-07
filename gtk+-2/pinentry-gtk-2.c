@@ -309,8 +309,15 @@ create_window (int confirm_mode)
 	g_signal_connect (G_OBJECT (win),
 			  "realize", G_CALLBACK (make_transient), NULL);
 
+      /* We need to grab the keyboard when its visible! not when its
+         mapped (there is a difference)  */
+      g_object_set (G_OBJECT(win), "events",
+                    GDK_VISIBILITY_NOTIFY_MASK | GDK_STRUCTURE_MASK, NULL);
+
       g_signal_connect (G_OBJECT (win),
-			pinentry->grab ? "map-event" : "focus-in-event",
+			pinentry->grab
+                        ? "visibility-notify-event"
+                        : "focus-in-event",
 			G_CALLBACK (grab_keyboard), NULL);
       g_signal_connect (G_OBJECT (win),
 			pinentry->grab ? "unmap-event" : "focus-out-event",
