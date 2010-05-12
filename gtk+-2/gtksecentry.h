@@ -39,6 +39,7 @@
 
 
 #include <gtk/gtk.h>
+#include "gseal-gtk-compat.h"
 
 #ifdef __cplusplus
 extern "C" {

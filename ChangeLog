@@ -1,3 +1,9 @@
+2010-05-12  Guido Günther  <agx@sigxcpu.org>  (wk)
+
+	* gtk+-2/gtksecentry.c: Make -DSEAL safe.
+	* gtk+-2/gseal-gtk-compat.h: New.
+	* gtk+-2/gtksecentry.h: Include new header.
+
 2010-05-07  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Keep the window above
