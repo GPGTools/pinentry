@@ -1,3 +1,9 @@
+2010-06-08  Marc Mutz  <marc.mutz@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Add WindowStaysOnTopHint.
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Add WStyle_StaysOnTop.
+
 2010-05-12  Guido Günther  <agx@sigxcpu.org>  (wk)
 
 	* gtk+-2/gtksecentry.c: Make -DSEAL safe.

@@ -33,7 +33,7 @@
 
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, 
                                 bool modal, bool enable_quality_bar )
-  : QDialog( parent, name, modal ), _grabbed( false )
+  : QDialog( parent, name, modal, Qt::WStyle_StaysOnTop ), _grabbed( false )
 {
   QBoxLayout* top = new QVBoxLayout( this, 6 );
   QBoxLayout* upperLayout = new QHBoxLayout( top );

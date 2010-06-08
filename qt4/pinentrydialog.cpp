@@ -83,7 +83,7 @@ QPixmap icon( QStyle::StandardPixmap which )
 
 PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
                                 bool enable_quality_bar )
-  : QDialog( parent ), _grabbed( false )
+  : QDialog( parent, Qt::WindowStaysOnTopHint ), _grabbed( false )
 {
   setWindowFlags( windowFlags() & ~Qt::WindowContextHelpButtonHint );
 
