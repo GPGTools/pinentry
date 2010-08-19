@@ -51,6 +51,19 @@ AM_MAINTAINER_MODE
 
 AC_CANONICAL_HOST
 
+AH_TOP([
+#ifndef PINENTRY_CONFIG_H_INCLUDED
+#define PINENTRY_CONFIG_H_INCLUDED
+
+/* Enable gpg-error's strerror macro under W32CE.  */
+#define GPG_ERR_ENABLE_ERRNO_MACROS 1
+])
+
+AH_BOTTOM([
+#endif /*PINENTRY_CONFIG_H_INCLUDED*/
+])
+
+
 dnl Checks for programs.
 missing_dir=`cd $ac_aux_dir && pwd`
 AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)

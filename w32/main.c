@@ -206,7 +206,7 @@ utf8_to_wchar (const char *string)
 }
 
 
-/* Raie the software input panel.  */
+/* Raise the software input panel.  */
 #ifdef HAVE_W32CE_SYSTEM
 static void
 raise_sip (HWND dlg)

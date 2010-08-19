@@ -1,3 +1,8 @@
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_TOP, AH_BOTTOM): New.  Define
+	GPG_ERR_ENABLE_ERRNO_MACROS.
+
 2010-06-08  Marc Mutz  <marc.mutz@kdab.com>  (wk)
 
 	* qt4/pinentrydialog.cpp (PinEntryDialog): Add WindowStaysOnTopHint.
