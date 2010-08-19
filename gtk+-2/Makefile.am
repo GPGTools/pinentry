@@ -35,4 +35,4 @@ LDADD = ../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a \
 	$(LIBCAP) $(GTK2LIBS) $(libcurses)
 
 pinentry_gtk_2_SOURCES = pinentry-gtk-2.c \
-	gtksecentry.c gtksecentry.h 
+	gtksecentry.c gtksecentry.h gseal-gtk-compat.h
