@@ -1,7 +1,7 @@
 /* pinentry-gtk-2.c
    Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
    Copyright (C) 2001, 2002, 2007 g10 Code GmbH
-   Copyright (C) 2004 by Albrecht Dreﬂ <albrecht.dress@arcor.de>
+   Copyright (C) 2004 by Albrecht Dre√ü <albrecht.dress@arcor.de>
 
    pinentry-gtk-2 is a pinentry application for the Gtk+-2 widget set.
    It tries to follow the Gnome Human Interface Guide as close as
@@ -222,6 +222,8 @@ pinentry_utf8_validate (gchar *text)
   if (g_utf8_validate (text, -1, NULL))
     return g_strdup (text);
 
+  /* Failure: Assume that it was encoded in the current locale and
+     convert it to utf-8.  */
   result = g_locale_to_utf8 (text, -1, NULL, NULL, NULL);
   if (!result)
     {
@@ -459,8 +461,20 @@ create_window (int confirm_mode)
           w = gtk_button_new_with_mnemonic (msg);
           g_free (msg);
         }
+      else if (pinentry->default_cancel)
+        {
+          GtkWidget *image;
+
+          msg = pinentry_utf8_validate (pinentry->default_cancel);
+          w = gtk_button_new_with_mnemonic (msg);
+          g_free (msg);
+          image = gtk_image_new_from_stock (GTK_STOCK_CANCEL,
+                                            GTK_ICON_SIZE_BUTTON);
+          if (image)
+            gtk_button_set_image (GTK_BUTTON (w), image);
+        }
       else
-        w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+          w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
       gtk_container_add (GTK_CONTAINER (bbox), w);
       g_signal_connect (G_OBJECT (w), "clicked",
                         G_CALLBACK (confirm_mode ? confirm_button_clicked
@@ -487,6 +501,18 @@ create_window (int confirm_mode)
       msg = pinentry_utf8_validate (pinentry->ok);
       w = gtk_button_new_with_mnemonic (msg);
       g_free (msg);
+    }
+  else if (pinentry->default_ok)
+    {
+      GtkWidget *image;
+      
+      msg = pinentry_utf8_validate (pinentry->default_ok);
+      w = gtk_button_new_with_mnemonic (msg);
+      g_free (msg);
+      image = gtk_image_new_from_stock (GTK_STOCK_OK,
+                                        GTK_ICON_SIZE_BUTTON);
+      if (image)
+        gtk_button_set_image (GTK_BUTTON (w), image);
     }
   else
     w = gtk_button_new_from_stock (GTK_STOCK_OK);

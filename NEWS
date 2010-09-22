@@ -6,6 +6,8 @@ Noteworthy changes in version 0.8.1 (unreleased)
  * The GTK pinentry now always sticks to the top and properly grabs
    the keyboard.
 
+ * The protocol options default-cancel and default-ok now work for the
+   pinnetry-gtk2.
 
 Noteworthy changes in version 0.8.0 (2010-03-03)
 ------------------------------------------------
