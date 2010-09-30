@@ -1,3 +1,10 @@
+2010-09-30  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add CLOSE_BUTTON.
+	* pinentry/pinentry.c (cmd_getpin, cmd_confirm, cmd_message): Send
+	BUTTON_INFO.
+	* gtk+-2/pinentry-gtk-2.c (delete_event): Set close_button.
+
 2010-09-22  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/pinentry-gtk-2.c (create_window): Make use of

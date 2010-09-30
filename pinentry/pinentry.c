@@ -80,7 +80,8 @@ struct pinentry pinentry =
     0,		/* Parent Window ID.  */
     NULL,       /* Touch file.  */
     0,		/* Result.  */
-    0,		/* Result Not-OK.  */
+    0,		/* Canceled.  */
+    0,		/* Close button flag.  */
     0,          /* Locale error flag. */
     0,          /* One-button flag.  */
     NULL,       /* Quality-Bar flag and description.  */
@@ -890,6 +891,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
+  pinentry.close_button = 0;
   pinentry.one_button = 0;
   pinentry.ctx_assuan = ctx;
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -903,6 +905,9 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     pinentry.prompt = NULL;
 
   pinentry.quality_bar = 0;  /* Reset it after the command.  */
+
+  if (pinentry.close_button)
+    assuan_write_status (ctx, "BUTTON_INFO", "close");
 
   if (result < 0)
     {
@@ -945,6 +950,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 
   pinentry.one_button = !!strstr (line, "--one-button");
   pinentry.quality_bar = 0;
+  pinentry.close_button = 0;
   pinentry.locale_err = 0;
   pinentry.canceled = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -953,6 +959,9 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
       free (pinentry.error);
       pinentry.error = NULL;
     }
+
+  if (pinentry.close_button)
+    assuan_write_status (ctx, "BUTTON_INFO", "close");
 
   return result ? 0
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
@@ -971,6 +980,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
 
   pinentry.one_button = 1;
   pinentry.quality_bar = 0;
+  pinentry.close_button = 0;
   pinentry.locale_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -978,6 +988,9 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
       free (pinentry.error);
       pinentry.error = NULL;
     }
+
+  if (pinentry.close_button)
+    assuan_write_status (ctx, "BUTTON_INFO", "close");
 
   return result ? 0 
                 : (pinentry.locale_err? ASSUAN_Locale_Problem

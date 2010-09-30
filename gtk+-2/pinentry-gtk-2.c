@@ -1,7 +1,7 @@
 /* pinentry-gtk-2.c
    Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
    Copyright (C) 2001, 2002, 2007 g10 Code GmbH
-   Copyright (C) 2004 by Albrecht Dre√ü <albrecht.dress@arcor.de>
+   Copyright (C) 2004 by Albrecht Dreﬂ <albrecht.dress@arcor.de>
 
    pinentry-gtk-2 is a pinentry application for the Gtk+-2 widget set.
    It tries to follow the Gnome Human Interface Guide as close as
@@ -161,6 +161,7 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+  pinentry->close_button = 1;
   gtk_main_quit ();
   return TRUE;
 }

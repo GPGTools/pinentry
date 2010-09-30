@@ -98,6 +98,11 @@ struct pinentry
      conversion occured. */
   int locale_err;
 
+  /* The user should set this to true if the window close button has
+     been used.  This flag is used in addition to a regular return
+     value.  */
+  int close_button;
+
   /* The caller should set this to true if only one button is
      required.  This is useful for notification dialogs where only a
      dismiss button is required. */
