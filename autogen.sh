@@ -140,7 +140,7 @@ if [ "$myhost" = "w32" ]; then
         fi
     fi
 
-    ./configure --enable-maintainer-mode --prefix=${w32root} \
+    $tsdir/configure --enable-maintainer-mode --prefix=${w32root} \
                 --host=${host} --build=${build} \
                 --disable-pinentry-gtk \
                 --disable-pinentry-qt  \

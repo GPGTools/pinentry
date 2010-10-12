@@ -39,6 +39,45 @@
 #include <pinentry-curses.h>
 #endif
 
+static QString escape_accel( const QString & s ) {
+
+  QString result;
+  result.reserve( 2 * s.length());
+
+  bool afterUnderscore = false;
+
+  for ( unsigned int i = 0, end = s.length() ; i != end ; ++i ) {
+    const QChar ch = s[i];
+    if ( ch == QChar ( '_' ) )
+      {
+        if ( afterUnderscore ) // escaped _
+          {
+            result += QChar ( '_' );
+            afterUnderscore = false;
+          }
+        else // accel
+          {
+            afterUnderscore = true;
+          }
+      }
+    else
+      {
+        if ( afterUnderscore || // accel
+             ch == QChar ( '&' ) ) // escape & from being interpreted by Qt
+          result += QChar ( '&' );
+        result += ch;
+        afterUnderscore = false;
+      }
+  }
+
+  if ( afterUnderscore )
+    // trailing single underscore: shouldn't happen, but deal with it robustly:
+    result += QChar ( '_' );
+
+  return result;
+}
+
+
 /* Hack for creating a QWidget with a "foreign" window ID */
 class ForeignWidget : public QWidget
 {
@@ -79,9 +118,16 @@ qt_cmd_handler (pinentry_t pe)
 #endif
 
       if (pe->ok)
-	pinentry.setOkText (QString::fromUtf8 (pe->ok));
+	pinentry.setOkText (escape_accel (QString::fromUtf8 (pe->ok)));
+      else if (pe->default_ok)
+	pinentry.setOkText (escape_accel (QString::fromUtf8 (pe->default_ok)));
+
       if (pe->cancel)
-	pinentry.setCancelText (QString::fromUtf8 (pe->cancel));
+	pinentry.setCancelText (escape_accel (QString::fromUtf8 (pe->cancel)));
+      else if (pe->default_cancel)
+	pinentry.setCancelText
+          (escape_accel (QString::fromUtf8 (pe->default_cancel)));
+
       if (pe->error)
 	pinentry.setError (QString::fromUtf8 (pe->error));
       if (pe->quality_bar)
@@ -113,9 +159,13 @@ qt_cmd_handler (pinentry_t pe)
     }
   else
     {
-      QString desc = QString::fromUtf8 (pe->description? pe->description :"");
-      QString ok   = QString::fromUtf8 (pe->ok ? pe->ok : "OK");
-      QString can  = QString::fromUtf8 (pe->cancel ? pe->cancel : "Cancel");
+      QString desc = QString::fromUtf8 (pe->description? pe->description : "");
+      QString ok   = escape_accel
+        (QString::fromUtf8 (pe->ok ? pe->ok :
+                            pe->default_ok ? pe->default_ok : "&OK"));
+      QString can  = escape_accel
+        (QString::fromUtf8 (pe->cancel ? pe->cancel :
+                            pe->default_cancel? pe->default_cancel: "&Cancel"));
       bool ret;
       
       ret = QMessageBox::information (parent, "", desc, ok, can );
@@ -160,7 +210,7 @@ main (int argc, char *argv[])
       for (done=0,p=*new_argv,i=0; i < argc; i++)
         if (!done && !strcmp (argv[i], "--display"))
           {
-            new_argv[i] = "-display";
+            new_argv[i] = (char*)"-display";
             done = 1;
           }
         else

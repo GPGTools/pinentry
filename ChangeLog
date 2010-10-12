@@ -1,3 +1,9 @@
+2010-10-12  Werner Koch  <wk@g10code.com>
+
+	* qt/main.cpp (escape_accel): New.  Adapt from from qt4/.
+	(qt_cmd_handler): Implement default-ok and default-cancel.  Escape
+	accelerators.
+
 2010-09-30  Werner Koch  <wk@g10code.com>
 
 	* pinentry/pinentry.h (struct pinentry): Add CLOSE_BUTTON.
