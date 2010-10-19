@@ -395,7 +395,7 @@ pinentry_have_display (int argc, char **argv)
     return 1;
 #endif
   for (; argc; argc--, argv++)
-    if (!strcmp (*argv, "--display"))
+    if (!strcmp (*argv, "--display") || !strncmp (*argv, "--display=", 10))
       return 1;
   return 0;
 }
