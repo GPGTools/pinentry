@@ -39,6 +39,10 @@
 # define LSFW_UNLOCK 2
 #endif
 
+#ifndef debugfp
+#define debugfp stderr
+#endif
+
 
 /* This function pointer gets initialized in main.  */
 #ifndef HAVE_W32CE_SYSTEM
@@ -207,10 +211,10 @@ utf8_to_wchar (const char *string)
 
 
 /* Raise the software input panel.  */
-#ifdef HAVE_W32CE_SYSTEM
 static void
 raise_sip (HWND dlg)
 {
+#ifdef HAVE_W32CE_SYSTEM
   SIPINFO si;
 
   SetForegroundWindow (dlg);
@@ -223,8 +227,10 @@ raise_sip (HWND dlg)
       si.fdwFlags |= SIPF_ON;
       SipSetInfo (&si);
     }
-}
+#else
+  (void)dlg;
 #endif
+}
 
 /* Center the window CHILDWND with the desktop as its parent
    window.  STYLE is passed as second arg to SetWindowPos.*/
@@ -316,7 +322,7 @@ move_mouse_and_click (HWND hwnd)
   inp[idx].mi.dwFlags = MOUSEEVENTF_LEFTUP;
   idx++;
 
-  if ( SendInput (idx, inp, sizeof (INPUT)) != idx && debugfp )
+  if ( (SendInput (idx, inp, sizeof (INPUT)) != idx) && debugfp)
     fprintf (debugfp, "SendInput failed: %s\n", w32_strerror (-1));
 #endif
 }

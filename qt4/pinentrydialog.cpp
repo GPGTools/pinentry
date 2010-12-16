@@ -40,27 +40,33 @@
 #include <windows.h>
 #endif
 
-#ifdef Q_WS_WIN
-void SetForegroundWindowEx( HWND hWnd )
-{
-   //Attach foreground window thread to our thread
-   const DWORD ForeGroundID = GetWindowThreadProcessId(::GetForegroundWindow(),NULL);
-   const DWORD CurrentID   = GetCurrentThreadId();
+/* I [wk] have no idea for what this code was supposed to do.
+   Foregrounding a window is heavily restricted by modern Windows
+   versions.  This is the reason why gpg-agent employs its
+   AllowSetForegroundWindow callback machinery to ask the supposed to
+   be be calling process to allow a pinentry to go into the
+   foreground.  */
+// #ifdef Q_WS_WIN
+// void SetForegroundWindowEx( HWND hWnd )
+// {
+//    //Attach foreground window thread to our thread
+//    const DWORD ForeGroundID = GetWindowThreadProcessId(::GetForegroundWindow(),NULL);
+//    const DWORD CurrentID   = GetCurrentThreadId();
  
-   AttachThreadInput ( ForeGroundID, CurrentID, TRUE );
-   //Do our stuff here
-   HWND hLastActivePopupWnd = GetLastActivePopup( hWnd );
-   SetForegroundWindow( hLastActivePopupWnd );
+//    AttachThreadInput ( ForeGroundID, CurrentID, TRUE );
+//    //Do our stuff here
+//    HWND hLastActivePopupWnd = GetLastActivePopup( hWnd );
+//    SetForegroundWindow( hLastActivePopupWnd );
  
-   //Detach the attached thread
-   AttachThreadInput ( ForeGroundID, CurrentID, FALSE );
-}// End SetForegroundWindowEx
-#endif
+//    //Detach the attached thread
+//    AttachThreadInput ( ForeGroundID, CurrentID, FALSE );
+// }// End SetForegroundWindowEx
+// #endif
 
 void raiseWindow( QWidget* w )
 {
 #ifdef Q_WS_WIN
-    SetForegroundWindowEx( w->winId() );
+    SetForegroundWindow( w->winId() );
 #endif
     w->raise();
     w->activateWindow();

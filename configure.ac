@@ -20,7 +20,7 @@
  
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.57)
-min_automake_version="1.7.6"
+min_automake_version="1.10"
 
 # Version number: Remember to change it immediately *after* a release.
 #                 Make sure to run  "svn up" and "./autogen.sh --force"
@@ -32,7 +32,7 @@ min_automake_version="1.7.6"
 # SVN version is the most recent one in a branch.  To disable the SVN
 # version for the real release, set the my_issvn macro to no.
 m4_define(my_version, [0.8.1])
-m4_define(my_issvn, [yes])
+m4_define(my_issvn, [no])
 
 m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
            | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
@@ -65,6 +65,8 @@ AH_BOTTOM([
 
 
 dnl Checks for programs.
+AC_PROG_MAKE_SET
+AM_SANITY_CHECK
 missing_dir=`cd $ac_aux_dir && pwd`
 AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
 AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)

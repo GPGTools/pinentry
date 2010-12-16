@@ -1,3 +1,20 @@
+2010-12-16  Werner Koch  <wk@g10code.com>
+
+	Release 0.8.1.
+
+	* doc/pinentry.texi: Remove the custom font setting for underscores.
+
+	Update to automake 1.10.
+
+	* missing, config.guess, config.sub: Update from GnuPG.
+
+	* w32/main.c (debugfp): Define to stderr.
+	(raise_sip) [!W32CE]: Make it a dummy function.
+
+	* qt4/pinentrydialog.cpp (raiseWindow): Use SetForegroundWindow
+	API directly.
+	(SetForegroundWindowEx): Comment out.
+
 2010-10-19  Werner Koch  <wk@g10code.com>
 
 	* pinentry/pinentry.c (pinentry_have_display): Also detect

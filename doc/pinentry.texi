@@ -51,12 +51,6 @@ section entitled ``Copying''.
 @end ifnottex
 
 
-@c Change the font used for @def... commands, since the default
-@c proportional one used is bad for names starting __.
-@tex
-\global\setfont\defbf\ttbshape{10}{\magstep1}
-@end tex
-
 @c %**end of header
 
 @ifnottex
