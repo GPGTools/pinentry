@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include "pinentryconfirm.h"
 #include "pinentrydialog.h"
 #include "pinentry.h"
 
@@ -152,7 +153,7 @@ qt_cmd_handler (pinentry_t pe)
 
   if (want_pass)
     {
-      PinEntryDialog pinentry (parent, 0, true, !!pe->quality_bar);
+      PinEntryDialog pinentry (parent, 0, pe->timeout, true, !!pe->quality_bar);
 
       pinentry.setPinentryInfo (pe);
       pinentry.setPrompt (escape_accel (from_utf8 (pe->prompt)) );
@@ -201,7 +202,7 @@ qt_cmd_handler (pinentry_t pe)
           pe->notok      ? QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel :
           /* else */       QMessageBox::Ok|QMessageBox::Cancel ;
 
-      QMessageBox box( QMessageBox::Information, title, desc, buttons, parent );
+      PinentryConfirm box( QMessageBox::Information, pe->timeout, title, desc, buttons, parent );
 
       const struct {
           QMessageBox::StandardButton button;

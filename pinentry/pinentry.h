@@ -72,6 +72,9 @@ struct pinentry
   /* True if debug mode is requested.  */
   int debug;
 
+  /* The number of seconds before giving up while waiting for user input. */
+  int timeout;
+
 #ifdef ENABLE_ENHANCED
   /* True if enhanced mode is requested.  */
   int enhanced;

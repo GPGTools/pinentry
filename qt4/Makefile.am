@@ -45,4 +45,5 @@ pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp secstring.h secstring.cpp qsecurelineedit.h \
 	qsecurelineedit.cpp pinentrydialog.moc qsecurelineedit.moc \
 	qrc_pinentry.cpp \
-	qsecurelineedit_p.h
+	qsecurelineedit_p.h \
+	pinentryconfirm.cpp pinentryconfirm.h pinentryconfirm.moc

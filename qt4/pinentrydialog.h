@@ -26,6 +26,7 @@
 
 #include <QDialog>
 #include <QStyle>
+#include <QTimer>
 
 #include "secstring.h"
 #include "pinentry.h"
@@ -49,7 +50,7 @@ class PinEntryDialog : public QDialog {
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, bool modal = false, bool enable_quality_bar = false );
+  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, int timeout = 0, bool modal = false, bool enable_quality_bar = false );
 
   void setDescription( const QString& );
   QString description() const;
@@ -73,6 +74,7 @@ public:
 
 public slots:
   void updateQuality(const secqstring&);
+  void slotTimeout();
 
 protected:
   /* reimp */ void showEvent( QShowEvent* event );
@@ -92,6 +94,7 @@ private:
   bool       _grabbed;
   bool       _have_quality_bar;
   pinentry_t _pinentry_info;
+  QTimer*    _timer;
 };
 
 #endif // __PINENTRYDIALOG_H__

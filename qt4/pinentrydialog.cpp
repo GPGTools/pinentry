@@ -87,8 +87,13 @@ QPixmap icon( QStyle::StandardPixmap which )
     return pm;
 }
 
-PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
-                                bool enable_quality_bar )
+void PinEntryDialog::slotTimeout()
+{
+    reject();
+}
+
+PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
+	int timeout, bool modal, bool enable_quality_bar )
   : QDialog( parent, Qt::WindowStaysOnTopHint ), _grabbed( false )
 {
   setWindowFlags( windowFlags() & ~Qt::WindowContextHelpButtonHint );
@@ -143,6 +148,12 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name, bool modal,
       _cancel->setIcon( style()->standardIcon( QStyle::SP_DialogCancelButton ) );
     }
  
+  if (timeout > 0) {
+      _timer = new QTimer(this);
+      connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+      _timer->start(timeout*1000);
+  }
+
   connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
   connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
   connect( _edit, SIGNAL( textChanged(secqstring) ),
@@ -257,6 +268,7 @@ void PinEntryDialog::updateQuality(const secqstring & txt )
   int percent;
   QPalette pal;
 
+  _timer->stop();
   if (!_have_quality_bar || !_pinentry_info)
     return;
   secstring pinStr = toUtf8(txt);

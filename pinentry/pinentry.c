@@ -73,6 +73,7 @@ struct pinentry pinentry =
     0,		/* TTY LC_CTYPE.  */
     0,		/* TTY LC_MESSAGES.  */
     0,		/* Debug mode.  */
+    60,		/* Pinentry timeout in seconds.  */
 #ifdef ENABLE_ENHANCED
     0,		/* Enhanced mode.  */
 #endif
@@ -413,6 +414,7 @@ usage (void)
 "      --ttytype NAME    Set the tty terminal type\n"
 "      --lc-ctype        Set the tty LC_CTYPE value\n"
 "      --lc-messages     Set the tty LC_MESSAGES value\n"
+"      --timeout SECS    Timeout waiting for input after this many seconds\n"
 #ifdef ENABLE_ENHANCED
 "  -e, --enhanced        Ask for timeout and insurance, too\n"
 #endif
@@ -498,6 +500,7 @@ pinentry_parse_opts (int argc, char *argv[])
      { "colors", required_argument,	 0, 'c' },
      { "help", no_argument,              0, 'h' },
      { "version", no_argument, &opt_version, 1 },
+     { "timeout", required_argument, 0, 'o' },
      { NULL, 0, NULL, 0 }};
   
   while ((opt = getopt_long (argc, argv, "degh", opts, NULL)) != -1)
@@ -587,6 +590,9 @@ pinentry_parse_opts (int argc, char *argv[])
 				&pinentry.color_so_bright);
 	  break;
 
+	case 'o':
+	  pinentry.timeout = atoi(optarg);
+	  break;
         default:
           fprintf (stderr, "%s: oops: option not handled\n", this_pgmname);
 	  break;
@@ -817,6 +823,15 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
+
+static int
+cmd_settimeout (ASSUAN_CONTEXT ctx, char *line)
+{
+    if (line && *line)
+	pinentry.timeout = atoi(line);
+
+    return 0;
+}
 
 static int
 cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
@@ -1052,6 +1067,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "SETQUALITYBAR_TT", 0,  cmd_setqualitybar_tt },
       { "GETINFO",    0,  cmd_getinfo },
       { "SETTITLE",   0,  cmd_settitle },
+      { "SETTIMEOUT",   0,  cmd_settimeout },
       { NULL }
     };
   int i, j, rc;
