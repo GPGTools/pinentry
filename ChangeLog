@@ -1,3 +1,10 @@
+2011-06-28  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/gtksecentry.c (PROP_EDITING_CANCELED): New.
+	(gtk_secure_entry_class_init, gtk_secure_entry_set_property)
+	(gtk_secure_entry_get_property): Implement as dummy it to get rid
+	of a runtime warning.
+
 2010-12-16  Werner Koch  <wk@g10code.com>
 
 	Release 0.8.1.

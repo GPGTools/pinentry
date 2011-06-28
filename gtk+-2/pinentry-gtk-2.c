@@ -11,12 +11,12 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-  
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-  
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
@@ -97,7 +97,7 @@ constrain_size (GtkWidget *win, GtkRequisition *req, gpointer data)
 				 GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
 }
 
- 
+
 /* Realize the window as transient if we grab the keyboard.  This
    makes the window a modal dialog to the root window, which helps the
    window manager.  See the following quote from:
@@ -273,7 +273,7 @@ changed_text_handler (GtkWidget *widget)
       snprintf (textbuf, sizeof textbuf, "%d%%", percent);
       color.green = 0xffff;
     }
-  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 
+  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar),
                                  (double)percent/100.0);
   gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar), textbuf);
   gtk_widget_modify_bg (qualitybar, GTK_STATE_PRELIGHT, &color);
@@ -327,7 +327,7 @@ create_window (int confirm_mode)
 			G_CALLBACK (ungrab_keyboard), NULL);
     }
   gtk_window_add_accel_group (GTK_WINDOW (win), acc);
-  
+
   wvbox = gtk_vbox_new (FALSE, HIG_LARGE * 2);
   gtk_container_add (GTK_CONTAINER (win), wvbox);
   gtk_container_set_border_width (GTK_CONTAINER (wvbox), HIG_LARGE);
@@ -435,7 +435,7 @@ create_window (int confirm_mode)
 	     2, 0);
 	  gtk_box_pack_start (GTK_BOX (sbox), time_out, FALSE, FALSE, 0);
 	  gtk_widget_show (time_out);
-	  
+
 	  w = gtk_label_new ("seconds");
 	  gtk_box_pack_start (GTK_BOX (sbox), w, FALSE, FALSE, 0);
 	  gtk_widget_show (w);
@@ -483,7 +483,7 @@ create_window (int confirm_mode)
 			(gpointer) CONFIRM_CANCEL);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
-  
+
   if (confirm_mode && !pinentry->one_button && pinentry->notok)
     {
       msg = pinentry_utf8_validate (pinentry->notok);
@@ -496,7 +496,7 @@ create_window (int confirm_mode)
 			(gpointer) CONFIRM_NOTOK);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
-  
+
   if (pinentry->ok)
     {
       msg = pinentry_utf8_validate (pinentry->ok);
@@ -506,7 +506,7 @@ create_window (int confirm_mode)
   else if (pinentry->default_ok)
     {
       GtkWidget *image;
-      
+
       msg = pinentry_utf8_validate (pinentry->default_ok);
       w = gtk_button_new_with_mnemonic (msg);
       g_free (msg);
@@ -540,7 +540,7 @@ create_window (int confirm_mode)
   gtk_window_set_keep_above (GTK_WINDOW (win), TRUE);
   gtk_widget_show_all (win);
   gtk_window_present (GTK_WINDOW (win));  /* Make sure it has the focus.  */
-  
+
   return win;
 }
 
@@ -595,7 +595,7 @@ main (int argc, char *argv[])
   g_mem_set_vtable (&secure_mem);
 
   pinentry_init (PGMNAME);
-    
+
 #ifdef FALLBACK_CURSES
   if (pinentry_have_display (argc, argv))
     gtk_init (&argc, &argv);
@@ -611,9 +611,9 @@ main (int argc, char *argv[])
       printf(PGMNAME " " VERSION "\n");
       exit(EXIT_SUCCESS);
     }
-  
+
   if (pinentry_loop ())
     return 1;
-  
+
   return 0;
 }
