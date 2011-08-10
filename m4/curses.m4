@@ -28,7 +28,13 @@ AC_DEFUN([IU_LIB_NCURSES], [
   AC_ARG_ENABLE(ncurses,    [  --disable-ncurses       don't prefer -lncurses over -lcurses],
               , enable_ncurses=yes)
   if test "$enable_ncurses" = yes; then
-    AC_CHECK_LIB(ncurses, initscr, LIBNCURSES="-lncurses")
+    AC_CHECK_LIB(ncursesw, initscr, LIBNCURSES="-lncursesw",
+      AC_CHECK_LIB(ncurses, initscr, LIBNCURSES="-lncurses"))
+    if test "$ac_cv_lib_ncursesw_initscr" = yes; then
+      have_ncursesw=yes
+    else
+      have_ncursesw=no
+    fi
     if test "$LIBNCURSES"; then
       # Use ncurses header files instead of the ordinary ones, if possible;
       # is there a better way of doing this, that avoids looking in specific
@@ -53,9 +59,14 @@ AC_DEFUN([IU_LIB_NCURSES], [
       else
 	AC_CACHE_CHECK(for ncurses include dir,
 		       inetutils_cv_includedir_ncurses,
+          if test "$have_ncursesw" = yes; then
+            ncursesdir=ncursesw
+          else
+            ncursesdir=ncurses
+          fi
 	  for D in $includedir $prefix/include /local/include /usr/local/include /include /usr/include; do
-	    if test -d $D/ncurses; then
-	      inetutils_cv_includedir_ncurses="$D/ncurses"
+	    if test -d $D/$ncursesdir; then
+	      inetutils_cv_includedir_ncurses="$D/$ncursesdir"
 	      break
 	    fi
 	    test "$inetutils_cv_includedir_ncurses" \
@@ -67,6 +78,9 @@ AC_DEFUN([IU_LIB_NCURSES], [
       else
         NCURSES_INCLUDE="-I$inetutils_cv_includedir_ncurses"
       fi
+    fi
+    if test $have_ncursesw = yes; then
+      AC_DEFINE(HAVE_NCURSESW, 1, [Define if you have working ncursesw])
     fi
   fi
   AC_SUBST(NCURSES_INCLUDE)

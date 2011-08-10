@@ -42,6 +42,10 @@
 
 #include <memory.h>
 
+#ifdef HAVE_WCHAR_H
+#include <wchar.h>
+#endif /*HAVE_WCHAR_H*/
+
 #include "pinentry.h"
 
 /* FIXME: We should allow configuration of these button labels and in
@@ -94,6 +98,24 @@ struct dialog
 typedef struct dialog *dialog_t;
 
 
+#ifdef HAVE_NCURSESW
+typedef wchar_t CH;
+#define STRLEN(x) wcslen (x)
+#define ADDCH(x) addnwstr (&x, 1);
+#define CHWIDTH(x) wcwidth (x)
+#define NULLCH L'\0'
+#define NLCH L'\n'
+#define SPCH L' '
+#else
+typedef char CH;
+#define STRLEN(x) strlen (x)
+#define ADDCH(x) addch ((unsigned char) x)
+#define CHWIDTH(x) 1
+#define NULLCH '\0'
+#define NLCH '\n'
+#define SPCH ' '
+#endif
+
 /* Return the next line up to MAXLEN columns wide in START and LEN.
    The first invocation should have 0 as *LEN.  If the line ends with
    a \n, it is a normal line that will be continued.  If it is a '\0'
@@ -101,40 +123,95 @@ typedef struct dialog *dialog_t;
    there is a forced line break.  A full line is returned and will be
    continued in the next line.  */
 static void
-collect_line (int maxlen, char **start_p, int *len_p)
+collect_line (int maxwidth, wchar_t **start_p, int *len_p)
 {
   int last_space = 0;
   int len = *len_p;
-  char *end;
+  int width = 0;
+  CH *end;
 
   /* Skip to next line.  */
   *start_p += len;
   /* Skip leading space.  */
-  while (**start_p == ' ')
+  while (**start_p == SPCH)
     (*start_p)++;
 
   end = *start_p;
   len = 0;
 
-  while (len < maxlen - 1 && *end && *end != '\n')
+  while (width < maxwidth - 1 && *end != NULLCH && *end != NLCH)
     {
       len++;
       end++;
-      if (*end == ' ')
+      if (*end == SPCH)
 	last_space = len;
+      width += CHWIDTH (*end);
     }
 
-  if (*end && *end != '\n' && last_space != 0)
+  if (*end != NULLCH && *end != NLCH && last_space != 0)
     {
       /* We reached the end of the available space, but still have
 	 characters to go in this line.  We can break the line into
 	 two parts at a space.  */
       len = last_space;
-      (*start_p)[len] = '\n';
+      (*start_p)[len] = NLCH;
     }
   *len_p = len + 1;
 }
 
+#ifdef HAVE_NCURSESW
+static CH *
+utf8_to_local (char *lc_ctype, char *string)
+{
+  mbstate_t ps;
+  size_t len;
+  char *local;
+  const char *p;
+  wchar_t *wcs = NULL;
+  char *old_ctype = NULL;
+
+  local = pinentry_utf8_to_local (lc_ctype, string);
+  if (!local)
+    return NULL;
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  setlocale (LC_CTYPE, lc_ctype? lc_ctype : "");
+
+  p = local;
+  memset (&ps, 0, sizeof(mbstate_t));
+  len = mbsrtowcs (NULL, &p, strlen (string), &ps);
+  if (len == (size_t)-1)
+    {
+      free (local);
+      goto leave;
+    }
+  wcs = calloc (len + 1, sizeof(wchar_t));
+  if (!wcs)
+    {
+      free (local);
+      goto leave;
+    }
+
+  p = local;
+  memset (&ps, 0, sizeof(mbstate_t));
+  mbsrtowcs (wcs, &p, len, &ps);
+
+ leave:
+  if (old_ctype)
+    {
+      setlocale (LC_CTYPE, old_ctype);
+      free (old_ctype);
+    }
+
+  return wcs;
+}
+#else
+static CH *
+utf8_to_local (const char *lc_ctype, const char *string)
+{
+  return pinentry_utf8_to_local (lc_ctype, string);
+}
+#endif
 
 static int
 dialog_create (pinentry_t pinentry, dialog_t dialog)
@@ -148,16 +225,15 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   int xpos;
   int description_x = 0;
   int error_x = 0;
-  char *description = NULL;
-  char *error = NULL;
-  char *prompt = NULL;
+  CH *description = NULL;
+  CH *error = NULL;
+  CH *prompt = NULL;
 
 #define COPY_OUT(what)							\
   do									\
     if (pinentry->what)							\
       {									\
-        what = pinentry_utf8_to_local (pinentry->lc_ctype,		\
-				       pinentry->what);			\
+        what = utf8_to_local (pinentry->lc_ctype, pinentry->what);	\
         if (!what)							\
 	  {								\
 	    err = 1;							\
@@ -214,7 +290,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   y = 1;		/* Top frame.  */
   if (description)
     {
-      char *start = description;
+      CH *start = description;
       int len = 0;
 
       do
@@ -232,7 +308,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     {
       if (error)
 	{
-	  char *p = error;
+	  CH *p = error;
 	  int err_x = 0;
 
 	  while (*p)
@@ -287,7 +363,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 
       new_x = MIN_PINENTRY_LENGTH;
       if (prompt)
-	new_x += strlen (prompt) + 1;	/* One space after prompt.  */
+	{
+	  new_x += STRLEN (prompt) + 1;	/* One space after prompt.  */
+	}
       if (new_x > size_x - 4)
 	new_x = size_x - 4;
       if (new_x > x)
@@ -335,7 +413,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   ypos++;
   if (description)
     {
-      char *start = description;
+      CH *start = description;
       int len = 0;
 
       do
@@ -347,9 +425,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  addch (' ');
 	  collect_line (size_x - 4, &start, &len);
 	  for (i = 0; i < len - 1; i++)
-	    addch ((unsigned char) start[i]);
-	  if (start[len - 1] && start[len - 1] != '\n')
-	    addch ((unsigned char) start[len - 1]);
+	    {
+	      ADDCH (start[i]);
+	    }
+	  if (start[len - 1] != NULLCH && start[len - 1] != NLCH)
+	    ADDCH (start[len - 1]);
 	  ypos++;
 	}
       while (start[len - 1]);
@@ -363,7 +443,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 
       if (error)
 	{
-	  char *p = error;
+	  CH *p = error;
 	  i = 0;
 
 	  while (*p)
@@ -378,11 +458,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 		}
 	      else
 		standout ();
-	      for (;*p && *p != '\n'; p++)
+	      for (;*p && *p != NLCH; p++)
 		if (i < x - 4)
 		  {
 		    i++;
-		    addch ((unsigned char) *p);
+		    ADDCH (*p);
 		  }
 	      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
 		{
@@ -410,14 +490,16 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       dialog->pin_size = x - 4;
       if (prompt)
 	{
-	  char *p = prompt;
-	  i = strlen (prompt);
+	  CH *p = prompt;
+	  i = STRLEN (prompt);
 	  if (i > x - 4 - MIN_PINENTRY_LENGTH)
 	    i = x - 4 - MIN_PINENTRY_LENGTH;
 	  dialog->pin_x += i + 1;
 	  dialog->pin_size -= i + 1;
 	  while (i-- > 0)
-	    addch ((unsigned char) *(p++));
+	    {
+	      ADDCH (*(p++));
+	    }
 	  addch (' ');
 	}
       for (i = 0; i < dialog->pin_size; i++)
@@ -631,6 +713,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   SCREEN *screen = 0;
   int done = 0;
   char *pin_utf8;
+#ifdef HAVE_NCURSESW
+  char *old_ctype = NULL;
+
+  if (pinentry->lc_ctype)
+    {
+      old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+      setlocale (LC_CTYPE, pinentry->lc_ctype);
+    }
+  else
+    setlocale (LC_CTYPE, "");
+#endif
 
   /* Open the desired terminal if necessary.  */
   if (tty_name)
@@ -804,6 +897,13 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (screen)
     delscreen (screen);
 
+#ifdef HAVE_NCURSESW
+  if (old_ctype)
+    {
+      setlocale (LC_CTYPE, old_ctype);
+      free (old_ctype);
+    }
+#endif
   if (ttyfi)
     fclose (ttyfi);
   if (ttyfo)
