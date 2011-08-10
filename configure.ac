@@ -1,23 +1,23 @@
 # configure.ac
 # Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
 # Copyright (C) 2001, 2002, 2003, 2004, 2007 g10 Code GmbH
-# 
+#
 # This file is part of PINENTRY.
-# 
+#
 # PINENTRY is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # PINENTRY is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- 
+
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.57)
 min_automake_version="1.10"
@@ -38,12 +38,12 @@ m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
            | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
+m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
+          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+
 # Remember to remove the "-cvs" suffix *before* a release and to bump the
 # version number immediately *after* a release and to re-append the suffix.
-AC_INIT(pinentry,
-        [my_version[]m4_if(my_issvn,[yes],
-        [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
-	[gnupg-devel@gnupg.org])
+AC_INIT([pinentry],[my_full_version],[http://bugs.gnupg.org])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
@@ -96,7 +96,7 @@ case "${host}" in
                   [Set this to limit filenames to the 8.3 format])
         have_dosish_system=yes
         have_w32_system=yes
-        case "${host}" in 
+        case "${host}" in
           *-mingw32ce*)
             have_w32ce_system=yes
             ;;
@@ -121,7 +121,7 @@ esac
 
 if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
-             [Defined if we run on some of the PCDOS like systems 
+             [Defined if we run on some of the PCDOS like systems
               (DOS, Windoze. OS/2) with special properties like
               no file modes])
 fi
@@ -147,7 +147,7 @@ if test "$GCC" = yes; then
     AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
     _gcc_cflags_save=$CFLAGS
     CFLAGS="-Wno-pointer-sign"
-    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_psign=yes,_gcc_psign=no)
     AC_MSG_RESULT($_gcc_psign)
     CFLAGS=$_gcc_cflags_save;
     if test x"$_gcc_psign" = xyes ; then
@@ -364,7 +364,7 @@ if test $have_qt = "no"; then
 *** end of config.log.$missing_qt_mt
 ***]])
 	else
-	  pinentry_qt="no"	  
+	  pinentry_qt="no"
 	fi
 fi
 if test $have_moc = "no"; then
@@ -380,7 +380,7 @@ if test $have_moc = "no"; then
 *** configure.
 ***]])
 	else
-	  pinentry_qt="no"	  
+	  pinentry_qt="no"
 	fi
 fi
 fi

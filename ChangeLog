@@ -1,3 +1,8 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Change bug report address to the BTS.  Fix
+	autoconf warnings.
+
 2011-06-28  Werner Koch  <wk@g10code.com>
 
 	* gtk+-2/gtksecentry.c (PROP_EDITING_CANCELED): New.
