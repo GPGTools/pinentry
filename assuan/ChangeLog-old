@@ -1,3 +1,10 @@
+2012-08-08  Werner Koch  <wk@gnupg.org>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on August 8, 2012 we put change information only in the GIT commit
+	log, and generate a top-level ChangeLog file from logs at "make
+	dist".  See doc/HACKING for details.
+
 2008-02-14  Werner Koch  <wk@g10code.com>
 
 	* assuan.h (ASSUAN_Parameter_Error): Add new alias.
@@ -88,10 +95,10 @@
 	* assuan-connect.c: Move all except assuan_get_pid to...
 	* assuan-pipe-connect.c: this.
 	(assuan_pipe_disconnect): Removed.
-	(do_finish, do_deinit): New 
+	(do_finish, do_deinit): New
 	(assuan_pipe_connect): and set them into the context.
 	* assuan-socket-connect.c: New.
-	
+
 	* assuan-util.c (_assuan_log_sanitized_string): New.
 
 	* assuan-pipe-server.c (assuan_init_pipe_server): Factored most
@@ -184,7 +191,7 @@
 
 	* assuan-connect.c (assuan_pipe_connect): Implemented the inital
 	handshake.
-	* assuan-client.c (read_from_server): Renamed to  
+	* assuan-client.c (read_from_server): Renamed to
 	(_assuan_read_from_server): this and made external.
 
 	* assuan-listen.c (assuan_set_hello_line): New.
@@ -231,11 +238,11 @@
 	than a line.
 	* assuan-defs.h: Add space in the context for this.
 
-	
+
      ************************************************************
-     * Please note that this is a stripped down Assuan version.  *
-     ************************************************************	
-	
+     * Please note that this is a stripped down Assuan version. *
+     ************************************************************
+
  Copyright 2001, 2002, 2004 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives

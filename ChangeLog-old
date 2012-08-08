@@ -1,0 +1,2175 @@
+2012-08-08  Werner Koch  <wk@gnupg.org>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on August 8, 2012 we put change information only in the GIT commit
+	log, and generate a top-level ChangeLog file from logs at "make
+	dist".  See doc/HACKING for details.
+
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Change bug report address to the BTS.  Fix
+	autoconf warnings.
+
+2011-06-28  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/gtksecentry.c (PROP_EDITING_CANCELED): New.
+	(gtk_secure_entry_class_init, gtk_secure_entry_set_property)
+	(gtk_secure_entry_get_property): Implement as dummy it to get rid
+	of a runtime warning.
+
+2010-12-16  Werner Koch  <wk@g10code.com>
+
+	Release 0.8.1.
+
+	* doc/pinentry.texi: Remove the custom font setting for underscores.
+
+	Update to automake 1.10.
+
+	* missing, config.guess, config.sub: Update from GnuPG.
+
+	* w32/main.c (debugfp): Define to stderr.
+	(raise_sip) [!W32CE]: Make it a dummy function.
+
+	* qt4/pinentrydialog.cpp (raiseWindow): Use SetForegroundWindow
+	API directly.
+	(SetForegroundWindowEx): Comment out.
+
+2010-10-19  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.c (pinentry_have_display): Also detect
+	--display=DISPID.
+
+2010-10-12  Werner Koch  <wk@g10code.com>
+
+	* qt/main.cpp (escape_accel): New.  Adapt from from qt4/.
+	(qt_cmd_handler): Implement default-ok and default-cancel.  Escape
+	accelerators.
+
+2010-09-30  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add CLOSE_BUTTON.
+	* pinentry/pinentry.c (cmd_getpin, cmd_confirm, cmd_message): Send
+	BUTTON_INFO.
+	* gtk+-2/pinentry-gtk-2.c (delete_event): Set close_button.
+
+2010-09-22  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Make use of
+	default_cancel and default_ok.
+
+2010-08-19  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/Makefile.am (pinentry_gtk_2_SOURCES): Add gseal-gtk-compat.h.
+
+	* configure.ac (AH_TOP, AH_BOTTOM): New.  Define
+	GPG_ERR_ENABLE_ERRNO_MACROS.
+
+2010-06-08  Marc Mutz  <marc.mutz@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Add WindowStaysOnTopHint.
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Add WStyle_StaysOnTop.
+
+2010-05-12  Guido Günther  <agx@sigxcpu.org>  (wk)
+
+	* gtk+-2/gtksecentry.c: Make -DSEAL safe.
+	* gtk+-2/gseal-gtk-compat.h: New.
+	* gtk+-2/gtksecentry.h: Include new header.
+
+2010-05-07  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Keep the window above
+	and make sure it has the focus.  Fixes bug#1162.
+
+2010-05-03  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use
+	visibility-notify-event instead of map-event.  Suggested by Ed
+	Marten.
+
+2010-04-26  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (grab_failed): New.
+	(grab_keyboard): s/g_error/g_critical/.  Set GRAB_FAILED.
+	(gtk_cmd_handler): Return Cancel if a grab failed.
+
+2010-04-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c: Move include config.h to top!
+
+2010-04-19  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/gtksecentry.c (gtk_secure_entry_delete_cb)
+	(gtk_secure_entry_toggle_overwrite, activate_cb)
+	(unichar_chosen_func): Comment out these unused functions.
+	(secentry_malloc): Fix format string error.
+
+2010-04-19  Stanislav Ochotnicky  <sochotnicky@redhat.com>  (wk)
+
+	* gtk+-2/pinentry-gtk-2.c (ungrab_keyboard): Fix segv when using
+	option -g.
+
+2010-04-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* secmem/util.c: Fix inverted test.
+
+2010-04-12  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c (dlg_proc): Act on VK_RETURN.
+
+	* w32/pinentry-w32.rc: Include config.h. Add basic support for
+	small screens as used with WindowsCE.
+
+	* w32/Makefile.am (pinentry-w32.o): Add -I.. to the command.
+
+2010-04-08  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.c [W32CE]: Do not include errno.h and
+	locale.h.
+	(pinentry_have_display) [W32CE]: Do not use getenv.
+	(pinentry_parse_opts) [W32CE]: No error diagnostics due to missing
+	errno.
+	(sleep) [W32CE]: New.
+	(option_handler) [W32CE]: Ignore option --debug-wait.
+	(getpid) [W32CE]: New.
+	(pinentry_loop): Use STDIN_FILENO and STDOUT_FILENO.
+	(pinentry_loop): Factor code out to ...
+	(pinentry_loop2): New.
+	* w32/main.c (w32_strerror) [W32CE]: Do not use FormatMessage.
+	(main) [W32CE]: Do not use LockSetForegroundWindow.
+	(set_dlg_item_text): Use wchar_t for static string.
+	* secmem/util.c [W32CE]: Do not include errno.h.
+	(xwrite) [W32CE]: Shortcut EINTR loop.
+
+2010-04-07  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Modernized.
+
+2010-03-03  Werner Koch  <wk@g10code.com>
+
+	Release 0.8.0.
+
+2010-03-02  Werner Koch  <wk@g10code.com>
+
+	* qt4/main.cpp (from_utf8): Add extra braces for clarity.
+	(main): Copy the fixed --display string.
+
+2010-02-25  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (from_utf8): don't throw InvalidUtf8(); for now,
+	fall back to QString::fromLocal8Bit()
+
+2010-02-22  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (InvalidUtf8): New exception class.
+	(from_utf8): wrapper around QString::fromUtf8 throwing
+	InvalidUtf8.
+	(qt_cmd_handler): Use from_utf8 instead of QString::fromUtf8.
+	(qt_cmd_handler_ex): New wrapper around qt_cmd_handler.
+	(pinentry_cmd_handler): Use qt_cmd_handler_ex.
+
+	* qt4/main.cpp (qt_cmd_handler): Also handle accels in
+	SET{OK,NOTOK,CANCEL} string.
+
+2010-02-19  Marc Mutz  <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp (qt_cmd_handler), qt4/pinentrydialog.cpp
+	(PinentryDialog::PinEntryDialog): Use the button icons that come
+	with Qt.
+
+	* qt4/pinentry_qrc, qt4/qrc_pinentry.cpp: New.
+	* qt4/gtk-cancel.png, qt4/gtk-ok.png: Removed.
+	* qt4/Makefile.am (EXTRA_DIST): Remove the GTK icons, add
+	pinentry.qrc.
+	(pinentry_qt4_SOURCES): add qrc_pinentry.cpp.
+
+	* qt4/main.cpp (qt_cmd_handler): Remove i18n support again.
+
+	* qt4/pinentrydialog.cpp (PinentryDialog::PinentryDialog):
+	set PIN entry field as buddy of its prompt
+
+	* qt4/main.cpp (escape_accel): New.
+	(qt_cmd_handler): use it on default_cancel, default_ok, prompt.
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp
+	(PinEntryDialog::PinEntryDialog): don't use a nested vbox layout.
+
+	* qt4/pinentrydialog.h: replace include file with forward decl.
+	* qt4/pinentrydialog.cpp: add include file here.
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp
+	(PinentryDialog::keyPressEvent()): Removed.
+
+	* qt/4pinentrydialog.cpp (PinEntryDialog::PinEntryDialog): use
+	QLayout::SetFixedSize instead of rolling our own solution.
+	* qt4/pinentrydialog.h: (PinentryDialog::setFixedSize): Removed.
+	* qt4/pinentrydialog.moc: Re-created.
+
+	* qt4/main.cpp: (qt_cmd_handler) make Cancel the default button
+	for CONFIRM
+
+	* qt4/main.cpp: (qt_cmd_handler) implement the confirm/message
+	logic correctly
+
+	* qt4/pinentrydialog.h (accepted, rejected): Removed; already
+	provided by base class.
+	* qt4/pinentrydialog.cpp (PinEntryDialog::PinEntryDialog): Use
+	QDialog::{accepted,rejected}.
+	* qt4/pinentrydialog.moc: Re-created.
+
+	* qt4/pinentrydialog.moc, qt4/qsecurelineedit.moc: Make compatible
+	with newer Qt version.
+
+2010-02-19  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Allow mnemonics in
+	button labels.
+
+	* pinentry/pinentry.h (struct pinentry): Add default_prompt.
+	* pinentry/pinentry.c (option_handler): Support "default-prompt".
+	(cmd_getpin): Use it.
+	(noprefix_strdup): Remove; should be done by caller.
+
+2010-02-17  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add default_ok and
+	default_cancel.
+	* pinentry/pinentry.c (noprefix_strdup): New.
+	(option_handler): Support "default-ok" and "default-cancel".
+	(strcpy_escaped): Change second arg from unsigend char to char.
+
+2010-02-16  Werner Koch  <wk@g10code.com>
+
+	* qt4/document-encrypt.png, qt4/gtk-cancel.png, qt4/gtk-ok.png: New.
+	* qt4/Makefile.am (EXTRA_DIST): Add them.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/main.cpp, qt/pinentrydialog.cpp: If the style says so,
+	set (GTK) icons on OK and Cancel buttons.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/main.cpp: Use an explicit QMessageBox instead of the
+	'information' convenience method.  We do this for two reasons:
+	1. So we can set our own icon (icon()).  2. So we can call our
+	raiseWindow() function on it.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>
+
+	* qt4/main.cpp: Use title. Use Qt translation of "OK" and "Cancel"
+
+	* qt4/pinentrydialog.cpp: Don't show the question-mark icon in the
+	window title.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp: Use the
+	document-encrypt icon instead of the
+	QMessageBox::{Information,Critical} ones.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/pinentrydialog.cpp: Properly show/hide optional widgets.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>
+
+	* qt4/pinentrydialog.cpp: Set text color or error label to red.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	Also attributed to Marc Mutz <marc@kdab.com>.
+
+	* qt4/pinentrydialog.cpp: Gather scattered layouting code, use a
+	single gridlayout for all, and use QDialogButtonBox.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/pinentrydialog.cpp: Call SetForegroundWindow on showEvent()
+	and set a fixed size on the dialog.
+
+	* qt4/main.cpp: Set document-encrypt as the window icon.
+
+2010-02-15  Marc Mutz <marc@kdab.com>  (wk)
+
+	* qt4/main.cpp: Load the correct Qt translation file based on
+	either lc_messages or the current locale.
+
+	* qt4/main.cpp: Use pinentry_t->parent_wid also for message-box
+	case.
+
+	* qt4/main.cpp: Properly delete the QApplication.
+
+2010-02-15  Christoph Schleifenbaum <christoph@kdab.com>  (wk)
+
+	* qt4/main.cpp: Remove guard clause with impossible condition.
+
+	* qt4/main.cpp: Respect pinentry_t->title.
+
+	* qt4/main.cpp: Include config.h.
+
+2009-12-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gtk+-2/gtksecentry.c: Don't translate properties.
+	Patch by Guido Guenther <agx@sigxcpu.org>.
+
+2009-12-02  Werner Koch  <wk@g10code.com>
+
+	* secmem/util.c: Re-indent function names.
+	(TEMP_FAILURE_RETRY): Remove because it is non-portable.
+	(xwrite): Open code the EINTR retry.
+	* pinentry/pinentry-curses.c (dialog_run): Replace '\e' by a
+	standard escape.  Reported by Wyllys Ingersoll.
+
+2009-08-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c [!ENABLE_ENHANCED]: Remove option enhanced.
+	* pinentry/pinentry.h (struct pinentry) [!ENABLE_ENHANCED]: Remove
+	member enhanced.
+	* gtk+-2/pinentry-gtk-2.c: New macro.
+	(button_clicked, create_window) [!ENABLE_ENHANCED]: Disable code.
+	* gtk/pinentry-gtk.c (button_clicked, create_window): Likewise.
+	* doc/pinentry.texi (Using pinentry): Comment out enhanced option.
+
+2009-07-10  Till Adam  <till@kdab.com>
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Redesign the dialog to
+	be prettier.
+
+2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Post-release changes.
+
+	Release version 0.7.6.
+
+	* configure.ac: Bump version.
+
+2009-01-29  Bernhard Reiter  <bernhard@intevation.de>
+
+	* doc/pinentry.texi (Using pinentry): Fix typo.
+
+2009-04-24  Guido Guenther <agx@sigxcpu.org>
+
+	* gtk+-2/gtksecentry.c (gtk_secure_entry_class_init): Don't
+	install "gtk-entry-select-on-focus" settings property since it
+	clashes with the one from GtkEntry.
+	(gtk_secure_entry_grab_focus): Create a temporary GtkEntry widget
+	to read that value instead. Allows to have GtkEntry and
+	GtkSecureEntry in the same process.
+
+2009-06-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	Suggested by Simon McVittie:
+	* gtk+-2/gtksecentry.c (g_malloc, g_realloc, g_free): Renamed to
+	secentry_malloc, secentry_realloc.
+	(g_malloc0): Removed.
+	(GMALLOC_SIZE): Move to ...
+	* gtk+-2/gtksecentry.h (GMALLOC_SIZE): ... here.
+	(secentry_malloc, secentry_realloc, secentry_free): New prototypes.
+	* gtk+-2/pinentry-gtk-2.c (main): Set memory allocation vtable.
+
+2009-05-04  Till Adam <till@kdab.net>
+
+	* qt4/main.cpp (qt_cmd_handler): Use WId instead of HWND.
+
+2009-04-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New member NOTOK.
+	Rename member USER_CLOSED to CANCELED.
+	* pinentry/pinentry.c: Add initializer for NOTOK.
+	(register_commands): Add SETNOTOK.
+	* pinentry/pinentry-curses.c (STRING_NOTOK): New macro.
+	(dialog_pos_t): New value DIALOG_POS_NOTOK.
+	(struct dialog): New members notok, notok_x, notok_y.
+	(dialog_create): Implement NOTOK.
+	(dialog_switch_pos): Likewise.
+	(dialog_run): Likewise.
+	* gtk+-2/pinentry-gtk-2.c: Rename confirm_yes to confirm_value.
+	(confirm_value_t): New type.  Use it for confirm_value.
+	(window_closed): Remove.
+	(confirm_button_clicked): Set confirm_value.
+	(create_window): Implement NOTOK.
+	(gtk_cmd_handler): Implement cancel behaviour a bit differently.
+
+2009-04-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt4/qsecurelineedit.h (QSecureLineEdit): Don't export.
+
+2009-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Portability fixes.
+
+2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add qsecurelineedit_p.h.
+
+	* secmem/Makefile.am (libsecmem_a_SOURCES): Add secmem++.h.
+	* qt4/Makefile.am (pinentry_qt4_SOURCES): Add pinentrydialog.moc
+	and qsecurelineedit.
+
+	* configure.ac: Incorporate revision number in version string.
+
+2009-04-02  Till Adam <till@kdab.net>
+
+	* qt4/qsecurelineedit.moc, qt4/main.cpp, qt4/pinentrydialog.moc,
+	qt4/qsecurelineedit.cpp, qt4/pinentrydialog.cpp,
+	qt4/pinentrydialog.h: Implement quality bar and grabbing.
+
+	* qt4/pinentrydialog.cpp (PinEntryDialog): Enable word wrapping.
+
+2009-04-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt4/main.cpp (qt_cmd_handler): Cast window handle ID.
+
+2009-03-19  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add field user_closed.
+	* pinentry/pinentry.c (cmd_getpin, cmd_confirm, cmd_message):
+	Reset this field.
+	(cmd_confirm): Return cancel if the user closed the window.
+	* gtk+-2/pinentry-gtk-2.c (window_closed): New.
+	(gtk_cmd_handler, delete_event): Set it.
+
+2009-02-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* secmem/secmem++.h: New file.
+	* qt4/Makefile.am, qt4/main.cpp, qt4/pinentrydialog.cpp,
+	qt4/pinentrydialog.h: Changes to use secure memory.
+	* qt4/pinentrydialog.moc, qt4/qsecurelineedit.moc: New files.
+	* qt4/qsecurelineedit.cpp, qt4/qsecurelineedit.h,
+	qt4/qsecurelineedit_p.h, qt4/secstring.h, qt4/secstring.cpp: New
+	files.
+	Submitted by Marc Mutz <marc@kdab.net>.
+
+2008-12-08  Werner Koch  <wk@g10code.com>
+
+	* qt/main.cpp (qt_cmd_handler) <!want_pass>: Translate from utf8.
+	* qt4/main.cpp (qt_cmd_handler) <!want_pass>: Translate from utf8.
+
+2008-11-12  Ludovic Rousseau <ludovic.rousseau@gmail.com>  (wk)
+
+	* pinentry/pinentry.h (struct pinentry): Add field TITLE.
+	* pinentry/pinentry.c (cmd_settitle): New.
+	(register_commands): Add command SETTITLE.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Set the title.
+
+2008-10-17  Werner Koch  <wk@g10code.com>
+
+	* secmem/memory.h: Add C++ extern declaration.
+
+	* secmem/secmem.c (secmem_get_max_size): New.
+
+2008-07-25  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* qt4/Makefile.am (DISTCLEANFILES): Rename to CLEANFILES.
+	(BUILD_SOURCES): New.
+
+2008-07-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Prefer pinentry gtk2 over gtk.  Now also choose
+	qt4 (after qt and before w32 native).
+	* README: Document Qt.
+
+2008-07-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt4/pinentrydialog.h, qt4/pinentrydialog.cpp, qt4/main.cpp,
+	qt4/Makefile.am: New files.
+	* configure.ac: Add check for Qt4.
+	(AC_CONFIG_FILES): Add qt4/Makefile.am.
+	* Makefile.am (pinentry_qt4): New variable.
+	(SUBDIRS): Add ${pinentry_qt4}.
+
+2008-07-23  Werner Koch  <wk@g10code.com>
+
+	* secmem/secmem.c (secmem_init): Fix apostrophe in error
+	message. Reported by Petr Uzel.
+
+2008-05-05  Marcus Brinkmann  <marcus@ulysses.g10code.com>
+
+	* gtk+-2/gtksecentry.c (GMALLOC_SIZE): New symbol.
+	(g_malloc, g_malloc0, g_realloc): Use GMALLOC_SIZE instead of
+	gulong for size attribute.
+
+2008-03-03  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Install realize callback.
+	(ungrab_keyboard): Unmake dialog transient.
+	(make_transient): New function.
+	Submitted by Joachim Breitner.
+
+2008-02-15  Werner Koch  <wk@g10code.com>
+
+	Release 0.7.4.
+
+2008-02-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for -Wno-pointer-sign.
+
+	* pinentry/pinentry.c (cmd_getinfo): New.
+	(register_commands): Register it.
+
+2008-01-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Use PKG_CONFIG instead of PKGCONFIG and
+	pkg-config.  Use AC_PATH_PROG instead of AC_CHECK_PROG.
+
+	* Makefile.am (install-exec-local): Add exe extension to link.
+
+2007-11-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.7.4.
+
+2007-11-19  Werner Koch  <wk@g10code.com>
+
+	* doc/pinentry.texi (Protocol): Typo fixes by Bernhard Herzog.
+	Describe SETQUALITYBAR_TT.
+
+2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Fixed crash
+
+2007-11-19  Werner Koch  <wk@g10code.com>
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use again map-event and
+	unmap-event as this works on my setup far more reliable than
+	expose-event/no-expose-event.
+
+	* gtk+-2/gtksecentry.c (get_cursor_time): s/time/blinktime/ t
+	avoid shadowing warning.
+
+	* pinentry/pinentry.h (struct pinentry): Change QUALITY_BAR to a
+	char ptr.
+	(struct pinentry): Add QUALITY_BAR_TT.
+	* pinentry/pinentry.c (cmd_setqualitybar): Allow to set a label text.
+	(cmd_setqualitybar_tt): New.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Take label and tooltip
+	from global.
+	* qt/pinentrydialog.h (setQualityBar, setQualityBarTT)
+	(_quality_bar_label): New.
+	* qt/pinentrydialog.cpp (setQualityBar, setQualityBarTT): New.
+	(PinEntryDialog): Remove setting of tooltip.
+
+	* qt/main.cpp (qt_cmd_handler): Propagate quality bar label and tootip.
+
+2007-11-19  Bernhard Herzog  <bernhard.herzog@intevation.de>  (wk)
+
+	* qt/pinentrydialog.cpp (PinEntryDialog): Move the quality bar
+	below the text entry and align them properly.  Show a tooltip.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Ditto.  Don't let it
+	change its height.
+	(QUALITYBAR_EMPTY_TEXT): New.
+
+2007-09-18  Werner Koch  <wk@g10code.com>
+
+	* qt/secqlineedit.h (SecQLineEdit): New signal textModified.
+	* qt/secqlineedit.cpp (finishChange): Emit it.
+	* qt/pinentrydialog.cpp (setPinentryInfo): New.
+	(PinEntryDialog): Add arg ENABLE_QUALITY_BAR.
+	* qt/pinentrydialog.h (setPinentryInfo): New.
+	(PinEntryDialog): Add arg ENABLE_QUALITY_BAR.
+
+	* pinentry/pinentry.h (struct pinentry): Add member QUALITY_BAR
+	and CTX_ASSUAN.
+	* pinentry/pinentry.c (cmd_setqualitybar): New.
+	(copy_and_escape): New.
+	(pinentry_inq_quality): New.
+
+2007-07-09  Werner Koch  <wk@g10code.com>
+
+	* doc/pinentry.texi: Fixed direntry syntax.
+
+	* configure.ac: Add --without-libcap.  From the Gentoo patch archive.
+
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use expose-event
+	instead of map-event.  From Alon Bar-Lev.
+
+2007-07-06  Werner Koch  <wk@g10code.com>
+
+	Released 0.7.3.
+
+	* config.sub, config.guess: Updated from current Savannah CVS.
+
+2007-06-27  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c: Revamped the SetFocus stuff.  It is all not that easy.
+
+2007-06-26  Werner Koch  <wk@g10code.com>
+
+	* w32/Makefile.am (pinentry_w32_LDFLAGS): Add -mconsole again.
+
+	* w32/main.c (dlg_proc): Set focus.
+	(resize_button): New.  No code yet.
+	(dlg_proc): Call it for the buttons.
+	(w32_cmd_handler): Restore old foreground window.
+
+2007-06-20  Werner Koch  <wk@g10code.com>
+
+	* w32/Makefile.am (pinentry_w32_LDFLAGS): Remove -mconsole.
+
+	* w32/main.c (wchar_to_utf8): New.
+	(ok_button_clicked): Use it.
+	(utf8_to_wchar): New.
+	(set_dlg_item_text): New.
+	(dlg_proc): Use new function so that we are able to correctly
+	display all prompts.
+	(main): Load LockSetForegroundWindow.
+	(dlg_proc): Call LockSetForegroundWindow via its fnc ptr.
+	(center_window): New.  Taken from GPGol.
+	(dlg_proc): Call it.
+	(w32_cmd_handler): Revamped the confirm mode.
+
+2007-06-18  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c (dlg_proc): Call LockSetForegroundWindow.
+
+	* Makefile.am (signed-dist, %.sig): Remove.
+
+	* autogen.sh: Modernized.
+
+2007-05-10  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (pinentry_color_t): New type.
+	(struct pinentry): New members COLOR_FG, COLOR_FG_BRIGHT,
+	COLOR_BG, COLOR_SO.
+	* pinentry/pinentry.c (pinentry_parse_opts): Support new option --colors.
+	(parse_color): New function.
+	* pinentry/pinentry-curses.c (USE_COLORS): New macro.
+	(pinentry_color): New static variable.
+	(dialog_create): Redo color management.
+
+	* pinentry/pinentry-curses.c (dialog_create): Re-add calculation
+	of cancel button position.  Adjust calculation of OK button
+	position if it is the only one used.
+
+2007-04-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/secqlineedit.h (SecQLineEdit::contextMenuEvent,
+	SecQLineEdit::createPopupMenu): Remove prototype.
+	* qt/secqlineedit.cpp (SecQLineEdit::contextMenuEvent,
+	SecQLineEdit::createPopupMenu): Remove implementation.
+	Submitted by Tobias Koenig <tokoe@kde.org>.
+
+2007-02-14  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.h (struct pinentry): Add TOUCH_FILE.
+	* pinentry/pinentry.c (option_handler): New option "touch-file".
+	(pinentry_have_display): Ignore an empty DISPLAY.
+	* pinentry/pinentry-curses.c (do_touch_file): New.
+	(curses_cmd_handler): Call it.
+	* configure.ac: Check for utime.h.
+
+2007-01-24  Werner Koch  <wk@g10code.com>
+
+	* pinentry/pinentry.c (cmd_message): New.
+	(cmd_confirm): New command option --one-button.
+	(cmd_getpin): Zeroise ONE_BUTTON.
+	* pinentry/pinentry.h (struct pinentry): Add field ONE_BUTTON.
+	* gtk/pinentry-gtk.c (create_window): Take care of new option.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Ditto.
+	* pinentry/pinentry-curses.c (dialog_create): Ditto.
+	(dialog_create, dialog_switch_pos): Allow CANCEL to be optional.
+
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* secmem/secmem.c (init_pool): Close FD after establishing the
+	mapping.
+
+2005-09-28  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (PINENTRY_GTK): Error out if iconv is not found but
+	needed.
+
+	* config.rpath: New file from gettext.  Needed by iconv.m4.
+
+2005-07-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (dialog_switch_pos): Set the cursor
+	state to invisible before moving around.  Move the cursor to the
+	beginning of the dialog buttons for accessibility.
+
+2005-06-16  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (dialog_run): Only convert pin if a
+	pin actually exists.
+
+2005-01-27  Werner Koch  <wk@g10code.com>
+
+	Released 0.7.2.
+
+	* gtk+-2/Makefile.am: Removed padlock-keyhole.xpm.
+
+	* configure.ac: Use AC_GNU_SOURCE instead of the custom define.
+	Prefer gtk2 pinentry over qt.
+
+2005-01-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* doc/pinentry.texi: Fix spelling errors.
+	Submitted by Ville Skyttä.
+
+2004-12-23  Werner Koch  <wk@g10code.com>
+
+	* w32/pinentry-w32.rc: Remove the default texts for description,
+	prompt and error.  Make it system modal.  Enlarge the description
+	field.
+
+2004-12-22  Timo Schulz  <twoaday@g10code.com>
+
+	* w32/main.c: Remove all helper functions and use a callback
+	to set the dialog items directly.
+	(dlg_proc): Set 'result' to -1 to indicate cancel.
+	(ok_button_clicked): Adjusted. Set 'result' to the len of
+	the PIN to indicate success.
+
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	* w32/main.c: Simplified.
+	* w32/dialog.h, w32/dialog.c, w32/controller.h, w32/controller.c:
+	Removed
+
+	* w32/resource.h, w32/pinentry-w32.rc, w32/main.c, w32/dialog.h
+	* w32/dialog.c, w32/controller.h, w32/controller.c
+	* w32/Makefile.am: New.  Based on Timo's work.
+
+	Update to automake 1.9.
+
+	* autogen.sh (configure_ac): Add --build-w32 option.
+	* Makefile.am: Support for the W32 pinentry.
+	* configure.ac: Ditto.  Reformatted some error messages.
+	Define the usual conditionals for W32.
+	Check for a couple of more usually required headers.
+
+	* pinentry/pinentry.h (sleep) [W32]: New.
+
+	* pinentry/pinentry.c: Include langinfo.h only if available.
+	(pinentry_loop) [DOSISH]: Don't do uid check.
+
+	* secmem/util.c [DOSISH]: Disable UID stuff.
+
+2004-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4 (IU_LIB_NCURSES, IU_LIB_CURSES, IU_LIB_TERMCAP):
+	Moved to m4/curses.m4.
+	(AM_ICONV): Moved to m4/iconv.m4.
+	(AM_PATH_GLIB): Moved to m4/glib.m4.
+	(QT_FIND_FILE, QT_PATH_MOC, QT_PATH_X, QT_PRINT_PROGRAM,
+	QT_CHECK_VERSION, QT_PATH_1_3, QT_PATH, QT_CHECK_COMPILER_FLAG,
+	QT_REMOVE_FORBIDDEN, QT_VALIDIFY_CXXFLAGS, QT_CHECK_COMPILERS,
+	QT_CHECK_RPATH, QT_CHECK_LIBPTHREAD, QT_CHECK_PTHREAD_OPTION,
+	QT_CHECK_THREADING): Move to m4/qt.m4.
+
+2004-09-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/Makefile.am (pinentry_qt_LDFLAGS): Add $(QT_RPATH).
+	Requested by Leo Savernik <l.savernik@aon.at>.
+
+2004-09-02  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gtk+-2/padlock-keyhole.xpm: File removed.
+	* gtk+-2/pinentry-gtk-2.c (create_window): Use stock icon.
+	* gtk+-2/gtksecentry.h, gtk+-2/gtksecentry.c: Fix copyright notice.
+
+	Submitted by Albrecht Dress albrecht.dress@arcor.de.
+
+2004-08-17  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Invoke AC_PROG_LN_S.
+	(PINENTRY_DEFAULT): New variable.  Substitute it.  Fail if no
+	default can be determined.
+	* Makefile.am (install-exec-local): Install pinentry default link.
+
+	* configure.ac: Check for Gtk+-2.
+	* gtk+-2: New directory with gtk+-2 pinentry.
+	* gtk+-2/Makefile.am, gtk+-2/gtksecentry.h, gtk+-2/gtksecentry.c,
+	gtk+-2/pinentry-gtk-2.c, gtk+-2/padlock-keyhole.xpm: New files.
+	* Makefile.am (pinentry_gtk_2): New variable.
+	(SUBDIRS): Add pinentry_gtk_2.
+
+	Submitted by Albrecht Dress albrecht.dress@arcor.de.
+
+2004-08-04  Werner Koch  <wk@g10code.de>
+
+	* pinentry/pinentry.c (usage): Print help to stdout.
+
+2004-07-30  Moritz Schulte  <moritz@g10code.com>
+
+	* qt/Makefile.am (ncurses_include): Removed
+	-I$(top_srcdir)/pinentry ...
+	(AM_CPPFLAGS): ... added: -I$(top_srcdir)/pinentry.  Thanks to
+	Peter Eisentraut.
+
+	* pinentry/pinentry.c (pinentry_utf8_to_local): Declare INPUT
+	const.
+	(pinentry_local_to_utf8): Likewise.
+	(pinentry_utf8_to_local, pinentry_local_to_utf8): Compile only, if
+	either Curses or GTK+ support is enabled.
+	* configure.ac: Do also check for libiconv when the GTK+ version
+	of pinentry is to be build.  Define PINENTRY_CURSES, PINENTRY_GTK,
+	PINENTRY_QT depending on which versions of pinentry should be
+	build.
+
+2004-05-21  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4 (QT_CHECK_DIRECT): Removed.
+	(QT_PATH_1_3): Do never invoke QT_CHECK_DIRECT.
+
+2004-04-21  Werner Koch  <wk@gnupg.org>
+
+	Released 0.7.1.
+
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* secmem/secmem.c [!ORIGINAL_GPG_VERSION]: Include util.h for some
+	typedefs and protos.
+	(secmem_free, secmem_term): Use wipememory2 instead of memset.
+
+	* autogen.sh (configure_ac): Fixed version check (s/==/=/).
+
+2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
+
+	* autogen.sh: Added ACLOCAL_FLAGS.
+
+2004-02-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/main.cpp: Include "pinentry.h", not <pinentry.h>.
+
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (fopencookie): Remove that test.
+
+2004-01-28  Moritz Schulte  <mo@g10code.com>
+
+	* gtk/gtksecentry.c:
+	(gtk_secure_entry_key_press): Treat GDK_KP_Enter just like
+	GDK_Return.
+
+2004-01-18  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/secqstring.cpp: Do not include "private/qunicodetables_p.h".
+	(isRightToLeft): De-optimize direction query.
+
+	* qt/secqinternal_p.h, qt/secqinternal.cpp: New files.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Add secqinternal_p.h
+	and secqinternal.cpp.
+	(EXTRA_DIST): Add README.SecQ.
+	* qt/secqlineedit.cpp: Include "secqinternal_p.h".
+	(drawContents): Use SecQSharedDoubleBuffer.
+
+2004-01-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Early check for a c++ compiler.
+
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	Released 0.7.0.
+
+	Added Manifest files to all directories.
+
+2003-12-22  Werner Koch  <wk@gnupg.org>
+
+	* qt/main.cpp: Include errno.h.
+	(main): Translate the --display option to -display, so that the Qt
+	init code can grasp it.
+
+	* doc/ChangeLog: Removed and merged with this file.
+	* doc/pinentry.texi: Cleaned up.
+	* doc/fdl.texi: Removed.
+
+	* pinentry/pinentry.h (struct pinentry): Added LOCALE_ERR.
+	* gtk/pinentry-gtk.c (button_clicked): Set the LOCAE_ERR flag.
+	* pinentry/pinentry-curses.c (dialog_run): Ditto.
+	* pinentry/pinentry.c (cmd_getpin, cmd_confirm): Check this flag.
+	(pinentry_local_to_utf8): Release the correct buffer in the error
+	case. Print diagnostics.
+	(pinentry_utf8_to_local): Print diagnostics.
+	(pinentry_parse_opts): Make short options work.
+	(pinentry_utf8_to_local): Pass nl_langinfo to iconv_open.
+
+	* gtk/pinentry-gtk.c (button_clicked): Use the right value as
+	input for the conversion.
+
+	* pinentry/pinentry.c: New variable THIS_PGMNAME.
+	(pinentry_init): Add arg PGMNAME and store it.  Use it at all
+	marked placed instead of the constant "pinentry".
+	(usage): Use it here too.
+	* curses/pinentry-curses.c (main): Call pinentry_init with our name.
+	* qt/main.cpp (main): Ditto.
+	* gtk/pinentry-gtk.c (main): Ditto.
+
+	* configure.ac: Check for mmap.
+
+	* secmem/util.h (wipememory2,wipememory,wipe): New.
+	* secmem/util.c (wipe): Removed.
+	* secmem/util.c (lower_privs, raise_privs): Commented out.
+
+	* pinentry/pinentry.c (pinentry_loop): Add paranoia check for
+	dropped privs.
+
+	* secmem/secmem.c (lock_pool): Cleanup syntax of cpp directives.
+
+	* gtk/pinentry-gtk.c (main): Print package name in the version line.
+	* curses/pinentry-curses.c (main): Ditto.
+	* qt/main.cpp (main): Ditto. Fixed typo.
+
+	* gtk/pinentry-gtk.c: Include memory.h.
+
+2003-12-20  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New member PARENT_WID.
+	* pinentry/pinentry.c (pinentry): Add new member here.
+	(usage): Add --parent-wid.
+	(pinentry_parse_opts): Add case for "parent-wid".
+	(option_handler): Same here.
+
+2003-12-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c (cmd_setcancel): Use strcpy_escaped.
+	(cmd_setok): Likewise.
+	(cmd_setprompt): Likewise.
+	(pinentry_utf8_to_local): Don't use
+	nl_langinfo, but just lc_ctype directly.
+	* pinentry/pinentry.c (cmd_getpin): Do not convert passphrase to
+	UTF-8 here.
+	* gtk/pinentry-gtk.c (button_clicked): Convert passphrase to UTF8
+	here.
+	* pinentry/pinentry-curses.c (dialog_run): Likewise.
+
+2003-12-14  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.c (pinentry_init): Register secmem_term as
+	atexit function.  Set assuan malloc hooks to secmem.
+	(pinentry_parse_opts): Add break statement to silence gcc warning.
+	* pinentry/pinentry.c (cmd_getpin): If canceled, release and clear
+	PINENTRY->pin nevertheless.
+
+	* acinclude.m4 (qt_incdirs): Add /usr/include/qt3.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Remove cppmemory.h,
+	cppmemory.cpp, pinentrycontroller.h, pinentrycontroller.cpp.
+	(nodist_pinentry_qt_SOURCES): Remove pinentrycontroller.moc.cpp.
+	(libcurses): Move ../pinentry/libpinentry.a from here to ...
+	(pinentry_qt_LDADD): ... here.  Change order a bit to make it
+	work.
+	* qt/cppmemory.h, qt/cppmemory.cpp, qt/pinentrycontroller.h,
+	qt/pinentrycontroller.cpp: Files removed.
+	* qt/secqstring.h, qt/secqstring.cpp, secqlineedit.h,
+	secqlineedit.cpp: New files.
+	* qt/Makefile.am (pinentry_qt_SOURCES): Add secqstring.h,
+	secqstring.cpp, secqlineedit.h, and secqlineedit.cpp.
+	(nodist_pinentry_qt_SOURCES): Add secqlineedit.moc.cpp.
+	* qt/main.cpp: Do not include "memory.h" or "secmem-util.h", nor
+	<new> or "pinentrycontroller.h".  Include <qapplication.h>,
+	<qmessagebox.h>, <qwidget.h> and "secqstring.h".  Always include
+	<pinentry.h>.
+	[USE_KDE]: Remove all instances.
+	(curses_main): Function removed.
+	(my_new_handler): Likewise.
+	(qt_main): Likewise.
+	(qt_cmd_handler): New function.
+	(pinentry_cmd_handler): Define always (to qt_cmd_handler).
+	(main): Rewritten.
+	* qt/pinentrydialog.cpp: Do not include <qlineedit.h>, but
+	"secqlineedit.h".
+	(PinEntryDialog::PinEntryDialog): Make _edit a SecQLineEdit
+	object.  Connect accepted SIGNAL to accept SLOT, and rejected
+	SIGNAL to reject SLOT.
+	(PinEntryDialog::setText): Make argument SecQString rather than
+	QString.
+	(PinEntryDialog::text): Likewise for return value.
+	* qt/pinentrydialog.h: Declare SecQString and SecQLineEdit classes.
+	(class PinEntryDialog): Disable property text (for now).  Adjust
+	argument of setText and return value of text, as well as type of
+	_edit.
+
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* README.CVS: New.
+	* Makefile.am (EXTRA_DIST): Add README.CVS
+	(ACLOCAL_AMFLAGS): New.
+	* configure.ac: Added min_automake_versions.
+	* autogen.sh: Revamped.
+
+2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Version 0.6.10-cvs
+
+2003-04-23  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* configure.ac: Version 0.6.9
+	* qt/Makefile.am: Added moc files to DISTCLEANFILES
+	* qt/pinentrycontroller.cpp: Dont spew assuan debug stuff out on stderr.
+
+2003-03-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* qt/cppmemory.cpp, qt/main.cpp: Only override array allocation
+	  operators. This should take care of the reported memory-problems
+	  and even make pinentry-qt use a bit less memory.
+
+2003-02-15  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* qt/pinentrydialog.h, qt/pinentrydialog.cpp: Added icons
+	  for error/non-error messages.
+
+2003-02-07  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.6.8.
+
+2003-02-04  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
+
+	* qt/main.cpp: Work around '--display' option. This fixes
+	  the pinentry-qt problem reported by several people lately.
+
+2003-01-24  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Print a hint to use maintainer mode.
+
+2002-12-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry-curses.c (collect_line): New function.
+	(COPY_OUT, MAKE_BUTTON): New macros.
+	(dialog_create): Rewrite the initializing code and the description
+	calculation routine with word wrapping.
+
+2002-11-20  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.7.
+
+	* pinentry/pinentry-curses.c (dialog_create): Better truncate
+	lines than to go into an infinite loop.  We need to implement word
+	wrap.
+	(dialog_run): Add DIALOG_POS_NONE to switch so prevent a warning.
+
+2002-11-12  Werner Koch  <wk@gnupg.org>
+
+	* config.sub, config.guess: Updated from ftp.gnu.org/gnu/config
+	to version 2002-11-08.
+
+2002-11-09  Werner Koch  <wk@gnupg.org>
+
+	Released 0.6.6.
+
+2002-11-08  Werner Koch  <wk@gnupg.org>
+
+	* pinentry/pinentry-curses.c (convert_utf8_string): Renamed to
+	* pinentry/pinentry.c (pinentry_utf8_to_local): this. Changed
+	callers.
+	(pinentry_local_to_utf8): New.
+	(cmd_getpin): Convert result back to UTF-8.
+	* gtk/pinentry-gtk.c (create_utf8_label): New.
+	(create_window): Use it here to set the prompts.
+
+2002-11-06  Werner Koch  <wk@gnupg.org>
+
+	* pinentry/pinentry-curses.c (dialog_run): Fixed retrun value tests
+	for fopen.
+
+2002-11-05  Werner Koch  <wk@gnupg.org>
+
+	* secmem/util.c (init_uids): Make it a prototype.
+
+	* gtk/pinentry-gtk.c (enter_callback): Changed argument name to
+	avoid shadowing warning.
+	(create_window): Removed unused variable I.
+	(ok): Not used, commented.
+
+	* pinentry/pinentry.c: Include headers for getpid and sleep
+	prototypes.
+
+	* secmem/util.h: Correctly declare functions taking no args.
+
+	* gtk/pinentry-gtk.c: Move gtk headers to the top to avoid
+	compiler warnings about shadowing index etc.
+
+	* curses/pinentry-curses.c: Include stdio.h for the printf prototype.
+
+	* pinentry/pinentry-curses.c (dialog_switch_pos): Return a value.
+
+	* pinentry/pinentry.c (pinentry_have_display): New.
+	(pinentry_setbufferlen): Must return a value. Fixed documentation.
+	(usage): Print a question mark as a substitue for the program name.
+
+	* gtk/pinentry-gtk.c (main): use it here instead of getenv().
+	* qt/main.cpp (main): Ditto.
+
+2002-10-11  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac, Makefile.am: Added doc/ and tests for makeinfo
+
+	* doc/pinentry.texi, doc/Makefile.am: New.
+	* doc/gpl.texi, doc/fdl.texi: Added these standard files.
+
+2002-09-30  Werner Koch  <wk@gnupg.org>
+
+        Released 0.6.5.
+
+	* qt/pinentrycontroller.cpp (optionHandler): Make sure that a
+	value is returned.
+	* configure.ac: Use -Wall also for C++.
+
+2002-08-19  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Relased 0.6.4.
+
+2002-08-11  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Adapted pinentry-qt to new CONFIRM spec.
+
+2002-06-26  Werner Koch  <wk@gnupg.org>
+
+	Release 0.6.3.
+
+2002-05-24  Werner Koch  <wk@gnupg.org>
+
+	* AUTHORS: Added Marcus
+	* README: Fixed spelling of Quintuple-Agent.
+
+2002-05-13  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.6.2.
+
+	* configure.ac: Set version number to 0.6.2.
+	* NEWS: Add information for 0.6.2.
+	* README: Update for release.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Add option --enable-fallback-curses and bind it to
+	the ncurses check.  Add automake conditional
+	BUILD_LIBPINENTRY_CURSES and FALLBACK_CURSES. Add preprocessor
+	symbol FALLBACK_CURSES.
+
+	* curses/Makefile.am (AM_CPPFLAGS): Add $(NCURSES_INCLUDE).
+	(LDADD): Add ../pinentry/libpinentry-curses.a.
+	* curses/pinentry-curses.c: Include "pinentry-curses.h".
+	Moved most of the meat to ...
+	* pinentry/pinentry-curses.c: ... here.  New file.  Make all
+	functions and global variables static.
+	(dialog_cmd_handler): Rename to ...
+	(curses_cmd_handler): ... this.
+	* pinentry/pinentry-curses.h: New file.
+	* pinentry/Makefile.am (noinst_LIBRARIES)
+	[BUILD_LIBPINENTRY_CURSES]: Add libpinentry-curses.a.
+	(libpinentry_curses_a_SOURCES): New target.
+
+	* gtk/Makefile.am (INCLUDES): Moved all to ...
+	(AM_CPPFLAGS): ... here.
+	[CURSES_FALLBACK]: Define ncurses_include and libcurses.
+	(AM_CPPFLAGS): Add $(ncurses_include).
+	(LDADD): Add $(libcurses).
+	* gtk/pinentry-gtk.c: Rename TIMEOUT to TIME_OUT to avoid conflict
+	with curses.h.
+	[CURSES_FALLBACK]: Include "pinentry-curses.h".
+	(button_clicked): Likewise.
+	(create_window): Likewise.
+	(cmd_handler): Renamed to ...
+	(gtk_cmd_handler): ... this.
+	(pinentry_cmd_handler): Set to gtk_cmd_handler.
+	(main) [CURSES_FALLBACK]: Initialize GTK+ only if environment
+	variable DISPLAY is set, otherwise fall back to curses dialog.
+
+	* pinentry/pinentry.h: Protect against multiple inclusion.
+
+2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_create): Allow multi-line error
+	texts.
+
+	* pinentry/pinentry.c (cmd_seterror): Call strcpy_escaped, rather
+	than strcpy, to allow percent-escaping the error text.
+
+2002-04-25  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* pinentry-qt: Use ok and cancel value if
+	provided.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* gtk/pinentry-gtk.c (create_window): Use ok and cancel value if
+	provided.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt/pinentrycontroller.h: New members _ok and _cancel.
+	* qt/pinentrycontroller.cpp (registerCommands): Add SETOK and SETCANCEL.
+	(assuanOk): New method.
+	(assuanCancel): Likewise.
+
+2002-04-25  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_create): Grok the new ok and
+	cancel members to set the pbutton texts, rather than parsing the
+	prompt in the confirm case.
+
+	* pinentry/pinentry.h (struct pinentry): Add new members ok and cancel.
+	* pinentry/pinentry.c (register_commands): Add new commands SETOK
+	and SETCANCEL to set button texts.
+	(struct pinentry pinentry): Add initializers for new members.
+	(cmd_setok): New function.
+	(cmd_setcancel): Likewise.
+
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_create): Add '<' and '>' around
+	the user provided button texts.  Replace sizeof by strlen to fix
+	size calculation of ok and cancel button.
+
+2002-04-23  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New variables lc_ctype
+	and lc_messages.
+	* pinentry/pinentry.c (usage): New options --lc-ctype and
+	--lc-messages.
+	(pinentry_parse_opts): Likewise.
+	(option_handler): Likewise.
+	(struct pinentry pinentry): New initializers for new members.
+
+	* curses/pinentry-curses.c (convert_utf8_string): New function.
+	(struct dialog): New members ok and cancel.
+	(dialog_create): New variables ERR, DESCRIPTION, ERROR, PROMPT,
+	OK, and CANCEL.  Initialize them with the localised versions of
+	the pinentry strings.  If in confirm mode, split up the prompt at
+	'|' and use the values as button texts.  Use localised strings.
+	(dialog_switch_pos): Use localised strings.
+	(dialog_run): Free dialog strings.
+
+	* acinclude.m4 (AM_ICONV): New check from gettext.
+	* configure.ac: Run AM_ICONV if curses pinentry is build.
+	Don't check for inttypes.h, don't check size of unsigned int or
+	unsigned long.
+	(LIBCAP): Move check to interface independent part.
+
+2002-04-21  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Removed X11 dependency and use Qt for grabbing the keyboard.
+	* Clear the lineedit before asking the user for the PIN.
+
+2002-04-12  Steffen Hansen  <steffen@hrhansen.dk>
+
+	* Enable pinentry-qt if Qt is found
+
+2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* qt: New directory.
+	* qt/Makefile.am, qt/cppmemory.cpp, qt/main.cpp,
+	pinentrycontroller.cpp, qt/pinentrycontroller.h,
+	qt/pinentrydialog.cpp, qt/pinentrydialog.h: New file, copied from
+	kde/.
+	* kde: Directory removed.
+	* kde/Makefile.am, kde/cppmemory.cpp, kde/main.cpp,
+	kde/pinentry.desktop, kde/pinentrycontroller.cpp,
+	kde/pinentrycontroller.h, kde/pinentrydialog.cpp,
+	kde/pinentrydialog.h: Files removed.
+	* acinclude.m4: Removed the KE checks and completely overhauled
+	the Qt checks, putting all Qt checks in their own namespace QT_,
+	and make it declare QT_-prefixed variables for linking and
+	compilation.
+	* configure.ac: Use the new Qt checks instead the KDE checks.
+	Replace "kde" with "qt" everywhere.
+	* Makefile.am: Replace "kde" with "qt" everywhere.
+
+2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Reworked the Qt and KDE checks, cutting out a lot
+	of dead and not-so-dead wood.  Gave all KDE checks proper names.
+	* configure.ac: Use the new names for the KDE checks.
+
+2002-04-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kde/Makefile.am (EXTRA_DIST): Remove variable.
+	(install-data-local): Remove target.
+	(uninstall-local): Likewise.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	Released 0.6.0.
+
+	* configure.ac: Set version number to 0.6.
+	* NEWS: Add information for 0.6.0.
+	* secmem/Makefile.am (libsecmem_a_SOURCES): Replace secmem.h with memory.
+	* kde/Makefile.am (pinentry_kde_SOURCES): Move
+	pinentrydialog.moc.cpp and pinentrycontroller.moc.cpp to ...
+	(nodist_pinentry_kde_SOURCES): ... this new target.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: A lot of new checks more or less straight from KDE's
+	admin/acinclude.m4.in.
+	* configure.ac (AC_CANONICAL_HOST): Call that macro.
+	(AC_CHECK_COMPILERS, AC_PATH_KDE): Call those macros if KDE
+	pinentry is enabled.
+	* kde/Makefile.am (CXXFLAGS, XXX_PREFIX, XXX_KDE_DEFINES, LIB_QT,
+	LIB_KDECORE, LIB_KDEUI, KDE_RPATH, MOC, kde_appsdir): Variables removed.
+	(AM_CPPFLAGS): Replace XXX_KDE_DEFINES by all_includes.
+	(pinentry_kde_LDFLAGS): Add all_libraries.
+	* README: Document that automatic check is not possible for KDE.
+
+2002-04-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* curses/pinentry-curses.c (dialog_run): Add handling for TAB key.
+	(dialog_create): New variable description_x.  Calculate dimension
+	of multi-line description correctly.
+
+2002-04-04  Marcus Brinkmann  <marcus@g10code.de>
+
+	* pinentry/pinentry.h (struct pinentry): New members DISPLAY,
+	TTYNAME and TTYTYPE.
+	* pinentry/pinentry.c (pinentry): Likewise.
+	* pinentry/pinentry.c: Include <string.h>.
+	(usage): Add new options --display,
+	--ttyname and --ttytype.
+	(option_handler): Likewise.
+	(pinentry_parse_opts): Likewise.
+
+	* curses/pinentry-curses.c (dialog_cmd_handler): Use
+	PINENTRY->ttyname and PINENTRY->ttytype.
+
+2002-03-30  Marcus Brinkmann  <marcus@g10code.de>
+
+	* acinclude.m4: Add AM_PATH_GLIB and AM_PATH_GTK.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Choose a more appropriate AC_CONFIG_SRCDIR.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kde/Makefile.am (pinentry_kde_LDADD): Link with $(LIBCAP).
+	* gtk/Makefile.am (install-exec-local): Moved to ...
+	* Makefile.am (install-exec-local): ... here.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* kde/Makefile.am (kde_appsdir): New variable.
+	* kde/Makefile.am (install-data-local): Use DESTDIR.
+	(uninstall-local): Likewise.
+
+2002-03-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	Merge of the gpinentry and curses pinentry program into the
+	pinentry distribution.  For this, the structure of the repository
+	has been thoroughly overhauled.  Some of the changes:
+	* secmem: New directory with secure memory allocation code.
+	* pinentry: New directory with pinentry support library.
+	* curses: New directory with curses frontend.
+	* gtk: New directory with GTK+ frontend.
+	* kde: New directory with only the core of the old kpinentry program.
+	* admin: Directory removed.
+	* po: Directory removed.
+	* kpinentry: Directory removed.
+	* doc: Directory removed.
+	* jnlib: Directory removed.x
+
+	The changes in more detail:
+	* AUTHORS: Add authors of other pinentry frontends.
+	* ChangeLog: Add the one from gpinentry.
+	* Makefile.am: Completely rewritten.
+	* README: Add content.
+	* TODO: Add content.
+	* NEWS: New file from gpinentry.
+	* THANKS: New file from gpinentry.
+	* acinclude.m4: New file.
+	* configure.ac: New file which configures for all frontends.
+	* curses/Makefile.am, curses/pinentry-curses.c: New files for
+	curses frontend.
+	* gtk/Makefile.am, gtk/gtksecentry.c, gtk/gtksecentry.h,
+	gtk/pinentry-gtk.c: New files, modified from gpinentry, for GTK+
+	frontend.
+	* kde/Makefile.am, kde/cppmemory.cpp, kde/main.cpp,
+	kde/pinentry.desktop, kde/pinentrycontroller.cpp,
+	kde/pinentrycontroller.h, kde/pinentrydialog.cpp,
+	kde/pinentrydialog.h: New files, modified from kpinentry, for KDE
+	frontend.
+	* pinentry/Makefile.am, pinentry/pinentry.c, pinentry/pinentry.h:
+	New files containing pinentry support library, partly factored out
+	from gpinentry.
+	* secmem/Makefile.am, secmem/memory.h, secmem/secmem-util.h,
+	secmem/secmem.c, secmem/util.c, secmem/util.h: New files
+	containing secure memory allocation code common to all pinentry
+	frontends.
+	* Makefile.dist, acconfig.h, configure.files, configure.in.in:
+	Files removed in favor of new configure.ac.
+	* pinentry.lsm: Removed file never used.
+	* stamp-h.in: Removed generated file.
+	* admin/ChangeLog, admin/Makefile.common, admin/acinclude.m4.in,
+	admin/am_edit, admin/am_edit.py, admin/conf.change.pl,
+	admin/config.guess, admin/config.pl, admin/config.sub,
+	admin/configure.in.min, admin/debianrules, admin/depcomp,
+	admin/install-sh, admin/libtool.m4.in, admin/ltcf-c.sh,
+	admin/ltcf-cxx.sh, admin/ltcf-gcj.sh, admin/ltconfig,
+	admin/ltmain.sh, admin/missing, admin/mkinstalldirs, admin/ylwrap:
+	Removed KDE build suite in favor of configure.ac.
+	* doc/Makefile.am, doc/en/Makefile.am, doc/en/index.docbook:
+	Removed files never used.
+	* jnlib/ChangeLog, jnlib/Makefile.am, jnlib/argparse.c,
+	jnlib/argparse.h jnlib/dotlock.c, jnlib/dotlock.h,
+	jnlib/libjnlib-config.h, jnlib/logging.c, jnlib/logging.h,
+	jnlib/mischelp.h, jnlib/stringhelp.c, jnlib/stringhelp.h,
+	jnlib/strlist.c, jnlib/strlist.h, jnlib/types.h, jnlib/xmalloc.c,
+	jnlib/xmalloc.h: Removed files no longer used.
+	* kpinentry/Makefile.am, kpinentry/cppmemory.cpp,
+	kpinentry/cppmemory.h, kpinentry/i18n.h, kpinentry/main.cpp,
+	kpinentry/memory.h, kpinentry/pinentry.desktop,
+	kpinentry/pinentrycontroller.cpp, kpinentry/pinentrycontroller.h,
+	kpinentry/pinentrydialog.cpp, kpinentry/pinentrydialog.h,
+	kpinentry/secmem.cpp, kpinentry/util.cpp, kpinentry/util.h:
+	Removed files in favor of new files in kde/.
+	* po/Makefile.am, po/pinentry.pot: Removed files never used.
+
+	* autogen.sh: New file.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	* gpinentry.c (enter_callback): New
+	(create_window): Connect it to the entry field.
+
+2002-02-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.5.1.
+
+	* gpinentry.c (create_window): Add CONFIRM_MODE.
+	(cmd_confirm): Implemented.
+
+	* assuan/:  Updated from NewPG.
+
+2002-01-20  Werner Koch  <wk@gnupg.org>
+
+	* gpinentry.c (option_handler): New to allow changing of the grab
+	status.
+	(grab_keyboard): Shortcut this when global grab is not set.
+
+2002-01-04  Werner Koch  <wk@gnupg.org>
+
+        Released 0.5.0.
+
+	* configure.ac: Bumbed version
+
+	* util.h (xtoi_1, xtoi_2): New.
+	* gpinentry.c (strcpy_escaped): New
+	(cmd_setdesc, cmd_seterror): Use it here to allo multiline texts.
+
+	* gpinentry: Removed debugging outbut
+	(create_window): Tweaked layout.
+
+2001-12-07  Werner Koch  <wk@gnupg.org>
+
+        New package gpinentry based on quintuple-agent.
+
+        Removed all stuff except for the basic configuration stuff and
+	what is needed to build gpinentry.  Also removed i18n support.
+	* gpinentry.c: Renamed from secret-query.c
+
+2001-02-12  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 1.0.0 released. Woo-hoo!
+
+	* configure.in, NEWS: Bumped version.
+
+2001-02-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (make_tmpdir): Honor $TMPDIR.
+
+	(agent): Would exit on every minor problem. Now, we just close the
+	offending connection.
+	Ignore SIGPIPE, so that EPIPE will close connection.
+
+2001-01-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Move one include statement so that the thing compiles.
+
+	* secret-query.c (main): Minor source cosmetics.
+
+2000-11-16  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* gtksecentry.c (gtk_secure_entry_insert_text): Secured a couple
+	of memory (de)allocations that were missed. Thanks to John Steele
+	<jhs28@eng.cam.ac.uk> for spotting these.
+
+2000-11-10  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Thoughts: Removed in favor of new TODO.
+
+	* README: Remove content and refer to doc/manual.info instead.
+
+	* agent.c (do_get): Would burn badly on a premature exit of the
+	query program (which would occur routinely if you selected /cancel/).
+
+2000-10-25  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* memory.h: Include sys/types.h for size_t.
+
+2000-10-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* README: Removed apology about missing documentation.
+	Updated paragraph about Linux capability patch.
+	Typo & Refill.
+
+2000-10-03  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.9 released.
+
+	* Makefile.am (EXTRA_DIST): Distribute BUGS (the file, that is).
+
+	* configure.in, NEWS: Bumped version.
+
+	* Makefile.am, configure.in: Add debian subdir.
+
+	* README: Recommend GTK+.
+	Update list of checked platforms.
+
+2000-10-02  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (ok): Simplify.
+	Put empty line between headers and secret.
+	(usage): Document '--help' and '--version'.
+
+	* agent.c (do_get): Use enhanced secret-query output to fill in
+	options.
+
+2000-10-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (main): Clarify error.
+
+	* client.c (query_options): New global variable.
+	(main): New option '--query-options' to pass options to the query
+	program.
+	(xgetpass): Use it.
+
+	* agent.c (main): New option '--query-options' to pass options to
+	the query program.
+	(do_get): Use 'query_options'.
+
+	* acconfig.h, configure.in: Add QUERY_PROGRAM definition.
+	* client.c: Remove here.
+	* agent.c (do_get): Use it here, too.
+
+	* secret-query.c (main): New option '--no-global-grab' introduced,
+	that prevents keyboard grabbing unless the window has focus.
+
+2000-09-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (usage): Add two missing pieces of "\n\".
+
+	* agent.c (main): --nofork is now the default, and the option is
+	deprecated. New option --fork added to turn forking on again.
+	Close stdout (and stderr unless debugging) even when not forking,
+	so that normal usage inside eval is still possible.
+	(agent): Exit gracefully on HUP, so that logging out now kills the
+	agent.
+
+	* README (Contact Information): Old URL - duh!
+	(Using Secret Agent): We no longer fork per default.
+
+	* Makefile.am (lib/libutil.a): New target, allows targets that not
+	automatically recurse (but still depend on libutil.a) to succeed.
+
+2000-07-20  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (usage): New function.
+	(main): Parse options: debug, enhanced, help, version.
+	Turn on locale support.
+	If enhanced, insert widgets to ask for timeout and insurance.
+	(ok): If enhanced, print more information on exit.
+	(grab_keyboard): Die if grab was unsuccessful.
+
+2000-05-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.8 released.
+
+	* configure.in, NEWS: Bumped version.
+
+	* Makefile.am (SUBDIRS): Include doc.
+
+	* configure.in, acconfig.h: Check for ssize_t.
+	Check for vsnprintf(), strdup().
+	Generate doc/Makefile.
+
+	* apgp.c, agpg.c, agentlib.c, util.c: Include more stuff.
+
+	* agent.c (do_get): Use asprintf() instead of snprintf() so we
+	don't need to roll our own for yet another function.
+	Fix some includes.
+
+	* acinclude.m4: gettext macros copied from automake and fixed.
+
+2000-05-30  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in, Makefile.am: Properly include doc subdir.
+
+2000-05-29  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in, acconfig.h: Add test for XMESSAGE path.
+
+	* client.c (main): Decode command from string to integer code
+	first, then evaluate that in ifs.
+
+	* secret-ask.c: New file, external ask-for-confirmation utility.
+
+	* configure.in, Makefile.am: Add secret-ask to programs being
+	built when GTK is available. Rename QUERY to more descriptive
+	GTK_PROGRAMS.
+
+	* agent.c (do_get): If GTK is available, try executing secret-ask
+	first.
+	Only put the comment into the insure-question if there is a
+	comment.
+	(main): --csh was missing from usage message.
+
+2000-04-23  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c (constrain_size): Lower window max_width to
+	accomodate bugs in GTK and Scwm.
+
+	* agent.c (main): Set x_enabled if X appears to be available.
+	Use it to selectively make FLAGS_INSURE supported.
+	(do_get): Use it instead of testing at every call.
+	(do_put): Requests containing unsupported flags fail.
+	(forget_old_stuff): Would not set next_deadline correctly.
+	(do_get): Implement FLAGS_INSURE.
+
+	* client.c (main): "list" format changed so that comment is to the
+	far right. Display the deadline as proper date/time, too.
+
+1999-11-11  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (next_deadline): New global variable, holds time when
+	next secret has to be killed.
+	(store): Keep it up-to-date.
+	(forget_old_stuff): New function, reaps secrets ready to kill,
+	keeps next_deadline updated.
+	(agent): Use it on all secrets, whenever a deadline is active.
+
+1999-11-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.h (request_put): Add flags, deadline. Increase REQUEST_MAGIC.
+	(reply_get): Ditto, and increase REPLY_MAGIC.
+	* agent.c (store): Store flags, deadline in reply.
+	(do_put): Hand flags, deadline from request on to store().
+	(do_get): Store on-demand queried secrets without deadline or
+	special flags, for now.
+	(agent): Do not ignore obsolete clients, return an error reply.
+	* agentlib.c (agent_put): Add flags, deadline arguments, and copy
+	them into the request.
+	* agentlib.h (agent_put): Update prototype.
+*	* client.c (main): Added --time-to-live (-t) and --insure (-i)
+	options, influencing PUT's deadline and flags, respectively.
+	(main): Change list format to include new attributes.
+
+1999-11-05  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: <getopt.h> check had redundant definition.
+	* acconfig.h: Remove here, too.
+
+	* configure.in: Check for <inttypes.h>. If not found, check for
+	unsigned {int, long} sizes.
+	* agent.h: Either include <inttypes.h>, or try to define uint32_t
+	yourself.
+	Need to include "config.h".
+
+1999-11-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (signed-dist): New rule, generates sig for dist.
+	(%.sig): New rule, for detached signatures in general.
+
+	* configure.in: Check for ulong.
+	* acconfig.h: Document it.
+	* secmem.c: Unconditionally defining it is no longer necessary
+	here. But do include <sys/types.h> in all cases.
+
+	* 0.7 released.
+
+	* secmem.c: ulong is not defined on all systems.
+
+	* agent.h: <inttypes.h> should define `uint32_t' as per Unix98, so
+	we use that.
+
+1999-11-02  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.h: Augmented requests and replies with magic numbers.
+	Data structures heavily commented.
+	All structures and enums typedef'd.
+	* agent.c: Adapted.
+	(store): Set magic number in stored reply.
+	(do_put): Set magic number in reply.
+	(do_delete): Ditto.
+	(do_list): Ditto.
+	(agent): Check magic number in request.
+	* agentlib.c: Adapted.
+	(send_request): Set magic number in request. Check it in reply.
+	* agentlib.h: Adapted.
+	* agpg.c: Adapted.
+	* apgp.c: Adapted.
+	* client.c: Adapted.
+
+1999-10-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Instead of defining ulong directly, include
+	<sys/types.h>
+
+	* secret-query.c (constrain_size): New function, puts constrains
+	on size of toplevel window.
+	(grab_keyboard): Removed protection against multiple calls.
+	(ungrab_keyboard): New function, cancelling a keyboard grab.
+	(main): Hang `grab_keyboard' onto map-event which makes it
+	actually work, hang `ungrab_keyboard' onto unmap-event.
+	Hang `constrain_size' onto size-request.
+
+	* secmem.c: ulong was undefined on some systems.
+
+1999-10-19  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (install-exec-local): Ignore setcap errors.
+
+	* apgp.c: New program, based on agpg.c, but for pgp2.6.
+	* Makefile.am (bin_PROGRAMS, apgp_SOURCES): Added it.
+
+	* agpg.c (GPG): New constant.
+	(find_id, main): Use it throughout.
+	(find_id): Forgot to pclose on success.
+
+	* secret-query.c (main): Don't expand anything.
+	Use a button box for the buttons.
+	Prompt label can be overridden from the commandline.
+	* agent.c (do_get): Make spawned secret-query show the id.
+	* client.c (xgetpass): Pass prompt to secret-query.
+	(main): Include id in xgetpass prompt.
+
+1999-10-14  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: setcap must be searched outside the usual user
+	PATH, too.
+	* Makefile.am (install-exec-local): Set cap_ipc_lock permitted on
+	installed binaries, if possible.
+
+	* agent.c (xdup2): New function, dup2 with error handling.
+	(move_fd): New function, moves fds.
+	(store): New function, abstracted out from do_put.
+	(do_put): Use it.
+	(do_get): If secret was not found, and DISPLAY is set, try to
+	query the user about it. If successful, store it.
+	(main): Route standard file descriptors to /dev/null rather than
+	just closing them. The latter would confuse children.
+
+1999-10-13  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* gtksecentry.c, gtksecentry.h: New files, being slightly modified
+	versions of GTK+'s gtkentry.[ch], spiffed up to use secure memory.
+	* secret-query.c (ok, unselect, main): Replace GtkEntry with
+	GtkSecureEntry.
+	(main): Initialize secure memory.
+	* Makefile.am (secret_query_SOURCES): Added gtksecentry.[ch].
+
+	* README (Security): New chapter.
+
+	* configure.in, acconfig.h: Check for POSIX capabilities, and the
+	setcap program.
+	* Makefile.am: Link LIBCAP to those binaries using secmem.c.
+
+	* util.h: Include <sys/types.h> for size_t.
+
+1999-09-21  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c: Synced with gnupg-1.0 (top new feature: capabilities).
+ 	(log_fatal): New function, logs to stderr, and dies.
+
+1999-09-08  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secmem.c (log_info): New function, logs to stderr.
+
+	* agent.c (agent): select() expects the number of fds, not the
+	highest fd. So remember that number.
+
+	* agent.c (agent): Don't use FD_SETSIZE, which is not defined on
+	all systems. Remember the number of the highest descriptor
+	instead.
+
+	* configure.in: Replace getline() instead of getdelim() because
+	this is the function we really need. Still check for getdelim(),
+	though - there are systems out there where this is provided, but
+	getline() is not.
+
+1999-09-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.6 released.
+
+	* configure.in: Bump version.
+
+	* NEWS: Updated.
+
+1999-08-31  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* util.c (init_uids, lower_privs, raise_privs, drop_privs): New
+	functions, for setuid binaries, extracted from agent.c.
+	* util.h: Add prototypes for them.
+	* agpg.c (main): Use them.
+	* client.c (main): Ditto.
+	* agent.c (main): Ditto. Removed code that did the same.
+	Unconditionally include "asprintf.h" (it protects itself now).
+
+1999-08-25  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (SUBDIRS): Process . before test so that "make
+	check" always builds all in . first.
+
+1999-08-21  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c: Include "config.h".
+
+	* agent.h (reply_list_entry, reply_list): New reply structures.
+	* agent.c (send_list_entry): New function.
+	(do_list): First send number of entries, then each entry via
+	send_list_entry().
+	* agentlib.c (agent_list): Read entries returned by LIST request.
+	* client.c (main): Output all entries returned by agent_list().
+
+	* agentlib.c (agent_put): Don't construct PUT request in insecure
+	stack space.
+
+1999-08-20  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* NEWS: Bump patchlevel.
+
+	* configure.in: Bump patchlevel.
+	Check for missing setenv().
+
+1999-08-09  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for strsignal().
+
+	* client-test: Obsoleted by test/client.
+
+	* Makefile.am (SUBDIRS): New subdirectory.
+	* configure.in (AC_OUTPUT): Add here, too.
+
+	* 0.5 released.
+
+	* README: Explain why secret-client will not output secrets to a
+	tty, and mention the cat-trick.
+
+	* agent.c (main): If seteuid is not available, don't use it and
+	issue a warning if running setuid.
+
+	* configure.in: Run together two REPLACE_FUNCS.
+	Check for seteuid.
+
+	* client-test: Mask out insecure memory warnings.
+
+	* agentlib.c (send_request): Let the calling functions reserve
+	space for the reply, but offer a simple way for simple requests.
+	(agent_get): Allocate secure memory.
+
+	* agent.c (main): Moved secmem_init() after the fork, since that
+	seemingly munlock's all pages.
+	Drop priviledges just in case somebody wants to install this
+	suid-root.
+	Flush stdout.
+
+	* agpg.c (find_id): Would reorder arguments.
+	Initialize opt_version.
+	(main): Initialize secure memory.
+
+	* Makefile.am (agpg_SOURCES): Link with secure memory module.
+
+	* client.c (usage): Fixed another program name reference.
+
+1999-08-06  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Conditionally define HAVE_GTK.
+	* acconfig.h: Add here too.
+
+	* client.c (xgetpass): Use "secret-query" only if it was built.
+	(main): Don't output secret (GET command) to ttys.
+
+	* agpg.c (find_id): Also print own version if "--version" is given.
+	(main): Check agent_init() errors.
+	Print error if exec fails.
+
+	* agent.c (main): Added an option to produce csh-compatible
+	output.
+
+	* agent.c, client.c: Forgot the terminating NULL in long options.
+	Fixed the program names in usage and version output.
+
+	* agent.c (create_socket): AF_UNIX and PF_UNIX are Unix98, so
+	that's what we use. AF_LOCAL, PF_LOCAL removed.
+	* agentlib.c (agent_init): Ditto.
+
+1999-08-05  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.4 released.
+
+	* configure.in: Bumped version.
+	Check for missing getdelim.
+
+	* cgpg: Removed, obsoleted by agpg.
+	* Makefile.am: Here, too.
+
+	* agpg.c (find_id): New function.
+	(main): Use it.
+
+	* Makefile.am (INCLUDES): Put GTK_FLAGS and GLIB_FLAGS here. It
+	is the easiest way for sources needing it, and it won't hurt those
+	that don't.
+	(agent.o): Explicit command removed accordingly.
+
+1999-08-04  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Need double quoting in nested AC_MSG_WARN.
+
+	* client.c (xgetpass): If no tty is available, but a DISPLAY is,
+	fork off "secure-query" to read the secret.
+	Put the fgets into a loop that keeps reading until all of the
+	secret is read.
+
+	* client-test: Unset DISPLAY, so that "secret-query" is never used.
+
+1999-08-03  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agpg.c: New file, first cut at a C version of the gpg wrapper,
+	written in a hurry (20 keys waiting to be signed, and a growling
+	stomach).
+	* Makefile.am: Add it to built programs.
+	(LDADD): New default.
+	(secret_client_LDADD): Removed, since it was identical to default.
+
+1999-08-01  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* secret-query.c: New program, queries the user for a password.
+	* Makefile.am (bin_PROGRAMS): Added it.
+	* configure.in: Check for GTK+, build "secret-query" only when
+	that is available.
+
+	* cgpg: Extra argument for ID is no longer necessary. cgpg will
+	scan the gpg args for switches that affect user-id, and determine
+	the right key itself. Per convention, the key-id is used by "GET".
+
+	* configure.in: The project name is now "secret-agent".
+
+	* Makefile.am: "agent" & "client" renamed to "secret-agent" &
+	"secret-client", respectively.
+	* client-test: Adapt to new names.
+
+	* Thoughts: Removed discussion of other names.
+	Added indication of which things already work.
+
+	* agent.c (make_tmpdir): Removed occurance of "gpg-agent."
+
+	* README: First proper version.
+
+	* client-test: Context diffs are more portable then unified diffs.
+
+	* agent.c, agent.h, agentlib.c, agentlib.h, client.c, memory.h,
+	util.c, util.h: Banner updated to new name.
+
+1999-07-29  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for missing asprintf.
+	Check if -lsocket is needed.
+
+	* secmem.c (secmem_dump_stats): Replace usage of ulong.
+
+	* Makefile.am (INCLUDES): Add the lib subdirectory to include search.
+
+	* agent.c: Forgot to include <string.h>.
+	Include RYO asprintf header if this function is missing.
+	For the sake of compatibility, provide a definition for AF_LOCAL,
+	PF_LOCAL, if missing.
+	* agentlib.c: Ditto.
+
+1999-07-28  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (client_SOURCES): Add "secmem.c", "memory.h".
+
+	* client.c (xgetpass): Use secmem_malloc() instead of RYO.
+	(main): Init and shutdown secmem.
+
+1999-07-27  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (agent_SOURCES): Add "secmem.c", "i18n.h", "memory.h".
+	(client_SOURCES): Add "i18n.h".
+
+	* client.c (main): Exit on agent_init() failure.
+
+	* agent.c (main): Init secmem.
+	Make --debug switch cumulative.
+ 	(cleanup): Shutdown secmem.
+	(do_put): Use secmem for storage of secrets.
+	(do_delete): Use secmem_free(). Since this wipes the memory on its
+	own, wipe() is superflous now.
+	(agent): Use secmem for inbound requests.
+	(delete_secret): New function, takes part of do_delete's
+	functionality.
+	(do_put): Use it to remove old versions stored under the same id.
+	(do_delete): Use it to delete secrets.
+
+	* memory.h: New file.
+
+	* secmem.c: New file, snarfed from GnuPG and modified slightly.
+
+	* acinclude.m4: New file.
+	* configure.in: (ALL_LINGUAS): Expanded list of available
+	languages. Most of them only have a few translations from gpg,
+	tough ...
+	getopt_long test was commented out for debugging,
+	and left such. Fixed.
+	Check for mlock.
+	* acconfig.h: Comment HAVE_BROKEN_MLOCK.
+
+	* cgpg: A space was missing.
+
+	* i18n.h: New file, centralizing the gettext macro defs.
+
+	* agent.c (BLIND): New macro, that blinds out a secret if debug
+	level is too low.
+	(do_put): Use it.
+	(do_get): Use it.
+	Include i18n.h.
+
+	* agentlib.c: Include i18n.h
+
+	* client.c (usage): New function.
+	Usage-message made gettext-friendly.
+	(xgetpass): Use perror() instead of fprintf().
+	(main): Use it.
+	Make comment an optional argument of PUT.
+	Include i18n.h.
+
+1999-07-26  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* Makefile.am (client_LDADD): Add lib/libutil.a for portability.
+	(agent_LDADD): Ditto.
+	(SUBDIRS): Add lib directory.
+	(bin_SCRIPTS): New with cgpg, so it gets installed, too.
+
+	* configure.in: Add lib/Makefile to output.
+
+1999-07-24  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* cgpg: New file.
+	* Makefile.am (EXTRA_DIST): Added it.
+
+	* agent.c: Moved inclusion of config.h before inclusion of
+	libintl.h since the latter needs HAVE_LC_MESSAGE.
+	* client.c: Ditto.
+	* clientlib.c: Ditto.
+
+	* client-test: Update for new client semantics.
+
+	* client.c (check_status): Use debugmsg(). Do nothing if not
+	debugging.
+	(xgetpass): New function, getpass replacement that uses mlock'ed
+	memory.
+	(main): PUT now asks for the secret rather then getting it from
+	the commandline.
+	GET prints only the secret to stdout.
+
+	* configure.in: Rearranged.
+	Check for socklen_t.
+	* acconfig.h: Added a definition for it.
+
+	* client.c: Include packaged getopt.h if the system doesn't provide
+	one.
+	* agent.c: Ditto.
+	(create_socket): Replace AF_FILE, PF_FILE with AF_LOCAL, PF_LOCAL
+	for portability.
+	* agentlib.c (agent_init): Ditto.
+	Explicitly cast addr to a sockaddr pointer.
+
+	* Makefile.am (client_LDADD): Added @INTLLIBS@.
+	(agent_LDADD): Ditto.
+
+1999-07-19  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in: Check for getopt.h and getopt_long.
+	* acconfig.h (HAVE_GETOPT_H): New define.
+	* lib/getopt.c, lib/getopt1.c, lib/getopt.h: Added.
+
+1999-07-18  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.2 released.
+
+	* NEWS: Updated.
+
+	* Makefile.am (agent.o): Mentioning the source explicitly does not
+	work for srcdir!=builddir.
+
+	* client.c (main): Function arguments are not always evaluated in
+	order, so drop the neat ++optind in favor of optind+1, optind+2,
+	etc.
+
+	* configure.in: Upped version.
+
+1999-06-28  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* util.h: Added multi-inclusion guard.
+
+	* agent.c Include "util.h".
+	(main): Forgot to exit at end.
+	(do_delete): Assume that value is a string and wipe it accordingly.
+
+	* configure.in (--enable-debug): New switch.
+
+	* agent.h (status_t): Added STATUS_COMM_ERR code.
+	Added multi-inclusion guard.
+
+	* client.c (main): Abstracted out most functionality into a
+	function library, namely:
+	* agentlib.c: New file.
+	* agentlib.h: New file.
+	* Makefile.am (client_SOURCES): Added agentlib.c, agentlib.h.
+
+	* Makefile.am (INCLUDES): GLIB_CFLAGS moved again, this time to
+	the agent.o target.
+
+1999-06-15  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* 0.1 released.
+
+	* Makefile.am (agent_CFLAGS): Removed - did not work.
+	(INCLUDES): Moved the GLIB stuff here.
+
+1999-06-14  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* configure.in (ALL_LINGUAS): Added `de'.
+
+	* agent.c (do_get): Added more debugmsgs.
+	(do_put): Wouldn't allocate enough for `value'.
+	(main): New option "--nofork" prevents forking.
+	Use macros for the std filedescriptor numbers.
+	Only close stderr if not debugging.
+	(main): Make Usage string gettext-friendly.
+
+	* client-test (cleanup): New function.
+ 	Call it on shell exit.
+	(client): New function.
+	Use it instead of calling client binary directly.
+	diff client output with expected one in GET testcases.
+
+1999-06-13  Robert Bihlmeyer  <robbe@orcus.priv.at>
+
+	* agent.c (failed_reply): New constant.
+	(do_list): Use it.
+	(do_put): The hash key was overwritten - strdup it.
+	Construct a GET reply and save that in the hash.
+	(do_get): Just send the preconstructed reply if the id is present,
+	and failed_reply otherwise.
+	(do_delete): Actually free the hashed stuff.
+
+	* client.c: Exit with error if agent returned STATUS_FAIL.
+
+	* Makefile.am (EXTRA_DIST): Added autogen.sh, Thoughts,
+	client-test.
+	(TESTS): Added client-test.
+	(AUTOMAKE_OPTIONS): Added gnits.
+
+
+ Copyright 2002, 2003, 2010 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

@@ -1,0 +1,14 @@
+
+2012-08-08  Werner Koch  <wk@gnupg.org>
+
+	NB: Changes done before August 8, 2012 are described in per
+	directory files named ChangeLog-old.  See doc/HACKING for
+	details.
+
+        -----
+        Copyright (C) 2002, 2003, 2010, 2012 g10 Code GmbH
+
+	Copying and distribution of this file and/or the original GIT
+	commit log messages, with or without modification, are
+	permitted provided the copyright notice and this notice are
+	preserved.

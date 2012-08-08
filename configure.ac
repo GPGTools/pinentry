@@ -85,6 +85,8 @@ AC_PROG_RANLIB
 AC_PROG_CXX
 AC_PROG_LN_S
 AC_CHECK_TOOL(WINDRES, windres, :)
+AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog,
+               [build-aux/gitlog-to-changelog])
 
 
 have_dosish_system=no

@@ -1,18 +1,18 @@
 # Makefile.am
-# Copyright (C) 2002 g10 Code GmbH
-# 
+# Copyright (C) 2002, 2012 g10 Code GmbH
+#
 # This file is part of PINENTRY.
-# 
+#
 # PINENTRY is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # PINENTRY is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
@@ -21,42 +21,46 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = autogen.sh README.SVN Manifest
+GITLOG_TO_CHANGELOG=gitlog-to-changelog
+
+EXTRA_DIST = autogen.sh README.GIT ChangeLog-old \
+	     build-aux/gitlog-to-changelog \
+	     build-aux/git-log-fix build-aux/git-log-footer
 
 if BUILD_PINENTRY_CURSES
 pinentry_curses = curses
 else
-pinentry_curses = 
+pinentry_curses =
 endif
 
 if BUILD_PINENTRY_GTK
 pinentry_gtk = gtk
 else
-pinentry_gtk = 
+pinentry_gtk =
 endif
 
 if BUILD_PINENTRY_GTK_2
 pinentry_gtk_2 = gtk+-2
 else
-pinentry_gtk_2 = 
+pinentry_gtk_2 =
 endif
 
 if BUILD_PINENTRY_QT
 pinentry_qt = qt
 else
-pinentry_qt = 
+pinentry_qt =
 endif
 
 if BUILD_PINENTRY_QT4
 pinentry_qt4 = qt4
 else
-pinentry_qt4 = 
+pinentry_qt4 =
 endif
 
 if BUILD_PINENTRY_W32
 pinentry_w32 = w32
 else
-pinentry_w32 = 
+pinentry_w32 =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
@@ -73,3 +77,19 @@ install-exec-local:
 	(cd $(DESTDIR)$(bindir); \
 	rm -f pinentry; \
 	$(LN_S) $(PINENTRY_DEFAULT)$(EXEEXT) pinentry)
+
+dist-hook: gen-ChangeLog
+	echo "$(VERSION)" > $(distdir)/VERSION
+
+gen_start_date = 2012-08-08T00:00:00
+.PHONY: gen-ChangeLog
+gen-ChangeLog:
+	if test -d $(top_srcdir)/.git; then				\
+	  (cd $(top_srcdir) &&                      			\
+	    $(GITLOG_TO_CHANGELOG) --append-dot --tear-off		\
+	    --amend=build-aux/git-log-fix				\
+	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
+          cat $(top_srcdir)/build-aux/git-log-footer >> $(distdir)/cl-t;\
+	  rm -f $(distdir)/ChangeLog;					\
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;			\
+	fi
