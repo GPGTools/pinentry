@@ -22,28 +22,28 @@
 AC_PREREQ(2.57)
 min_automake_version="1.10"
 
-# Version number: Remember to change it immediately *after* a release.
-#                 Make sure to run  "svn up" and "./autogen.sh --force"
-#                  before a "make dist".  See below for the LT versions.
-#
-# The SVN version is usually the next intended release version with
-# the string "-svnNNN" appended.  The reason for this is that tests for a
-# specific feature can already be done under the assumption that the
-# SVN version is the most recent one in a branch.  To disable the SVN
-# version for the real release, set the my_issvn macro to no.
-m4_define(my_version, [0.8.2])
-m4_define(my_issvn, [yes])
+# To build a release you need to create a tag with the version number
+# (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
+# bump the version number immediately after the release, do another
+# commit, and a push so that the git magic is able to work.
+m4_define(mym4_version, [0.8.2])
 
-m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
-           | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
-m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
+# Below is m4 magic to extract and compute the git revision number,
+# the decimalized short revision number, a beta version string and a
+# flag indicating a development version (mym4_isgit).  Note that the
+# m4 processing is done by autoconf and not during the configure run.
+m4_define([mym4_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
-          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+m4_define([mym4_revision_dec],
+          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
+m4_define([mym4_betastring],
+          m4_esyscmd_s([git describe --match 'pinentry-[0-9].[0-9].*[0-9]' \
+                           --long|  awk -F- '$3!=0{print"-beta"$3}']))
+m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
+m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-# Remember to remove the "-cvs" suffix *before* a release and to bump the
-# version number immediately *after* a release and to re-append the suffix.
-AC_INIT([pinentry],[my_full_version],[http://bugs.gnupg.org])
+AC_INIT([pinentry],[mym4_full_version], [http://bugs.gnupg.org])
+
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
@@ -510,6 +510,9 @@ AC_OUTPUT
 
 AC_MSG_NOTICE([
 	Pinentry v${VERSION} has been configured as follows:
+
+        Revision:  mym4_revision  (mym4_revision_dec)
+        Platform:  $host
 
 	Curses Pinentry: $pinentry_curses
 	GTK+ Pinentry: $pinentry_gtk
