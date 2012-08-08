@@ -1,8 +1,8 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'pinentrydialog.h'
 **
-** Created: Sun Jun 26 15:13:15 2011
-**      by: The Qt Meta Object Compiler version 62 (Qt 4.7.3)
+** Created: Wed Aug 8 16:09:23 2012
+**      by: The Qt Meta Object Compiler version 63 (Qt 4.8.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -10,8 +10,8 @@
 #include "pinentrydialog.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'pinentrydialog.h' doesn't include <QObject>."
-#elif Q_MOC_OUTPUT_REVISION != 62
-#error "This file was generated using the moc from 4.7.3. It"
+#elif Q_MOC_OUTPUT_REVISION != 63
+#error "This file was generated using the moc from 4.8.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -20,7 +20,7 @@ QT_BEGIN_MOC_NAMESPACE
 static const uint qt_meta_data_PinEntryDialog[] = {
 
  // content:
-       5,       // revision
+       6,       // revision
        0,       // classname
        0,    0, // classinfo
        2,   14, // methods
@@ -49,9 +49,26 @@ static const char qt_meta_stringdata_PinEntryDialog[] = {
     "error\0secqstring\0pin\0prompt\0"
 };
 
+void PinEntryDialog::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        Q_ASSERT(staticMetaObject.cast(_o));
+        PinEntryDialog *_t = static_cast<PinEntryDialog *>(_o);
+        switch (_id) {
+        case 0: _t->updateQuality((*reinterpret_cast< const secqstring(*)>(_a[1]))); break;
+        case 1: _t->slotTimeout(); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObjectExtraData PinEntryDialog::staticMetaObjectExtraData = {
+    0,  qt_static_metacall 
+};
+
 const QMetaObject PinEntryDialog::staticMetaObject = {
     { &QDialog::staticMetaObject, qt_meta_stringdata_PinEntryDialog,
-      qt_meta_data_PinEntryDialog, 0 }
+      qt_meta_data_PinEntryDialog, &staticMetaObjectExtraData }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
@@ -77,11 +94,8 @@ int PinEntryDialog::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        switch (_id) {
-        case 0: updateQuality((*reinterpret_cast< const secqstring(*)>(_a[1]))); break;
-        case 1: slotTimeout(); break;
-        default: ;
-        }
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
         _id -= 2;
     }
 #ifndef QT_NO_PROPERTIES
