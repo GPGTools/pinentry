@@ -147,12 +147,14 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
       _ok->setIcon( style()->standardIcon( QStyle::SP_DialogOkButton ) );
       _cancel->setIcon( style()->standardIcon( QStyle::SP_DialogCancelButton ) );
     }
- 
+
   if (timeout > 0) {
       _timer = new QTimer(this);
       connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
       _timer->start(timeout*1000);
   }
+  else
+    _timer = NULL;
 
   connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
   connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
@@ -268,7 +270,9 @@ void PinEntryDialog::updateQuality(const secqstring & txt )
   int percent;
   QPalette pal;
 
-  _timer->stop();
+  if (_timer)
+    _timer->stop();
+
   if (!_have_quality_bar || !_pinentry_info)
     return;
   secstring pinStr = toUtf8(txt);
