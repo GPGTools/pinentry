@@ -64,6 +64,7 @@ static GtkWidget *insure;
 static GtkWidget *time_out;
 #endif
 static GtkTooltips *tooltips;
+static gboolean got_input;
 
 /* Gnome hig small and large space in pixels.  */
 #define HIG_SMALL      6
@@ -249,6 +250,8 @@ changed_text_handler (GtkWidget *widget)
   int percent;
   GdkColor color = { 0, 0, 0, 0};
 
+  got_input = TRUE;
+
   if (!qualitybar || !pinentry->quality_bar)
     return;
 
@@ -279,6 +282,15 @@ changed_text_handler (GtkWidget *widget)
   gtk_widget_modify_bg (qualitybar, GTK_STATE_PRELIGHT, &color);
 }
 
+
+static gboolean
+timeout_cb (gpointer data)
+{
+  (void)data;
+  if (!got_input)
+    gtk_main_quit ();
+  return FALSE;
+}
 
 
 static GtkWidget *
@@ -541,6 +553,9 @@ create_window (int confirm_mode)
   gtk_widget_show_all (win);
   gtk_window_present (GTK_WINDOW (win));  /* Make sure it has the focus.  */
 
+  if (pinentry->timeout > 0)
+    g_timeout_add (pinentry->timeout*1000, timeout_cb, NULL);
+
   return win;
 }
 
@@ -551,6 +566,7 @@ gtk_cmd_handler (pinentry_t pe)
   GtkWidget *w;
   int want_pass = !!pe->pin;
 
+  got_input = FALSE;
   pinentry = pe;
   confirm_value = CONFIRM_CANCEL;
   passphrase_ok = 0;
