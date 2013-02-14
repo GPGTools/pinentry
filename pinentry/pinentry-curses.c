@@ -60,6 +60,7 @@ static short pinentry_color[] = { -1, -1, COLOR_BLACK, COLOR_RED,
 				  COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE,
 				  COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE };
 static int init_screen;
+static int timed_out;
 
 typedef enum
   {
@@ -712,6 +713,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   FILE *ttyfo = NULL;
   SCREEN *screen = 0;
   int done = 0;
+  int no_input = 1;
   char *pin_utf8;
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
@@ -786,14 +788,24 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     return -2;
   dialog_switch_pos (&diag, diag.pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
 
+  wtimeout (stdscr, 70);
+
   do
     {
       int c;
 
-      c = getch ();     /* Refresh, accept single keystroke of input.  */
+      c = wgetch (stdscr);     /* Refresh, accept single keystroke of input.  */
+
+      if (timed_out && no_input)
+	{
+	  done = -2;
+	  break;
+	}
 
       switch (c)
 	{
+	case ERR:
+	  continue;
 	case KEY_LEFT:
 	case KEY_UP:
 	  switch (diag.pos)
@@ -889,6 +901,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  if (diag.pos == DIALOG_POS_PIN)
 	    dialog_input (&diag, c);
 	}
+
+      no_input = 0;
     }
   while (!done);
 
@@ -960,11 +974,29 @@ do_touch_file (pinentry_t pinentry)
 #endif /*HAVE_UTIME_H*/
 }
 
+static void
+catchsig (int sig)
+{
+  if (sig == SIGALRM)
+    timed_out = 1;
+}
 
 int
 curses_cmd_handler (pinentry_t pinentry)
 {
   int rc;
+
+  timed_out = 0;
+
+  if (pinentry->timeout)
+    {
+      struct sigaction sa;
+
+      memset (&sa, 0, sizeof(sa));
+      sa.sa_handler = catchsig;
+      sigaction (SIGALRM, &sa, NULL);
+      alarm (pinentry->timeout);
+    }
 
   rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
   do_touch_file (pinentry);
