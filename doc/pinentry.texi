@@ -182,6 +182,13 @@ means to connect to the machine to kill the @pinentry{}).
 Use window ID @var{n} as the parent window for positioning the window.
 Note, that this is not fully supported by all flavors of @pinentry{}.
 
+@item --timeout @var{seconds}
+@opindex timeout
+Give up waiting for input from the user after the specified number of
+seconds and return an error. The error returned is the same as if the
+Cancel button was selected. To disable the timeout and wait indefinately
+then set to 0, the default.
+
 @item --display @var{string}
 @itemx --ttyname @var{string}
 @itemx --ttytype @var{string}
@@ -229,6 +236,12 @@ is encoded as @code{%25}).
 Here is the list of supported commands:
 
 @table @gnupgtabopt
+
+@item Set the timeout before returning an error
+@example
+  C: SETTIMEOUT 30
+  S: OK
+@end example
 
 @item Set the descriptive text to be displayed
 @example
