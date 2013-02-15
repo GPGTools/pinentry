@@ -60,7 +60,9 @@ static short pinentry_color[] = { -1, -1, COLOR_BLACK, COLOR_RED,
 				  COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE,
 				  COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE };
 static int init_screen;
+#ifndef HAVE_DOSISH_SYSTEM
 static int timed_out;
+#endif
 
 typedef enum
   {
@@ -713,8 +715,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   FILE *ttyfo = NULL;
   SCREEN *screen = 0;
   int done = 0;
-  int no_input = 1;
   char *pin_utf8;
+#ifndef HAVE_DOSISH_SYSTEM
+  int no_input = 1;
+#endif
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
 
@@ -788,24 +792,29 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     return -2;
   dialog_switch_pos (&diag, diag.pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
 
+#ifndef HAVE_DOSISH_SYSTEM
   wtimeout (stdscr, 70);
+#endif
 
   do
     {
       int c;
 
       c = wgetch (stdscr);     /* Refresh, accept single keystroke of input.  */
-
+#ifndef HAVE_DOSISH_SYSTEM
       if (timed_out && no_input)
 	{
 	  done = -2;
 	  break;
 	}
+#endif
 
       switch (c)
 	{
+#ifndef HAVE_DOSISH_SYSTEM
 	case ERR:
 	  continue;
+#endif
 	case KEY_LEFT:
 	case KEY_UP:
 	  switch (diag.pos)
@@ -901,8 +910,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  if (diag.pos == DIALOG_POS_PIN)
 	    dialog_input (&diag, c);
 	}
-
+#ifndef HAVE_DOSISH_SYSTEM
       no_input = 0;
+#endif
     }
   while (!done);
 
@@ -974,18 +984,21 @@ do_touch_file (pinentry_t pinentry)
 #endif /*HAVE_UTIME_H*/
 }
 
+#ifndef HAVE_DOSISH_SYSTEM
 static void
 catchsig (int sig)
 {
   if (sig == SIGALRM)
     timed_out = 1;
 }
+#endif
 
 int
 curses_cmd_handler (pinentry_t pinentry)
 {
   int rc;
 
+#ifndef HAVE_DOSISH_SYSTEM
   timed_out = 0;
 
   if (pinentry->timeout)
@@ -997,6 +1010,7 @@ curses_cmd_handler (pinentry_t pinentry)
       sigaction (SIGALRM, &sa, NULL);
       alarm (pinentry->timeout);
     }
+#endif
 
   rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
   do_touch_file (pinentry);
