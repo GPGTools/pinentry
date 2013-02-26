@@ -419,7 +419,7 @@ usage (void)
 "  -e, --enhanced        Ask for timeout and insurance, too\n"
 #endif
 "  -g, --no-global-grab  Grab keyboard only while window is focused\n"
-"      --parent-wid	 Parent window ID (for positioning)\n"
+"      --parent-wid      Parent window ID (for positioning)\n"
 "  -d, --debug           Turn on debugging output\n"
 "  -h, --help            Display this help and exit\n"
 "      --version         Output version information and exit\n", this_pgmname);
