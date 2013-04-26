@@ -1,16 +1,16 @@
 /* main.c - Secure W32 dialog for PIN entry.
    Copyright (C) 2004, 2007 g10 Code GmbH
-   
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation; either version 2 of the
    License, or (at your option) any later version.
- 
+
    This program is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -46,7 +46,7 @@
 
 /* This function pointer gets initialized in main.  */
 #ifndef HAVE_W32CE_SYSTEM
-static WINUSERAPI BOOL WINAPI (*lock_set_foreground_window)(UINT);
+static BOOL WINAPI (*lock_set_foreground_window)(UINT);
 #endif
 
 static int w32_cmd_handler (pinentry_t pe);
@@ -74,7 +74,7 @@ const char *
 w32_strerror (int ec)
 {
   static char strerr[256];
-  
+
   if (ec == -1)
     ec = (int)GetLastError ();
 #ifdef HAVE_W32CE_SYSTEM
@@ -86,7 +86,7 @@ w32_strerror (int ec)
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, sizeof strerr - 1, NULL);
 #endif
-  return strerr;    
+  return strerr;
 }
 
 
@@ -134,7 +134,7 @@ w32ce_finish_pipe (int rvid, int write_end)
 /*       char name[200]; */
 /*       int nname; */
 /*       char *pname; */
-   
+
 /*       memset (buf, 0, sizeof (buf)); */
 /*       GetWindowText (child, buf, sizeof (buf)-1); */
 /*       nname = GetClassName (child, name, sizeof (name)-1); */
@@ -222,7 +222,7 @@ raise_sip (HWND dlg)
   memset (&si, 0, sizeof si);
   si.cbSize = sizeof si;
 
-  if (SipGetInfo (&si)) 
+  if (SipGetInfo (&si))
     {
       si.fdwFlags |= SIPF_ON;
       SipSetInfo (&si);
@@ -235,33 +235,33 @@ raise_sip (HWND dlg)
 /* Center the window CHILDWND with the desktop as its parent
    window.  STYLE is passed as second arg to SetWindowPos.*/
 static void
-center_window (HWND childwnd, HWND style) 
-{     
+center_window (HWND childwnd, HWND style)
+{
 #ifndef HAVE_W32CE_SYSTEM
   HWND parwnd;
-  RECT rchild, rparent;    
+  RECT rchild, rparent;
   HDC hdc;
   int wchild, hchild, wparent, hparent;
   int wscreen, hscreen, xnew, ynew;
   int flags = SWP_NOSIZE | SWP_NOZORDER;
-  
+
   parwnd = GetDesktopWindow ();
-  GetWindowRect (childwnd, &rchild);     
-  wchild = rchild.right - rchild.left;     
+  GetWindowRect (childwnd, &rchild);
+  wchild = rchild.right - rchild.left;
   hchild = rchild.bottom - rchild.top;
-  
-  GetWindowRect (parwnd, &rparent);     
-  wparent = rparent.right - rparent.left;     
-  hparent = rparent.bottom - rparent.top;      
-  
-  hdc = GetDC (childwnd);     
-  wscreen = GetDeviceCaps (hdc, HORZRES);     
-  hscreen = GetDeviceCaps (hdc, VERTRES);     
-  ReleaseDC (childwnd, hdc);      
-  xnew = rparent.left + ((wparent - wchild) / 2);     
+
+  GetWindowRect (parwnd, &rparent);
+  wparent = rparent.right - rparent.left;
+  hparent = rparent.bottom - rparent.top;
+
+  hdc = GetDC (childwnd);
+  wscreen = GetDeviceCaps (hdc, HORZRES);
+  hscreen = GetDeviceCaps (hdc, VERTRES);
+  ReleaseDC (childwnd, hdc);
+  xnew = rparent.left + ((wparent - wchild) / 2);
   if (xnew < 0)
     xnew = 0;
-  else if ((xnew+wchild) > wscreen) 
+  else if ((xnew+wchild) > wscreen)
     xnew = wscreen - wchild;
   ynew = rparent.top  + ((hparent - hchild) / 2);
   if (ynew < 0)
@@ -285,14 +285,14 @@ move_mouse_and_click (HWND hwnd)
   int wscreen, hscreen, x, y, normx, normy;
   INPUT inp[3];
   int idx;
-  
-  hdc = GetDC (hwnd);     
-  wscreen = GetDeviceCaps (hdc, HORZRES);     
-  hscreen = GetDeviceCaps (hdc, VERTRES);     
-  ReleaseDC (hwnd, hdc);      
+
+  hdc = GetDC (hwnd);
+  wscreen = GetDeviceCaps (hdc, HORZRES);
+  hscreen = GetDeviceCaps (hdc, VERTRES);
+  ReleaseDC (hwnd, hdc);
   if (wscreen < 10 || hscreen < 10)
     return;
-  
+
   GetWindowRect (hwnd, &rect);
   x = rect.left;
   y = rect.bottom;
@@ -357,7 +357,7 @@ set_dlg_item_text (HWND dlg, int item, const char *string)
   else
     {
       wchar_t *wbuf;
-      
+
       wbuf = utf8_to_wchar (string);
       if (!wbuf)
         SetDlgItemTextW (dlg, item, L"[out of core]");
@@ -418,7 +418,7 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
           EnableWindow (GetDlgItem (dlg, IDC_PINENT_TEXT), FALSE);
           SetWindowPos (GetDlgItem (dlg, IDC_PINENT_TEXT), NULL, 0, 0, 0, 0,
                         (SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW));
-          
+
           item = IDOK;
         }
       else
@@ -460,7 +460,7 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 	}
       break;
 
-     case WM_KEYDOWN: 
+     case WM_KEYDOWN:
        if (wparam == VK_RETURN)
          {
            if (confirm_mode)
@@ -485,7 +485,7 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
   wchar_t *w_buffer;
   size_t w_buffer_size = 255;
   unsigned int nchar;
-  
+
   pe->locale_err = 1;
   w_buffer = secmem_malloc ((w_buffer_size + 1) * sizeof *w_buffer);
   if (!w_buffer)
@@ -577,7 +577,7 @@ parse_std_file_handles (int *argcp, char ***argvp)
       s = *argv;
       if (*s == '-' && s[1] == '&' && s[2] == 'S'
           && (s[3] == '0' || s[3] == '1' || s[3] == '2')
-          && s[4] == '=' 
+          && s[4] == '='
           && (strchr ("-01234567890", s[5]) || !strcmp (s+5, "null")))
         {
           if (s[5] == 'n')
