@@ -511,19 +511,20 @@ Makefile
 AC_OUTPUT
 
 AC_MSG_NOTICE([
+
 	Pinentry v${VERSION} has been configured as follows:
 
-        Revision:  mym4_revision  (mym4_revision_dec)
-        Platform:  $host
+	Revision:  mym4_revision  (mym4_revision_dec)
+	Platform:  $host
 
-	Curses Pinentry: $pinentry_curses
-	GTK+ Pinentry: $pinentry_gtk
-	GTK+-2 Pinentry: $pinentry_gtk_2
-	Qt Pinentry: $pinentry_qt
-	Qt4 Pinentry: $pinentry_qt4
-        W32 Pinentry: $pinentry_w32
+	Curses Pinentry ..: $pinentry_curses
+	GTK+ Pinentry ....: $pinentry_gtk
+	GTK+-2 Pinentry ..: $pinentry_gtk_2
+	Qt Pinentry ......: $pinentry_qt
+	Qt4 Pinentry .....: $pinentry_qt4
+	W32 Pinentry .....: $pinentry_w32
 
 	Fallback to Curses: $fallback_curses
 
-	Default Pinentry: $PINENTRY_DEFAULT
+	Default Pinentry .: $PINENTRY_DEFAULT
 ])
