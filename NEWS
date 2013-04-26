@@ -1,5 +1,9 @@
-Noteworthy changes in version 0.8.2 (unreleased)
+Noteworthy changes in version 0.8.3 (2013-04-26)
 ------------------------------------------------
+
+ * Build fixes for newer mingw32 toolchains.
+
+ * Add SETTIMEOUT command for the gtk+-2 pinentry.
 
 
 Noteworthy changes in version 0.8.2 (2012-08-08)
