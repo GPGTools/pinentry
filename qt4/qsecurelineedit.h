@@ -50,7 +50,19 @@
 #include <QtGui/qframe.h>
 #include <QtCore/qstring.h>
 
+#include <config.h>
+
 #include "secstring.h"
+
+#ifndef PINENTRY_QT4_CLIPBOARD
+// Sacrifice security for usability by allowing clipboard actions
+# ifndef QT_NO_CLIPBOARD
+#  define QT_NO_CLIPBOARD
+# endif
+# ifndef QT_NO_CONTEXTMENU
+#  define QT_NO_CONTEXTMENU
+# endif
+#endif
 
 // for moc, since qt4_automoc doesn't appear to hand over defines when
 // running moc. They should't be visible when #including other Qt
@@ -60,12 +72,6 @@
 #endif
 #ifndef QT_NO_COMPLETER
 # define QT_NO_COMPLETER
-#endif
-#ifndef QT_NO_CLIPBOARD
-# define QT_NO_CLIPBOARD
-#endif
-#ifndef QT_NO_CONTEXTMENU
-# define QT_NO_CONTEXTMENU
 #endif
 #ifndef QT_NO_DRAGANDDROP
 # define QT_NO_DRAGANDDROP
@@ -203,6 +209,9 @@ public Q_SLOTS:
 public:
     void deselect();
     void insert(const secqstring &);
+#ifndef QT_NO_CLIPBOARD
+    void insert(const QString &);
+#endif
 #ifndef QT_NO_CONTEXTMENU
     QMenu *createStandardContextMenu();
 #endif
