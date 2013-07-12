@@ -35,3 +35,6 @@ secmem/Makefile
 w32/Makefile.in
 w32/Makefile
 
+/qt4/pinentryconfirm.moc
+/qt4/pinentrydialog.moc
+/qt4/qsecurelineedit.moc
