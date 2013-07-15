@@ -2578,10 +2578,6 @@ void QSecureLineEdit::contextMenuEvent(QContextMenuEvent *event)
     delete menu;
 }
 
-#if defined(Q_WS_WIN)
-    extern bool qt_use_rtl_extensions;
-#endif
-
 /*!  This function creates the standard context menu which is shown
         when the user clicks on the line edit with the right mouse
         button. It is called from the default contextMenuEvent() handler.
@@ -2648,11 +2644,7 @@ QMenu *QSecureLineEdit::createStandardContextMenu()
     }
 #endif
 
-#if defined(Q_WS_WIN)
-    if (!d->readOnly && qt_use_rtl_extensions) {
-#else
     if (!d->readOnly) {
-#endif
         popup->addSeparator();
         //QUnicodeControlCharacterMenu *ctrlCharacterMenu = new QUnicodeControlCharacterMenu(this, popup);
         //popup->addMenu(ctrlCharacterMenu);
