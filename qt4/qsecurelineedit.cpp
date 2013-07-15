@@ -1330,7 +1330,8 @@ void QSecureLineEdit::deselect()
  * wanted. Defeats the purpose of the secmem implmentation */
 void QSecureLineEdit::insert(const QString &newText)
 {
-    if (!newText.isEmpty() && newText.at(0).isPrint()) {
+    if (!newText.isEmpty() && newText.at(0).isPrint()
+            && newText.length() < 1024) {
         insert( secqstring( newText.begin(), newText.end() ) );
     }
 }
