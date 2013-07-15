@@ -1331,7 +1331,7 @@ void QSecureLineEdit::deselect()
 void QSecureLineEdit::insert(const QString &newText)
 {
     if (!newText.isEmpty() && newText.at(0).isPrint()
-            && newText.length() < 1024) {
+            && newText.length() < 300) {
         insert( secqstring( newText.begin(), newText.end() ) );
     }
 }
