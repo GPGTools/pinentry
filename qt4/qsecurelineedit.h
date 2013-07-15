@@ -200,11 +200,9 @@ public Q_SLOTS:
     void selectAll();
     void undo();
     void redo();
-#ifndef QT_NO_CLIPBOARD
     void cut();
     void copy() const;
     void paste();
-#endif
 
 public:
     void deselect();

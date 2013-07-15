@@ -1430,7 +1430,6 @@ void QSecureLineEdit::setReadOnly(bool enable)
 }
 
 
-#ifndef QT_NO_CLIPBOARD
 /*!
     Copies the selected text to the clipboard and deletes it, if there
     is any, and if echoMode() is \l Normal.
@@ -1443,10 +1442,12 @@ void QSecureLineEdit::setReadOnly(bool enable)
 
 void QSecureLineEdit::cut()
 {
+#ifndef QT_NO_CLIPBOARD
     if (hasSelectedText()) {
         copy();
         del();
     }
+#endif
 }
 
 
@@ -1459,8 +1460,10 @@ void QSecureLineEdit::cut()
 
 void QSecureLineEdit::copy() const
 {
+#ifndef QT_NO_CLIPBOARD
     Q_D(const QSecureLineEdit);
     d->copy();
+#endif
 }
 
 /*!
@@ -1476,6 +1479,7 @@ void QSecureLineEdit::copy() const
 
 void QSecureLineEdit::paste()
 {
+#ifndef QT_NO_CLIPBOARD
     Q_D(QSecureLineEdit);
     if(echoMode() == PasswordEchoOnEdit)
     {
@@ -1485,8 +1489,10 @@ void QSecureLineEdit::paste()
         d->resumePassword = true;
     }
     insert(QApplication::clipboard()->text(QClipboard::Clipboard));
+#endif
 }
 
+#ifndef QT_NO_CLIPBOARD
 void QSecureLineEditPrivate::copy(bool clipboard) const
 {
     Q_Q(const QSecureLineEdit);
