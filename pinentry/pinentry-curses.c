@@ -752,6 +752,11 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     {
       if (!init_screen)
 	{
+          if (!(isatty(fileno(stdin)) && isatty(fileno(stdout))))
+            {
+              errno = ENOTTY;
+              return -1;
+            }
 	  init_screen = 1;
 	  initscr ();
 	}
