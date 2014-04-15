@@ -22,7 +22,7 @@
  * Modified by the GTK+ Team and others 1997-2000.  See the AUTHORS
  * file for a list of people on the GTK+ Team.  See the ChangeLog
  * files for a list of changes.  These files are distributed with
- * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
+ * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
  */
 
 /*
@@ -43,10 +43,11 @@
 
 #ifdef __cplusplus
 extern "C" {
-#ifdef MAKE_EMACS_HAPPY
-}
-#endif				/* MAKE_EMACS_HAPPY */
-#endif				/* __cplusplus */
+#if 0
+} /* Make Emacs happy.  */
+#endif
+#endif	/* __cplusplus */
+
 #define GTK_TYPE_SECURE_ENTRY                  (gtk_secure_entry_get_type ())
 #define GTK_SECURE_ENTRY(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_SECURE_ENTRY, GtkSecureEntry))
 #define GTK_SECURE_ENTRY_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), GTK_TYPE_SECURE_ENTRY, GtkSecureEntryClass))
