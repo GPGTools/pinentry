@@ -29,6 +29,8 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
 	connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 	_timer->start(timeout*1000);
     }
+    setAccessibleDescription (desc);
+    setAccessibleName (title);
 }
 
 void PinentryConfirm::slotTimeout()

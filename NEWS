@@ -1,7 +1,9 @@
 Noteworthy changes in version 0.8.4 (unreleased)
 ------------------------------------------------
 
- *
+ * Qt4: New option to enable pasting the passphrase from clipboard
+
+ * Qt4: Improved accessiblity
 
 
 Noteworthy changes in version 0.8.3 (2013-04-26)

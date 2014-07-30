@@ -198,6 +198,7 @@ void PinEntryDialog::setDescription( const QString& txt )
 {
   _desc->setVisible( !txt.isEmpty() );
   _desc->setText( txt );
+  _desc->setAccessibleDescription ( txt );
   _icon->setPixmap( icon() );
   setError( QString::null );
 }
@@ -211,6 +212,7 @@ void PinEntryDialog::setError( const QString& txt )
 {
   if( !txt.isNull() )_icon->setPixmap( icon( QStyle::SP_MessageBoxCritical ) );
   _error->setText( txt );
+  _error->setAccessibleDescription ( txt );
   _error->setVisible( !txt.isEmpty() );
 }
 
@@ -243,19 +245,23 @@ QString PinEntryDialog::prompt() const
 void PinEntryDialog::setOkText( const QString& txt )
 {
   _ok->setText( txt );
+  _ok->setAccessibleDescription ( txt );
   _ok->setVisible( !txt.isEmpty() );
 }
 
 void PinEntryDialog::setCancelText( const QString& txt )
 {
   _cancel->setText( txt );
+  _cancel->setAccessibleDescription ( txt );
   _cancel->setVisible( !txt.isEmpty() );
 }
 
 void PinEntryDialog::setQualityBar( const QString& txt )
 {
-  if (_have_quality_bar)
+  if (_have_quality_bar) {
     _quality_bar_label->setText( txt );
+    _quality_bar_label->setAccessibleDescription ( txt );
+  }
 }
 
 void PinEntryDialog::setQualityBarTT( const QString& txt )
