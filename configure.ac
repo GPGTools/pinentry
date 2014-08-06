@@ -427,6 +427,7 @@ fi)
 fi
 
 if test "$pinentry_qt4" != "no"; then
+QT_PATH_MOC
 PKG_CHECK_MODULES(QT4_GUI, QtGui,,
 if test "$pinentry_qt4" = "yes"; then
     AC_MSG_ERROR([[
