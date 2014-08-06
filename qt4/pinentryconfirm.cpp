@@ -18,6 +18,7 @@
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 #include "pinentryconfirm.h"
+#include "pinentrydialog.h"
 #include <QAbstractButton>
 
 PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
@@ -31,6 +32,13 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
     }
     setAccessibleDescription (desc);
     setAccessibleName (title);
+    raiseWindow (this);
+}
+
+void PinentryConfirm::showEvent( QShowEvent* event )
+{
+    QDialog::showEvent( event );
+    raiseWindow( this );
 }
 
 void PinentryConfirm::slotTimeout()

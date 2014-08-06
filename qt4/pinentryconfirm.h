@@ -36,6 +36,9 @@ class PinentryConfirm : public QMessageBox
 
     private:
 	QTimer *_timer;
+
+    protected:
+    /* reimp */ void showEvent( QShowEvent* event );
 };
 
 #endif

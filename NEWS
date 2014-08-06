@@ -5,6 +5,7 @@ Noteworthy changes in version 0.8.4 (unreleased)
 
  * Qt4: Improved accessiblity
 
+ * Qt4: Raise confirm message windows into foreground
 
 Noteworthy changes in version 0.8.3 (2013-04-26)
 ------------------------------------------------
