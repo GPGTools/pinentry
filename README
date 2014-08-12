@@ -17,6 +17,7 @@ GTK+ V2.0	--enable-pinentry-gtk2	 Gimp Toolkit Library, Version 2.0
 					 eg. libgtk-x11-2.0 and libglib-2.0
 Qt		--enable-pinentry-qt	 Qt, eg. libqt or libqt-mt
 Qt4		--enable-pinentry-qt4	 Qt4
+TTY		--enable-pinentry-tty	 Simple TTY version, no dependencies
 
 The GTK+ and Qt pinentries can fall back to the curses mode.  The
 option to enable this is --enable-fallback-curses, but this is also

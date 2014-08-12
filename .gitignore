@@ -34,6 +34,8 @@ secmem/Makefile.in
 secmem/Makefile
 w32/Makefile.in
 w32/Makefile
+tty/Makefile.in
+tty/Makefile
 
 /qt4/pinentryconfirm.moc
 /qt4/pinentrydialog.moc

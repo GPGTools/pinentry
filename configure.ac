@@ -236,6 +236,20 @@ fi
 
 
 dnl
+dnl Check for tty pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-tty,
+            AC_HELP_STRING([--enable-pinentry-tty], [build tty pinentry]),
+            pinentry_tty=$enableval, pinentry_tty=maybe)
+AM_CONDITIONAL(BUILD_PINENTRY_TTY, test "$pinentry_tty" = "yes")
+
+if test "$pinentry_tty" = "yes"; then
+  AC_DEFINE(PINENTRY_TTY, 1,
+           [The TTY version of Pinentry is to be build])
+fi
+
+
+dnl
 dnl Check for GTK+ pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-gtk,
@@ -494,10 +508,14 @@ else
         if test "$pinentry_curses" = "yes"; then
           PINENTRY_DEFAULT=pinentry-curses
         else
-          if test "$pinentry_w32" = "yes"; then
-            PINENTRY_DEFAULT=pinentry-w32
+          if test "$pinentry_tty" = "yes"; then
+            PINENTRY_DEFAULT=pinentry-tty
           else
-            AC_MSG_ERROR([[No pinentry enabled.]])
+            if test "$pinentry_w32" = "yes"; then
+              PINENTRY_DEFAULT=pinentry-w32
+            else
+              AC_MSG_ERROR([[No pinentry enabled.]])
+            fi
           fi
         fi
       fi
@@ -512,6 +530,7 @@ assuan/Makefile
 secmem/Makefile
 pinentry/Makefile
 curses/Makefile
+tty/Makefile
 gtk/Makefile
 gtk+-2/Makefile
 qt/Makefile
@@ -531,6 +550,7 @@ AC_MSG_NOTICE([
 	Platform:  $host
 
 	Curses Pinentry ..: $pinentry_curses
+	TTY Pinentry .....: $pinentry_tty
 	GTK+ Pinentry ....: $pinentry_gtk
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	Qt Pinentry ......: $pinentry_qt

@@ -35,6 +35,12 @@ else
 pinentry_curses =
 endif
 
+if BUILD_PINENTRY_TTY
+pinentry_tty = tty
+else
+pinentry_tty =
+endif
+
 if BUILD_PINENTRY_GTK
 pinentry_gtk = gtk
 else
@@ -65,7 +71,7 @@ else
 pinentry_w32 =
 endif
 
-SUBDIRS = assuan secmem pinentry ${pinentry_curses} \
+SUBDIRS = assuan secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_qt4} \
 	${pinentry_w32} doc
 

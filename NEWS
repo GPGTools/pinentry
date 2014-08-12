@@ -1,6 +1,8 @@
 Noteworthy changes in version 0.8.4 (unreleased)
 ------------------------------------------------
 
+ * New pinentry-tty version for dumb terminals.
+
  * Qt4: New option to enable pasting the passphrase from clipboard
 
  * Qt4: Improved accessiblity
