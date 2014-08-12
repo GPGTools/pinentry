@@ -1,20 +1,20 @@
 /* pinentry.c - The PIN entry support library
    Copyright (C) 2002, 2003, 2007, 2008, 2010 g10 Code GmbH
-   
+
    This file is part of PINENTRY.
-   
+
    PINENTRY is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
- 
+
    PINENTRY is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>.  
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -53,7 +53,7 @@
 #endif
 
 /* Keep the name of our program here. */
-static char this_pgmname[50]; 
+static char this_pgmname[50];
 
 
 struct pinentry pinentry =
@@ -146,7 +146,8 @@ pinentry_utf8_to_local (char *lc_ctype, char *text)
       free (output_buf);
       return NULL;
     }
-  processed = iconv (cd, &input, &input_len, &output, &output_len);
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
   iconv_close (cd);
   if (processed == (size_t) -1 || input_len)
     {
@@ -212,7 +213,8 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
         free (output_buf);
       return NULL;
     }
-  processed = iconv (cd, &input, &input_len, &output, &output_len);
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
   iconv_close (cd);
   if (processed == (size_t) -1 || input_len)
     {
@@ -240,7 +242,7 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
   int i;
   const unsigned char *s = (unsigned char *)text;
   char *p = buffer;
-  
+
   for (i=0; i < textlen; i++)
     {
       if (s[i] < ' ' || s[i] == '+')
@@ -300,7 +302,7 @@ pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
 
   for (;;)
     {
-      do 
+      do
         {
           rc = assuan_read_line (ctx, &line, &linelen);
           if (rc)
@@ -308,7 +310,7 @@ pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
               fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
               return 0;
             }
-        }    
+        }
       while (*line == '#' || !linelen);
       if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
           && (!line[3] || line[3] == ' '))
@@ -403,7 +405,7 @@ pinentry_have_display (int argc, char **argv)
 
 
 
-static void 
+static void
 usage (void)
 {
   fprintf (stdout, "Usage: %s [OPTION]...\n"
@@ -502,7 +504,7 @@ pinentry_parse_opts (int argc, char *argv[])
      { "version", no_argument, &opt_version, 1 },
      { "timeout", required_argument, 0, 'o' },
      { NULL, 0, NULL, 0 }};
-  
+
   while ((opt = getopt_long (argc, argv, "degh", opts, NULL)) != -1)
     {
       switch (opt)
@@ -536,7 +538,7 @@ pinentry_parse_opts (int argc, char *argv[])
 #endif
 	      exit (EXIT_FAILURE);
 	    }
-	  break; 
+	  break;
 	case 'T':
 	  pinentry.ttyname = strdup (optarg);
 	  if (!pinentry.ttyname)
@@ -598,9 +600,9 @@ pinentry_parse_opts (int argc, char *argv[])
 	  break;
         }
     }
-  if (opt_version) 
+  if (opt_version)
     return 1;
-  if (opt_help) 
+  if (opt_help)
     {
       usage ();
       exit (EXIT_SUCCESS);
@@ -710,7 +712,7 @@ strcpy_escaped (char *d, const char *s)
   while (*s)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *d++ = xtoi_2 ( s);
           s += 2;
@@ -718,7 +720,7 @@ strcpy_escaped (char *d, const char *s)
       else
         *d++ = *s++;
     }
-  *d = 0; 
+  *d = 0;
 }
 
 
@@ -838,10 +840,10 @@ cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newt;
   newt = malloc (strlen (line) + 1);
-  
+
   if (!newt)
     return ASSUAN_Out_Of_Core;
-  
+
   strcpy_escaped (newt, line);
   if (pinentry.title)
     free (pinentry.title);
@@ -879,7 +881,7 @@ cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
       newval = malloc (strlen (line) + 1);
       if (!newval)
         return ASSUAN_Out_Of_Core;
-      
+
       strcpy_escaped (newval, line);
     }
   else
@@ -980,7 +982,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 
   return result ? 0
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
-                                      : (pinentry.one_button 
+                                      : (pinentry.one_button
                                          ? 0
                                          : (pinentry.canceled
                                             ? ASSUAN_Canceled
@@ -1007,7 +1009,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   if (pinentry.close_button)
     assuan_write_status (ctx, "BUTTON_INFO", "close");
 
-  return result ? 0 
+  return result ? 0
                 : (pinentry.locale_err? ASSUAN_Locale_Problem
                                       : 0);
 }
@@ -1080,7 +1082,7 @@ register_commands (ASSUAN_CONTEXT ctx)
                                     table[i].name, table[i].handler);
       if (rc)
         return rc;
-    } 
+    }
   return 0;
 }
 
@@ -1122,7 +1124,7 @@ pinentry_loop2 (int infd, int outfd)
 #if 0
   assuan_set_log_stream (ctx, stderr);
 #endif
-  
+
   for (;;)
     {
       rc = assuan_accept (ctx);
@@ -1134,7 +1136,7 @@ pinentry_loop2 (int infd, int outfd)
                    this_pgmname, assuan_strerror (rc));
           break;
         }
-      
+
       rc = assuan_process (ctx);
       if (rc)
         {
