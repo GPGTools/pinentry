@@ -44,6 +44,7 @@ m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
 AC_INIT([pinentry],[mym4_full_version], [http://bugs.gnupg.org])
 
+AC_CONFIG_AUX_DIR([build-aux])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
