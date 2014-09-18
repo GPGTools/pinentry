@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.8.4 (unreleased)
+Noteworthy changes in version 0.8.4 (2014-09-18)
 ------------------------------------------------
 
  * New pinentry-tty version for dumb terminals.
@@ -9,8 +9,11 @@ Noteworthy changes in version 0.8.4 (unreleased)
 
  * Qt4: Raise confirm message windows into foreground
 
- * Qt4 (Windows): Improve the way pinentry-qt raises itself in
- the foreground.
+ * Qt4 (Windows): Improve the way pinentry-qt raises itself in the
+   foreground.
+
+ * Improved the build system.
+
 
 Noteworthy changes in version 0.8.3 (2013-04-26)
 ------------------------------------------------
