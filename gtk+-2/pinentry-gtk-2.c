@@ -132,11 +132,11 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
 
 
 /* Grab the keyboard for maximum security */
-static void
+static int
 grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
   if (! pinentry->grab)
-    return;
+    return FALSE;
 
   if (gdk_keyboard_grab (win->window, FALSE, gdk_event_get_time (event)))
     {
@@ -144,11 +144,12 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
       grab_failed = 1;
       gtk_main_quit ();
     }
+  return FALSE;
 }
 
 
 /* Remove grab.  */
-static void
+static int
 ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
   gdk_keyboard_ungrab (gdk_event_get_time (event));
@@ -158,6 +159,7 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
      code is taken from gtk_window_transient_parent_unrealized.  */
   gdk_property_delete (win->window,
                        gdk_atom_intern_static_string ("WM_TRANSIENT_FOR"));
+  return FALSE;
 }
 
 
