@@ -1,20 +1,20 @@
 /* pinentry.h - The interface for the PIN entry support library.
    Copyright (C) 2002, 2003, 2010 g10 Code GmbH
-   
+
    This file is part of PINENTRY.
-   
+
    PINENTRY is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
- 
+
    PINENTRY is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
-   along with this program; if not, see <http://www.gnu.org/licenses/>. 
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef PINENTRY_H
@@ -22,7 +22,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#if 0 
+#if 0
 }
 #endif
 #endif
@@ -111,6 +111,18 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
+  /* If true a second prompt for the passphrase is show and the user
+     is expected to enter the same passphrase again.  Pinentry checks
+     that both match.  */
+  char *repeat_passphrase;
+
+  /* The string to show if a repeated passphrase does not match.  */
+  char *repeat_error_string;
+
+  /* Set to true if the passphrase has been entered a second time and
+     matches the first passphrase.  */
+  int repeat_okay;
+
   /* If this is not NULL, a passphrase quality indicator is shown.
      There will also be an inquiry back to the caller to get an
      indication of the quality for the passphrase entered so far.  The
@@ -170,7 +182,7 @@ char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
 
 
 /* Run a quality inquiry for PASSPHRASE of LENGTH. */
-int pinentry_inq_quality (pinentry_t pin, 
+int pinentry_inq_quality (pinentry_t pin,
                           const char *passphrase, size_t length);
 
 /* Try to make room for at least LEN bytes for the pin in the pinentry
@@ -206,7 +218,7 @@ extern pinentry_cmd_handler_t pinentry_cmd_handler;
 
 
 
-#if 0 
+#if 0
 {
 #endif
 #ifdef __cplusplus

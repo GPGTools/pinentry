@@ -85,6 +85,9 @@ struct pinentry pinentry =
     0,		/* Close button flag.  */
     0,          /* Locale error flag. */
     0,          /* One-button flag.  */
+    NULL,       /* Repeat passphrase flag.  */
+    NULL,       /* Repeat error string.  */
+    0,          /* Correctly repeated flag.  */
     NULL,       /* Quality-Bar flag and description.  */
     NULL,       /* Quality-Bar tooltip.  */
     PINENTRY_COLOR_DEFAULT,
@@ -759,6 +762,38 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
 
 
 static int
+cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *p;
+
+  p = malloc (strlen (line) + 1);
+  if (!p)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy_escaped (p, line);
+  free (pinentry.repeat_passphrase);
+  pinentry.repeat_passphrase = p;
+  return 0;
+}
+
+
+static int
+cmd_setrepeaterror (ASSUAN_CONTEXT ctx, char *line)
+{
+  char *p;
+
+  p = malloc (strlen (line) + 1);
+  if (!p)
+    return ASSUAN_Out_Of_Core;
+
+  strcpy_escaped (p, line);
+  free (pinentry.repeat_error_string);
+  pinentry.repeat_error_string = p;
+  return 0;
+}
+
+
+static int
 cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newe;
@@ -909,6 +944,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     }
   pinentry.locale_err = 0;
   pinentry.close_button = 0;
+  pinentry.repeat_okay = 0;
   pinentry.one_button = 0;
   pinentry.ctx_assuan = ctx;
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -917,6 +953,11 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     {
       free (pinentry.error);
       pinentry.error = NULL;
+    }
+  if (pinentry.repeat_passphrase)
+    {
+      free (pinentry.repeat_passphrase);
+      pinentry.repeat_passphrase = NULL;
     }
   if (set_prompt)
     pinentry.prompt = NULL;
@@ -938,6 +979,8 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 
   if (result)
     {
+      if (pinentry.repeat_okay)
+        assuan_write_status (ctx, "PIN_REPEATED", "");
       result = assuan_send_data (ctx, pinentry.pin, result);
       if (!result)
 	result = assuan_send_data (ctx, NULL, 0);
@@ -1058,6 +1101,8 @@ register_commands (ASSUAN_CONTEXT ctx)
     {
       { "SETDESC",    0,  cmd_setdesc },
       { "SETPROMPT",  0,  cmd_setprompt },
+      { "SETREPEAT",  0,  cmd_setrepeat },
+      { "SETREPEATERROR",0, cmd_setrepeaterror },
       { "SETERROR",   0,  cmd_seterror },
       { "SETOK",      0,  cmd_setok },
       { "SETNOTOK",   0,  cmd_setnotok },
