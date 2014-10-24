@@ -230,7 +230,7 @@ enter_callback (GtkWidget *widget, GtkWidget *anentry)
 static void
 confirm_button_clicked (GtkWidget *widget, gpointer data)
 {
-  confirm_value = (int) data;
+  confirm_value = (int)(long) data;
   gtk_main_quit ();
 }
 

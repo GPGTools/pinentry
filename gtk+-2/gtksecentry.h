@@ -72,6 +72,7 @@ struct _GtkSecureEntry {
     GtkIMContext *im_context;
 
     gint current_pos;
+    gint insert_pos;   /* Used to temporary save a position.  */
     gint selection_bound;
 
     PangoLayout *cached_layout;
@@ -93,6 +94,9 @@ struct _GtkSecureEntry {
     guint mouse_cursor_obscured:1;
 
     guint resolved_dir : 4; /* PangoDirection */
+
+    guint real_changed : 1;
+    guint change_count : 8;
 
     guint button;
     guint blink_timeout;
@@ -124,9 +128,9 @@ struct _GtkSecureEntryClass {
     void (*insert_at_cursor) (GtkSecureEntry * entry, const gchar * str);
     void (*delete_from_cursor) (GtkSecureEntry * entry,
 				GtkDeleteType type, gint count);
+    void (*paste_clipboard) (GtkSecureEntry *entry);
 
     /* Padding for future expansion */
-    void (*_gtk_reserved1) (void);
     void (*_gtk_reserved2) (void);
     void (*_gtk_reserved3) (void);
     void (*_gtk_reserved4) (void);

@@ -31,7 +31,7 @@
  *
  * The entry is now always invisible, uses secure memory methods to
  * allocate the text memory, and all potentially dangerous methods
- * (copy & paste, popup, etc.) have been removed.
+ * (copy, popup, etc.) have been removed.
  */
 
 #include <stdlib.h>
@@ -57,6 +57,7 @@ enum {
     MOVE_CURSOR,
     INSERT_AT_CURSOR,
     DELETE_FROM_CURSOR,
+    PASTE_CLIPBOARD,
     LAST_SIGNAL
 };
 
@@ -175,6 +176,7 @@ static void gtk_secure_entry_real_activate(GtkSecureEntry * entry);
 static void gtk_secure_entry_keymap_direction_changed(GdkKeymap * keymap,
 						      GtkSecureEntry *
 						      entry);
+
 /* IM Context Callbacks
  */
 static void gtk_secure_entry_commit_cb(GtkIMContext * context,
@@ -195,6 +197,13 @@ static gboolean gtk_secure_entry_delete_surrounding_cb(GtkIMContext *
 
 /* Internal routines
  */
+
+static void begin_change (GtkSecureEntry *entry);
+static void end_change (GtkSecureEntry *entry);
+static void emit_changed (GtkSecureEntry *entry);
+static void gtk_secure_entry_paste (GtkSecureEntry *entry, GdkAtom selection);
+static void gtk_secure_entry_paste_clipboard (GtkSecureEntry *entry);
+
 static void gtk_secure_entry_enter_text(GtkSecureEntry * entry,
 					const gchar * str);
 static void gtk_secure_entry_set_positions(GtkSecureEntry * entry,
@@ -424,6 +433,7 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
     class->move_cursor = gtk_secure_entry_move_cursor;
     class->insert_at_cursor = gtk_secure_entry_insert_at_cursor;
     class->delete_from_cursor = gtk_secure_entry_delete_from_cursor;
+    class->paste_clipboard = gtk_secure_entry_paste_clipboard;
     class->activate = gtk_secure_entry_real_activate;
 
     g_object_class_override_property (gobject_class,
@@ -544,6 +554,15 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
 		     _gtk_marshal_VOID__ENUM_INT, G_TYPE_NONE, 2,
 		     GTK_TYPE_DELETE_TYPE, G_TYPE_INT);
 
+    signals[PASTE_CLIPBOARD] =
+      g_signal_new ("paste-clipboard",
+                    G_OBJECT_CLASS_TYPE (gobject_class),
+                    G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                    G_STRUCT_OFFSET (GtkEntryClass, paste_clipboard),
+                    NULL, NULL,
+                    _gtk_marshal_VOID__VOID,
+                    G_TYPE_NONE, 0);
+
     /*
      * Key bindings
      */
@@ -655,6 +674,13 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
 				 GDK_CONTROL_MASK, "delete_from_cursor", 2,
 				 G_TYPE_ENUM, GTK_DELETE_WORD_ENDS,
 				 G_TYPE_INT, -1);
+
+    /* Clipboard - only pasting of course.  */
+    gtk_binding_entry_add_signal (binding_set, GDK_v, GDK_CONTROL_MASK,
+                                  "paste-clipboard", 0);
+    gtk_binding_entry_add_signal (binding_set, GDK_Insert, GDK_SHIFT_MASK,
+                                  "paste-clipboard", 0);
+
 }
 
 static void
@@ -833,13 +859,11 @@ static void
 gtk_secure_entry_realize(GtkWidget * widget)
 {
     GtkSecureEntry *entry;
-    GtkEditable *editable;
     GdkWindowAttr attributes;
     gint attributes_mask;
 
     GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
     entry = GTK_SECURE_ENTRY(widget);
-    editable = GTK_EDITABLE(widget);
 
     attributes.window_type = GDK_WINDOW_CHILD;
 
@@ -1166,6 +1190,18 @@ gtk_secure_entry_button_press(GtkWidget * widget, GdkEventButton * event)
 	}
 
 	return TRUE;
+    }
+    else if (event->button == 2) {
+        switch (event->type) {
+        case GDK_BUTTON_PRESS:
+            entry->insert_pos = tmp_pos;
+            gtk_secure_entry_paste (entry, GDK_SELECTION_PRIMARY);
+            return TRUE;
+
+        default:
+            break;
+        }
+
     }
 
     return FALSE;
@@ -1647,7 +1683,7 @@ gtk_secure_entry_real_insert_text(GtkEditable * editable,
 
     gtk_secure_entry_recompute(entry);
 
-    g_signal_emit_by_name(editable, "changed");
+    emit_changed (entry);
     g_object_notify(G_OBJECT(editable), "text");
 }
 
@@ -1688,7 +1724,7 @@ gtk_secure_entry_real_delete_text(GtkEditable * editable,
 
 	gtk_secure_entry_recompute(entry);
 
-	g_signal_emit_by_name(editable, "changed");
+	emit_changed (entry);
 	g_object_notify(G_OBJECT(editable), "text");
     }
 }
@@ -1859,6 +1895,100 @@ gtk_secure_entry_delete_from_cursor(GtkSecureEntry * entry,
 
     gtk_secure_entry_pend_cursor_blink(entry);
 }
+
+static void
+begin_change (GtkSecureEntry *entry)
+{
+  entry->change_count++;
+}
+
+static void
+end_change (GtkSecureEntry *entry)
+{
+  GtkEditable *editable = GTK_EDITABLE (entry);
+
+  g_return_if_fail (entry->change_count > 0);
+
+  entry->change_count--;
+
+  if (entry->change_count == 0)
+    {
+       if (entry->real_changed)
+         {
+           g_signal_emit_by_name (editable, "changed");
+           entry->real_changed = FALSE;
+         }
+    }
+}
+
+static void
+emit_changed (GtkSecureEntry *entry)
+{
+  GtkEditable *editable = GTK_EDITABLE (entry);
+
+  if (entry->change_count == 0)
+    g_signal_emit_by_name (editable, "changed");
+  else
+    entry->real_changed = TRUE;
+}
+
+
+static void
+paste_received (GtkClipboard *clipboard,
+		const gchar  *text,
+		gpointer      data)
+{
+  GtkSecureEntry *entry = GTK_SECURE_ENTRY (data);
+  GtkEditable *editable = GTK_EDITABLE (entry);
+
+  if (entry->button == 2)
+    {
+      gint pos, start, end;
+
+      pos = entry->insert_pos;
+      gtk_editable_get_selection_bounds (editable, &start, &end);
+      if (!((start <= pos && pos <= end) || (end <= pos && pos <= start)))
+	gtk_editable_select_region (editable, pos, pos);
+    }
+
+  if (text)
+    {
+      gint pos, start, end;
+      gint length = -1;
+
+      begin_change (entry);
+      g_object_freeze_notify (G_OBJECT (entry));
+      if (gtk_editable_get_selection_bounds (editable, &start, &end))
+        gtk_editable_delete_text (editable, start, end);
+
+      pos = entry->current_pos;
+      gtk_editable_insert_text (editable, text, length, &pos);
+      gtk_editable_set_position (editable, pos);
+      g_object_thaw_notify (G_OBJECT (entry));
+      end_change (entry);
+    }
+
+  g_object_unref (entry);
+}
+
+
+static void
+gtk_secure_entry_paste (GtkSecureEntry *entry, GdkAtom selection)
+{
+  g_object_ref (entry);
+  gtk_clipboard_request_text (gtk_widget_get_clipboard (GTK_WIDGET (entry),
+                                                        selection),
+			      paste_received, entry);
+}
+
+
+static void
+gtk_secure_entry_paste_clipboard (GtkSecureEntry *entry)
+{
+  gtk_secure_entry_paste (entry, GDK_SELECTION_CLIPBOARD);
+}
+
+
 
 /* static void */
 /* gtk_secure_entry_delete_cb(GtkSecureEntry * entry) */
