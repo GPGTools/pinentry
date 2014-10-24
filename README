@@ -11,11 +11,8 @@ be requested explicitely.
 
 GUI		OPTION			 DEPENDENCIES
 Curses		--enable-pinentry-curses Curses library, for example ncurses
-GTK+ V1.2	--enable-pinentry-gtk	 Gimp Toolkit Library Version 1.2
-			 		 eg. libgtk-1.2 and libglib-1.2
 GTK+ V2.0	--enable-pinentry-gtk2	 Gimp Toolkit Library, Version 2.0
 					 eg. libgtk-x11-2.0 and libglib-2.0
-Qt		--enable-pinentry-qt	 Qt, eg. libqt or libqt-mt
 Qt4		--enable-pinentry-qt4	 Qt4
 TTY		--enable-pinentry-tty	 Simple TTY version, no dependencies
 
@@ -27,13 +24,13 @@ specified.  So to disable linking to curses completely you have to
 pass --disable-fallback-curses to the configure script as well.
 
 Examples:
-* To only build the GTK+ 1.2 pinentry with curses support:
-./configure --enable-pinentry-gtk --enable-fallback-curses \
-	--disable-pinentry-curses --disable-pinentry-qt
+* To only build the GTK+ pinentry with curses support:
+./configure --enable-pinentry-gtk2 --enable-fallback-curses \
+	--disable-pinentry-curses --disable-pinentry-qt4
 
 * To build the Qt pinentry, and the other pinentries if they are
   supported:
-./configure --enable-pinentry-qt
+./configure --enable-pinentry-qt4
 
 * To build everything that is supported (complete auto-detection):
 ./configure

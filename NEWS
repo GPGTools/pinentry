@@ -1,5 +1,13 @@
-Noteworthy changes in version 0.8.5 (unreleased)
+Noteworthy changes in version 0.9.0 (unreleased)
 ------------------------------------------------
+
+ * New command SETREPEAT.  Currently only supported for Gtk+-2.
+
+ * Gtk+-2: Pasting using the mouse is now supported.
+
+ * curses: Check that it is actually connected to a tty.
+
+ * Removed the old qt-3 and gtk+-1 pinentries.
 
 
 Noteworthy changes in version 0.8.4 (2014-09-18)

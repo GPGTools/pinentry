@@ -251,55 +251,10 @@ fi
 
 
 dnl
-dnl Check for GTK+ pinentry program.
+dnl Additional checks pinentry Curses.
 dnl
-AC_ARG_ENABLE(pinentry-gtk,
-            AC_HELP_STRING([--enable-pinentry-gtk], [build GTK+ pinentry]),
-            pinentry_gtk=$enableval, pinentry_gtk=maybe)
-
-dnl
-dnl Checks for GTK+ libraries.  Deal correctly with $pinentry_gtk = maybe.
-dnl
-if test "$pinentry_gtk" != "no"; then
-AM_PATH_GLIB(1.2.0,,
-if test "$pinentry_gtk" = "yes"; then
-    AC_MSG_ERROR([[
-***
-*** GLIB 1.2.0 or newer is required. The latest version of GLIB
-*** is always available from ftp://ftp.gtk.org/.
-***]])
-else
-    pinentry_gtk=no
-fi)
-fi
-
-if test "$pinentry_gtk" != "no"; then
-AM_PATH_GTK(1.2.0,
-    AC_DEFINE(HAVE_GTK, 1, [Defined if GTK is available]),
-if test "$pinentry_gtk" = "yes"; then
-    AC_MSG_ERROR([[
-***
-*** GTK+ 1.2.0 or newer is required. The latest version of GTK+
-*** is always available form ftp://ftp.gtk.org/.
-***]])
-else
-    pinentry_gtk=no
-fi)
-fi
-
-dnl If we have come so far, GTK+ pinentry can be build.
-if test "$pinentry_gtk" != "no"; then
-    pinentry_gtk=yes
-fi
-AM_CONDITIONAL(BUILD_PINENTRY_GTK, test "$pinentry_gtk" = "yes")
-if test "$pinentry_gtk" = "yes"; then
-  AC_DEFINE(PINENTRY_GTK, 1, [The GTK+ version of Pinentry is to be build])
-fi
-
 if test "$pinentry_curses" = "yes" \
-        -o "$fallback_curses" = "yes" \
-        -o "$pinentry_gtk" = "yes"; then
-  dnl Additional checks pinentry Curses/GTK+.
+        -o "$fallback_curses" = "yes" ; then
   AM_ICONV
   if test "$am_cv_func_iconv" != "yes"; then
     AC_MSG_ERROR([[
@@ -310,10 +265,6 @@ if test "$pinentry_curses" = "yes" \
   fi
 fi
 
-dnl if test "$pinentry_gtk" = "yes"; then
-dnl Additional checks for GTK+ pinentry.
-dnl End of additional checks for GTK+ pinentry.
-dnl fi
 
 
 dnl
@@ -358,64 +309,6 @@ if test "$pinentry_gtk_2" != "no"; then
 	fi
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
-
-
-dnl
-dnl Check for Qt pinentry program.
-dnl
-AC_ARG_ENABLE(pinentry-qt,
-            AC_HELP_STRING([--enable-pinentry-qt], [build Qt pinentry]),
-            pinentry_qt=$enableval, pinentry_qt=maybe)
-dnl
-dnl Checks for Qt libraries.  Deal correctly with $pinentry_qt = maybe.
-dnl
-if test "$pinentry_qt" != "no"; then
-QT_CHECK_COMPILERS
-QT_PATH
-if test $have_qt = "no"; then
-	if test $pinentry_qt = "yes"; then
-	  AC_MSG_ERROR([[
-***
-*** Qt ($qt_minversion) $ac_qt_notfound not found. Please check your
-*** installation!  For more details about this problem, look at the
-*** end of config.log.$missing_qt_mt
-***]])
-	else
-	  pinentry_qt="no"
-	fi
-fi
-if test $have_moc = "no"; then
-	if test $pinentry_qt = "yes"; then
-        AC_MSG_ERROR([[
-***
-*** No Qt meta object compiler (moc) found!
-*** Please check whether you installed Qt correctly.
-*** You need to have a running moc binary.
-*** configure tried to run $ac_cv_path_moc and the test didn't
-*** succeed. If configure shouldn't have tried this one, set
-*** the environment variable MOC to the right one before running
-*** configure.
-***]])
-	else
-	  pinentry_qt="no"
-	fi
-fi
-fi
-
-dnl If we have come so far, Qt pinentry can probably be build.
-if test "$pinentry_qt" != "no"; then
-    pinentry_qt=yes
-fi
-AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
-
-if test "$pinentry_qt" = "yes"; then
-  AC_DEFINE(PINENTRY_QT, 1, [The Qt version of Pinentry is to be build])
-fi
-
-dnl if test "$pinentry_qt" = "yes"; then
-dnl dnl Additional checks for Qt pinentry.
-dnl dnl End of checks for Qt pinentry.
-dnl fi
 
 
 dnl
@@ -495,29 +388,21 @@ AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
 # pinentry really is better (more feature-complete and more secure).
 
 if test "$pinentry_gtk_2" = "yes"; then
-   PINENTRY_DEFAULT=pinentry-gtk-2
+  PINENTRY_DEFAULT=pinentry-gtk-2
 else
-  if test "$pinentry_gtk" = "yes"; then
-    PINENTRY_DEFAULT=pinentry-gtk
+  if test "$pinentry_qt4" = "yes"; then
+    PINENTRY_DEFAULT=pinentry-qt4
   else
-    if test "$pinentry_qt" = "yes"; then
-      PINENTRY_DEFAULT=pinentry-qt
+    if test "$pinentry_curses" = "yes"; then
+      PINENTRY_DEFAULT=pinentry-curses
     else
-      if test "$pinentry_qt4" = "yes"; then
-        PINENTRY_DEFAULT=pinentry-qt4
+      if test "$pinentry_tty" = "yes"; then
+        PINENTRY_DEFAULT=pinentry-tty
       else
-        if test "$pinentry_curses" = "yes"; then
-          PINENTRY_DEFAULT=pinentry-curses
+        if test "$pinentry_w32" = "yes"; then
+          PINENTRY_DEFAULT=pinentry-w32
         else
-          if test "$pinentry_tty" = "yes"; then
-            PINENTRY_DEFAULT=pinentry-tty
-          else
-            if test "$pinentry_w32" = "yes"; then
-              PINENTRY_DEFAULT=pinentry-w32
-            else
-              AC_MSG_ERROR([[No pinentry enabled.]])
-            fi
-          fi
+          AC_MSG_ERROR([[No pinentry enabled.]])
         fi
       fi
     fi
@@ -532,9 +417,7 @@ secmem/Makefile
 pinentry/Makefile
 curses/Makefile
 tty/Makefile
-gtk/Makefile
 gtk+-2/Makefile
-qt/Makefile
 qt4/Makefile
 w32/Makefile
 doc/Makefile
@@ -552,9 +435,7 @@ AC_MSG_NOTICE([
 
 	Curses Pinentry ..: $pinentry_curses
 	TTY Pinentry .....: $pinentry_tty
-	GTK+ Pinentry ....: $pinentry_gtk
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
-	Qt Pinentry ......: $pinentry_qt
 	Qt4 Pinentry .....: $pinentry_qt4 $pinentry_qt4_clip_msg
 	W32 Pinentry .....: $pinentry_w32
 

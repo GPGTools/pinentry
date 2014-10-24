@@ -41,22 +41,10 @@ else
 pinentry_tty =
 endif
 
-if BUILD_PINENTRY_GTK
-pinentry_gtk = gtk
-else
-pinentry_gtk =
-endif
-
 if BUILD_PINENTRY_GTK_2
 pinentry_gtk_2 = gtk+-2
 else
 pinentry_gtk_2 =
-endif
-
-if BUILD_PINENTRY_QT
-pinentry_qt = qt
-else
-pinentry_qt =
 endif
 
 if BUILD_PINENTRY_QT4
@@ -72,8 +60,7 @@ pinentry_w32 =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} ${pinentry_tty} \
-	${pinentry_gtk} ${pinentry_gtk_2} ${pinentry_qt} ${pinentry_qt4} \
-	${pinentry_w32} doc
+	  ${pinentry_gtk_2} ${pinentry_qt4} ${pinentry_w32} doc
 
 
 install-exec-local:
