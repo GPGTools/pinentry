@@ -676,10 +676,12 @@ gtk_secure_entry_class_init(GtkSecureEntryClass * class)
 				 G_TYPE_INT, -1);
 
     /* Clipboard - only pasting of course.  */
-    gtk_binding_entry_add_signal (binding_set, GDK_v, GDK_CONTROL_MASK,
-                                  "paste-clipboard", 0);
-    gtk_binding_entry_add_signal (binding_set, GDK_Insert, GDK_SHIFT_MASK,
-                                  "paste-clipboard", 0);
+    /* Ist does not work right now.  Depending on the GTK version we
+       see segv due to "property added after class was intialized".  */
+    /* gtk_binding_entry_add_signal (binding_set, GDK_v, GDK_CONTROL_MASK, */
+    /*                               "paste-clipboard", 0); */
+    /* gtk_binding_entry_add_signal (binding_set, GDK_Insert, GDK_SHIFT_MASK, */
+    /*                               "paste-clipboard", 0); */
 
 }
 
