@@ -1,4 +1,4 @@
-Noteworthy changes in version 0.9.0 (unreleased)
+Noteworthy changes in version 0.9.0 (2014-10-26)
 ------------------------------------------------
 
  * New command SETREPEAT.  Currently only supported for Gtk+-2.
