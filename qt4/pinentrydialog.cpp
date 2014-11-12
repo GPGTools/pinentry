@@ -76,7 +76,6 @@ void raiseWindow( QWidget* w )
     /* Maybe Qt will become agressive enough one day that
      * this is enough on windows too*/
     w->raise();
-    w->activateWindow();
 #ifdef Q_WS_WIN
     /* In the meantime we do our own attention grabbing */
     if (!SetForegroundWindow (w->winId()) &&
