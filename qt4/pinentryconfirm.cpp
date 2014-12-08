@@ -30,8 +30,10 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
 	connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 	_timer->start(timeout*1000);
     }
+#ifndef QT_NO_ACCESSIBILITY
     setAccessibleDescription (desc);
     setAccessibleName (title);
+#endif
     raiseWindow (this);
 }
 
