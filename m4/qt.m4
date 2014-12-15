@@ -59,7 +59,7 @@ AC_DEFUN([QT_PATH_MOC],
       qt_bindirs="$ac_qt_bindir:$qt_bindirs"
    fi
 
-   AC_PATH_PROG(MOC, moc, no, [$qt_bindirs])
+   AC_PATH_PROGS(MOC, [moc-qt4 moc], no, [$qt_bindirs])
    if test "$MOC" = no; then
     #AC_MSG_ERROR([No Qt meta object compiler (moc) found!
     #Please check whether you installed Qt correctly.

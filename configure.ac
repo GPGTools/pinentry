@@ -335,7 +335,19 @@ fi)
 fi
 
 if test "$pinentry_qt4" != "no"; then
+
 QT_PATH_MOC
+if test "$have_moc" != "yes"; then
+    if test "$pinentry_qt4" = "yes"; then
+        AC_MSG_ERROR([[
+    ***
+    *** Qt moc is required.
+    ***]])
+    else
+        pinentry_qt4=no
+    fi
+fi
+
 PKG_CHECK_MODULES(QT4_GUI, QtGui,,
 if test "$pinentry_qt4" = "yes"; then
     AC_MSG_ERROR([[

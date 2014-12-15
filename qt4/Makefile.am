@@ -44,16 +44,15 @@ pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 BUILT_SOURCES = \
 	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
 
-MAINTAINERCLEANFILES = \
+CLEANFILES = \
 	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
-
-EXTRA_DIST += \
-        pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
 
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp secstring.h secstring.cpp qsecurelineedit.h \
 	qsecurelineedit.cpp qrc_pinentry.cpp \
-	qsecurelineedit_p.h pinentryconfirm.cpp pinentryconfirm.h \
+	qsecurelineedit_p.h pinentryconfirm.cpp pinentryconfirm.h
+
+nodist_pinentry_qt4_SOURCES = \
 	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
 
 .h.moc:
