@@ -189,11 +189,7 @@ main (int argc, char *argv[])
   pinentry_init ("pinentry-tty");
 
   /* Consumes all arguments.  */
-  if (pinentry_parse_opts(argc, argv))
-    {
-      printf ("pinentry-tty (pinentry) " VERSION "\n");
-      exit(EXIT_SUCCESS);
-    }
+  pinentry_parse_opts(argc, argv);
 
   if (pinentry_loop ())
     return 1;

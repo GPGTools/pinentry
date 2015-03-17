@@ -3,17 +3,17 @@
    Copyright (C) 2003 g10 Code GmbH
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
    Modified by Marcus Brinkmann <marcus@g10code.de>.
-   
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation; either version 2 of the
    License, or (at your option) any later version.
- 
+
    This program is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -87,7 +87,7 @@ public:
     QWidget::destroy();
     create( wid, false, false );
   }
- 
+
   ~ForeignWidget()
   {
     destroy( false, false );
@@ -167,16 +167,16 @@ qt_cmd_handler (pinentry_t pe)
         (QString::fromUtf8 (pe->cancel ? pe->cancel :
                             pe->default_cancel? pe->default_cancel: "&Cancel"));
       bool ret;
-      
+
       ret = QMessageBox::information (parent, "", desc, ok, can );
-      
+
       return !ret;
     }
 }
 
 pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler;
 
-int 
+int
 main (int argc, char *argv[])
 {
   pinentry_init ("pinentry-qt");
@@ -205,7 +205,7 @@ main (int argc, char *argv[])
           fprintf (stderr, "pinentry-qt: can't fixup argument list: %s\n",
                    strerror (errno));
           exit (EXIT_FAILURE);
-          
+
         }
       for (done=0,p=*new_argv,i=0; i < argc; i++)
         if (!done && !strcmp (argv[i], "--display"))
@@ -224,14 +224,9 @@ main (int argc, char *argv[])
       i = argc;
       new QApplication (i, new_argv);
     }
-  
 
-  /* Consumes all arguments.  */
-  if (pinentry_parse_opts (argc, argv))
-    {
-      printf ("pinentry-qt (pinentry) " VERSION "\n");
-      exit (EXIT_SUCCESS);
-    }
+
+  pinentry_parse_opts (argc, argv);
 
   if (pinentry_loop ())
     return 1;

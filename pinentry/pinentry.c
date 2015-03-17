@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002, 2003, 2007, 2008, 2010 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2015 g10 Code GmbH
 
    This file is part of PINENTRY.
 
@@ -46,6 +46,7 @@
 #include "assuan.h"
 #include "memory.h"
 #include "secmem-util.h"
+#include "argparse.h"
 #include "pinentry.h"
 
 #ifdef HAVE_W32CE_SYSTEM
@@ -408,26 +409,46 @@ pinentry_have_display (int argc, char **argv)
 
 
 
-static void
-usage (void)
+/* Print usage information and and provide strings for help. */
+static const char *
+my_strusage( int level )
 {
-  fprintf (stdout, "Usage: %s [OPTION]...\n"
-"Ask securely for a secret and print it to stdout.\n"
-"\n"
-"      --display DISPLAY Set the X display\n"
-"      --ttyname PATH    Set the tty terminal node name\n"
-"      --ttytype NAME    Set the tty terminal type\n"
-"      --lc-ctype        Set the tty LC_CTYPE value\n"
-"      --lc-messages     Set the tty LC_MESSAGES value\n"
-"      --timeout SECS    Timeout waiting for input after this many seconds\n"
-#ifdef ENABLE_ENHANCED
-"  -e, --enhanced        Ask for timeout and insurance, too\n"
-#endif
-"  -g, --no-global-grab  Grab keyboard only while window is focused\n"
-"      --parent-wid      Parent window ID (for positioning)\n"
-"  -d, --debug           Turn on debugging output\n"
-"  -h, --help            Display this help and exit\n"
-"      --version         Output version information and exit\n", this_pgmname);
+  const char *p;
+
+  switch (level)
+    {
+    case 11: p = this_pgmname; break;
+    case 12: p = "pinentry"; break;
+    case 13: p = PACKAGE_VERSION; break;
+    case 14: p = "Copyright (C) 2015 g10 Code GmbH"; break;
+    case 19: p = "Please report bugs to <" PACKAGE_BUGREPORT ">.\n"; break;
+    case 1:
+    case 40:
+      {
+        static char *str;
+
+        if (!str)
+          {
+            size_t n = 50 + strlen (this_pgmname);
+            str = malloc (n);
+            if (str)
+              snprintf (str, n, "Usage: %s [options] (-h for help)",
+                        this_pgmname);
+          }
+        p = str;
+      }
+      break;
+    case 41:
+      p = "Ask securely for a secret and print it to stdout.";
+      break;
+
+    case 42:
+      p = "1"; /* Flag print 40 as part of 41. */
+      break;
+
+    default: p = NULL; break;
+    }
+  return p;
 }
 
 
@@ -481,40 +502,37 @@ parse_color (char *arg, pinentry_color_t *color_p, int *bright_p)
   return new_arg;
 }
 
-/* Parse the command line options.  Returns 1 if user should print
-   version and exit.  Can exit the program if only help output is
-   requested.  */
-int
+/* Parse the command line options.  May exit the program if only help
+   or version output is requested.  */
+void
 pinentry_parse_opts (int argc, char *argv[])
 {
-  int opt;
-  int opt_help = 0;
-  int opt_version = 0;
-  struct option opts[] =
-    {{ "debug", no_argument,             0, 'd' },
-     { "display", required_argument,     0, 'D' },
-     { "ttyname", required_argument,     0, 'T' },
-     { "ttytype", required_argument,     0, 'N' },
-     { "lc-ctype", required_argument,    0, 'C' },
-     { "lc-messages", required_argument, 0, 'M' },
+  static ARGPARSE_OPTS opts[] = {
+    ARGPARSE_s_n('d', "debug",    "Turn on debugging output"),
+    ARGPARSE_s_s('D', "display",  "|DISPLAY|Set the X display"),
+    ARGPARSE_s_s('T', "ttyname",  "|FILE|Set the tty terminal node name"),
+    ARGPARSE_s_s('N', "ttytype",  "|NAME|Set the tty terminal type"),
+    ARGPARSE_s_s('C', "lc-ctype", "|STRING|Set the tty LC_CTYPE value"),
+    ARGPARSE_s_s('M', "lc-messages", "|STRING|Set the tty LC_MESSAGES value"),
 #ifdef ENABLE_ENHANCED
-     { "enhanced", no_argument,          0, 'e' },
+    ARGPARSE_s_n('e', "enhanced", "Ask for timeout and insurance, too"),
 #endif
-     { "no-global-grab", no_argument,    0, 'g' },
-     { "parent-wid", required_argument,  0, 'W' },
-     { "colors", required_argument,	 0, 'c' },
-     { "help", no_argument,              0, 'h' },
-     { "version", no_argument, &opt_version, 1 },
-     { "timeout", required_argument, 0, 'o' },
-     { NULL, 0, NULL, 0 }};
+    ARGPARSE_s_i('o', "timeout",
+                 "|SECS|Timeout waiting for input after this many seconds"),
+    ARGPARSE_s_n('g', "no-global-grab",
+                 "Grab keyboard only while window is focused"),
+    ARGPARSE_s_u('W', "parent-wid", "Parent window ID (for positioning)"),
+    ARGPARSE_s_s('c', "colors", "|STRING|Set custom colors for ncurses"),
+    ARGPARSE_end()
+  };
+  ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
 
-  while ((opt = getopt_long (argc, argv, "degh", opts, NULL)) != -1)
+  set_strusage (my_strusage);
+
+  while (arg_parse  (&pargs, opts))
     {
-      switch (opt)
+      switch (pargs.r_opt)
         {
-        case 0:
-        case '?':
-          break;
         case 'd':
           pinentry.debug = 1;
           break;
@@ -526,14 +544,11 @@ pinentry_parse_opts (int argc, char *argv[])
         case 'g':
           pinentry.grab = 0;
           break;
-        case 'h':
-          opt_help = 1;
-          break;
 
 	case 'D':
           /* Note, this is currently not used because the GUI engine
              has already been initialized when parsing these options. */
-	  pinentry.display = strdup (optarg);
+	  pinentry.display = strdup (pargs.r.ret_str);
 	  if (!pinentry.display)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
@@ -543,7 +558,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'T':
-	  pinentry.ttyname = strdup (optarg);
+	  pinentry.ttyname = strdup (pargs.r.ret_str);
 	  if (!pinentry.ttyname)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
@@ -553,7 +568,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'N':
-	  pinentry.ttytype = strdup (optarg);
+	  pinentry.ttytype = strdup (pargs.r.ret_str);
 	  if (!pinentry.ttytype)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
@@ -563,7 +578,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'C':
-	  pinentry.lc_ctype = strdup (optarg);
+	  pinentry.lc_ctype = strdup (pargs.r.ret_str);
 	  if (!pinentry.lc_ctype)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
@@ -573,7 +588,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'M':
-	  pinentry.lc_messages = strdup (optarg);
+	  pinentry.lc_messages = strdup (pargs.r.ret_str);
 	  if (!pinentry.lc_messages)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
@@ -583,34 +598,30 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'W':
-	  pinentry.parent_wid = atoi (optarg);
-	  /* FIXME: Add some error handling.  Use strtol.  */
+	  pinentry.parent_wid = pargs.r.ret_ulong;
 	  break;
 
 	case 'c':
-	  optarg = parse_color (optarg, &pinentry.color_fg,
-				&pinentry.color_fg_bright);
-	  optarg = parse_color (optarg, &pinentry.color_bg, NULL);
-	  optarg = parse_color (optarg, &pinentry.color_so,
-				&pinentry.color_so_bright);
+          {
+            char *tmpstr = pargs.r.ret_str;
+
+            tmpstr = parse_color (tmpstr, &pinentry.color_fg,
+                                  &pinentry.color_fg_bright);
+            tmpstr = parse_color (tmpstr, &pinentry.color_bg, NULL);
+            tmpstr = parse_color (tmpstr, &pinentry.color_so,
+                                  &pinentry.color_so_bright);
+          }
 	  break;
 
 	case 'o':
-	  pinentry.timeout = atoi(optarg);
+	  pinentry.timeout = pargs.r.ret_int;
 	  break;
+
         default:
-          fprintf (stderr, "%s: oops: option not handled\n", this_pgmname);
+          pargs.err = ARGPARSE_PRINT_WARNING;
 	  break;
         }
     }
-  if (opt_version)
-    return 1;
-  if (opt_help)
-    {
-      usage ();
-      exit (EXIT_SUCCESS);
-    }
-  return 0;
 }
 
 

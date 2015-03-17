@@ -123,7 +123,7 @@ static QString from_utf8( const char * s ) {
         else
             return QString::fromLocal8Bit( s );
       }
-    
+
     return result;
 }
 
@@ -149,7 +149,7 @@ qt_cmd_handler (pinentry_t pe)
   const QString title =
       pe->title ? from_utf8( pe->title ) :
       /* else */  QLatin1String( "pinentry-qt4" ) ;
-      
+
 
   if (want_pass)
     {
@@ -311,15 +311,7 @@ main (int argc, char *argv[])
     }
 
 
-  /* Consumes all arguments.  */
-  if (pinentry_parse_opts (argc, argv))
-    {
-      printf ("pinentry-qt4 (pinentry) " /* VERSION */ "\n");
-      return EXIT_SUCCESS;
-    }
-  else
-    {
-      return pinentry_loop () ? EXIT_FAILURE : EXIT_SUCCESS ;
-    }
+  pinentry_parse_opts (argc, argv);
 
+  return pinentry_loop () ? EXIT_FAILURE : EXIT_SUCCESS ;
 }

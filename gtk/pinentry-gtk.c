@@ -1,4 +1,4 @@
-/* gpinentry.c 
+/* gpinentry.c
  * Copyright (C) 2001, 2002 g10 Code GmbH
  * Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
  *
@@ -6,12 +6,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 #include "getopt.h"
 #endif /* HAVE_GETOPT_H */
 
@@ -56,7 +56,7 @@ static GtkWidget *entry, *insure, *time_out;
 
 #if 0 /* not used */
 /* ok - Return to the command handler routine.  */
-static void 
+static void
 ok (GtkWidget *w, gpointer data)
 {
   gtk_main_quit ();
@@ -65,7 +65,7 @@ ok (GtkWidget *w, gpointer data)
 
 /* unselect - work around a bug in GTK+ that permits word-selection to
    work on the invisible passphrase */
-static void 
+static void
 unselect(GtkWidget *w, GdkEventButton *e)
 {
   static gint lastpos;
@@ -82,14 +82,14 @@ unselect(GtkWidget *w, GdkEventButton *e)
 
 /* constrain_size - constrain size of the window the window should not
    shrink beyond the requisition, and should not grow vertically */
-static void 
+static void
 constrain_size(GtkWidget *win, GtkRequisition *req, gpointer data)
 {
   static gint width, height;
   GdkGeometry geo;
 
   if (req->width == width && req->height == height)
-    return; 
+    return;
   width = req->width;
   height = req->height;
   geo.min_width = width;
@@ -101,19 +101,19 @@ constrain_size(GtkWidget *win, GtkRequisition *req, gpointer data)
 }
 
 /* grab_keyboard - grab the keyboard for maximum security */
-static void 
+static void
 grab_keyboard(GtkWidget *win, GdkEvent *event, gpointer data)
 {
   if (!pinentry->grab)
     return;
-  if (gdk_keyboard_grab(win->window, FALSE, gdk_event_get_time(event))) 
+  if (gdk_keyboard_grab(win->window, FALSE, gdk_event_get_time(event)))
     {
       g_error("could not grab keyboard");
     }
 }
 
 /* ungrab_keyboard - remove grab */
-static void 
+static void
 ungrab_keyboard(GtkWidget *win, GdkEvent *event, gpointer data)
 {
   gdk_keyboard_ungrab(gdk_event_get_time(event));
@@ -172,7 +172,7 @@ button_clicked (GtkWidget *widget, gpointer data)
 }
 
 
-static void 
+static void
 enter_callback (GtkWidget *widget, GtkWidget *anentry)
 {
   button_clicked (widget, "ok");
@@ -270,7 +270,7 @@ create_window (int confirm_mode)
           style = gtk_style_copy(gtk_widget_get_style(w));
           style->fg[GTK_STATE_NORMAL] = color[0];
           gtk_widget_set_style(w, style);
-        } 
+        }
     }
 
   ebox = gtk_hbox_new (FALSE, 5);
@@ -300,22 +300,22 @@ create_window (int confirm_mode)
         {
           sbox = gtk_hbox_new(FALSE, 5);
           gtk_box_pack_start(GTK_BOX(box), sbox, FALSE, FALSE, 0);
-          
+
           w = gtk_label_new ("Forget secret after");
           gtk_box_pack_start(GTK_BOX(sbox), w, FALSE, FALSE, 0);
           gtk_widget_show(w);
-          
+
           time_out = gtk_spin_button_new
             (GTK_ADJUSTMENT(gtk_adjustment_new(0, 0, HUGE_VAL,
                                                1, 60, 60)),2,0);
           gtk_box_pack_start (GTK_BOX(sbox), time_out, FALSE, FALSE, 0);
           gtk_widget_show (time_out);
-	
+
           w = gtk_label_new ("seconds");
-          gtk_box_pack_start (GTK_BOX(sbox), w, FALSE, FALSE, 0); 
+          gtk_box_pack_start (GTK_BOX(sbox), w, FALSE, FALSE, 0);
           gtk_widget_show (w);
           gtk_widget_show (sbox);
-          
+
           insure = gtk_check_button_new_with_label
             ("ask before giving out secret");
           gtk_box_pack_start (GTK_BOX(box), insure, FALSE, FALSE, 0);
@@ -328,7 +328,7 @@ create_window (int confirm_mode)
   bbox = gtk_hbutton_box_new();
   gtk_box_pack_start (GTK_BOX(box), bbox, TRUE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (bbox), 5);
-  
+
   w = gtk_button_new_with_label (pinentry->ok ? pinentry->ok : "OK");
   gtk_container_add (GTK_CONTAINER(bbox), w);
   if (!confirm_mode)
@@ -348,14 +348,14 @@ create_window (int confirm_mode)
     }
 
   gtk_widget_show (w);
-  
+
   if (!pinentry->one_button)
     {
-      w = gtk_button_new_with_label (pinentry->cancel 
+      w = gtk_button_new_with_label (pinentry->cancel
                                      ? pinentry->cancel : "Cancel");
       gtk_container_add (GTK_CONTAINER(bbox), w);
       gtk_accel_group_add (acc, GDK_Escape, 0, 0, GTK_OBJECT(w), "clicked");
-      gtk_signal_connect (GTK_OBJECT(w), "clicked", 
+      gtk_signal_connect (GTK_OBJECT(w), "clicked",
                           confirm_mode? confirm_button_clicked: button_clicked,
                           NULL);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
@@ -399,7 +399,7 @@ gtk_cmd_handler (pinentry_t pe)
 
 pinentry_cmd_handler_t pinentry_cmd_handler = gtk_cmd_handler;
 
-int 
+int
 main (int argc, char *argv[])
 {
   pinentry_init (PGMNAME);
@@ -413,12 +413,7 @@ main (int argc, char *argv[])
   gtk_init (&argc, &argv);
 #endif
 
-  /* Consumes all arguments.  */
-  if (pinentry_parse_opts (argc, argv))
-    {
-      printf ("pinentry-gtk (pinentry) " VERSION "\n");
-      exit (EXIT_SUCCESS);
-    }
+  pinentry_parse_opts (argc, argv);
 
   if (pinentry_loop ())
     return 1;

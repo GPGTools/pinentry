@@ -689,12 +689,7 @@ main (int argc, char *argv[])
   gtk_init (&argc, &argv);
 #endif
 
-  /* Consumes all arguments.  */
-  if (pinentry_parse_opts (argc, argv))
-    {
-      printf(PGMNAME " " VERSION "\n");
-      exit(EXIT_SUCCESS);
-    }
+  pinentry_parse_opts (argc, argv);
 
   if (pinentry_loop ())
     return 1;

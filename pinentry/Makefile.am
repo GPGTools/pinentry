@@ -31,5 +31,5 @@ noinst_LIBRARIES = libpinentry.a $(pinentry_curses)
 
 AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem
 
-libpinentry_a_SOURCES = pinentry.h pinentry.c
+libpinentry_a_SOURCES = pinentry.h pinentry.c argparse.c argparse.h
 libpinentry_curses_a_SOURCES = pinentry-curses.h pinentry-curses.c

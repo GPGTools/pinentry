@@ -628,9 +628,7 @@ main (int argc, char **argv)
 
   pinentry_init (PGMNAME);
 
-  /* Consumes all arguments.  */
-  if (pinentry_parse_opts (argc, argv))
-    exit (EXIT_SUCCESS);
+  pinentry_parse_opts (argc, argv);
 
 /*   debugfp = fopen ("pinentry.log", "w"); */
 /*   if (!debugfp) */
