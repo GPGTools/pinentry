@@ -1,18 +1,18 @@
 /* pinentry-curses.c - A secure curses dialog for PIN entry, library version
    Copyright (C) 2002 g10 Code GmbH
-   
+
    This file is part of PINENTRY.
-   
+
    PINENTRY is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
- 
+
    PINENTRY is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
@@ -126,7 +126,7 @@ typedef char CH;
    there is a forced line break.  A full line is returned and will be
    continued in the next line.  */
 static void
-collect_line (int maxwidth, wchar_t **start_p, int *len_p)
+collect_line (int maxwidth, CH **start_p, int *len_p)
 {
   int last_space = 0;
   int len = *len_p;
@@ -244,7 +244,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  }								\
       }									\
   while (0)
-    
+
   COPY_OUT (description);
   COPY_OUT (error);
   COPY_OUT (prompt);
@@ -306,7 +306,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       while (start[len - 1]);
       y++;
     }
-      
+
   if (pinentry->pin)
     {
       if (error)
@@ -333,7 +333,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       y += 2;		/* Pin entry field.  */
     }
   y += 2;		/* OK/Cancel and bottom frame.  */
-  
+
   if (y > size_y)
     {
       err = 1;
@@ -763,7 +763,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
       else
 	clear ();
     }
-  
+
   keypad (stdscr, TRUE); /* Enable keyboard mapping.  */
   nonl ();		/* Tell curses not to do NL->CR/NL on output.  */
   cbreak ();		/* Take input chars one at a time, no wait for \n.  */
@@ -873,7 +873,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      if (diag.notok)
 		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
 	      else
-		dialog_switch_pos (&diag, DIALOG_POS_CANCEL);	      
+		dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
 	      break;
 	    case DIALOG_POS_NOTOK:
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
@@ -888,7 +888,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      break;
 	    }
 	  break;
-  
+
 	case '\005':
 	  done = -2;
 	  break;

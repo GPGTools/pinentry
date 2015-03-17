@@ -104,7 +104,7 @@ struct pinentry pinentry =
 
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
 char *
-pinentry_utf8_to_local (char *lc_ctype, char *text)
+pinentry_utf8_to_local (const char *lc_ctype, const char *text)
 {
   iconv_t cd;
   const char *input = text;
