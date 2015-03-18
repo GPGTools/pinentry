@@ -20,7 +20,6 @@
 ## Process this file with automake to produce Makefile.in
 
 ACLOCAL_AMFLAGS = -I m4
-AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 DISTCHECK_CONFIGURE_FLAGS = --disable-pinentry-qt4
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog

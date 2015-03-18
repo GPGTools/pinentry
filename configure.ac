@@ -19,8 +19,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 # (Process this file with autoconf to produce a configure script.)
-AC_PREREQ(2.57)
-min_automake_version="1.10"
+AC_PREREQ(2.69)
+min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
@@ -47,7 +47,7 @@ AC_INIT([pinentry],[mym4_full_version], [http://bugs.gnupg.org])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
-AM_INIT_AUTOMAKE($PACKAGE_NAME, $PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 
 AC_GNU_SOURCE
 
