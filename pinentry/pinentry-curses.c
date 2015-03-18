@@ -772,7 +772,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (has_colors ())
     {
       start_color ();
+#ifdef NCURSES_VERSION
       use_default_colors ();
+#endif
 
       if (pinentry->color_so == PINENTRY_COLOR_DEFAULT)
 	{

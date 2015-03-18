@@ -26,7 +26,6 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <unistd.h>
 #ifndef HAVE_W32CE_SYSTEM
 # include <locale.h>
