@@ -771,6 +771,18 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
+/* The data provided at LINE may be used by pinentry implementations
+   to identify a key for caching strategies of its own.  As of now
+   this is here only for documentation purposes.  */
+static int
+cmd_setkeyinfo (ASSUAN_CONTEXT ctx, char *line)
+{
+  (void)ctx;
+  (void)line;
+  return 0;
+}
+
+
 static int
 cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
 {
@@ -1111,6 +1123,7 @@ register_commands (ASSUAN_CONTEXT ctx)
     {
       { "SETDESC",    0,  cmd_setdesc },
       { "SETPROMPT",  0,  cmd_setprompt },
+      { "SETKEYINFO", 0,  cmd_setkeyinfo },
       { "SETREPEAT",  0,  cmd_setrepeat },
       { "SETREPEATERROR",0, cmd_setrepeaterror },
       { "SETERROR",   0,  cmd_seterror },
