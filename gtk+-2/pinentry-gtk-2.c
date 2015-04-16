@@ -24,6 +24,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <assert.h>
 #include <math.h>
@@ -223,16 +224,32 @@ button_clicked (GtkWidget *widget, gpointer data)
 static void
 enter_callback (GtkWidget *widget, GtkWidget *anentry)
 {
-  button_clicked (widget, "ok");
+  button_clicked (widget, (gpointer) CONFIRM_OK);
 }
 
 
 static void
 confirm_button_clicked (GtkWidget *widget, gpointer data)
 {
-  confirm_value = (int)(long) data;
+  confirm_value = (confirm_value_t) data;
   gtk_main_quit ();
 }
+
+
+static void
+cancel_callback (GtkAccelGroup *acc, GObject *accelerable,
+                 guint keyval, GdkModifierType modifier, gpointer data)
+{
+  int confirm_mode = !!data;
+
+  if (confirm_mode)
+    confirm_button_clicked (GTK_WIDGET (accelerable),
+                            (gpointer)CONFIRM_CANCEL);
+  else
+    button_clicked (GTK_WIDGET (accelerable),
+                    (gpointer)CONFIRM_CANCEL);
+}
+
 
 
 static gchar *
@@ -328,6 +345,7 @@ create_window (int confirm_mode)
   GtkWidget *win, *box;
   GtkWidget *wvbox, *chbox, *bbox;
   GtkAccelGroup *acc;
+  GClosure *acc_cl;
   gchar *msg;
 
   tooltips = gtk_tooltips_new ();
@@ -561,6 +579,11 @@ create_window (int confirm_mode)
                         G_CALLBACK (confirm_mode ? confirm_button_clicked
                                     : button_clicked),
 			(gpointer) CONFIRM_CANCEL);
+
+      acc_cl = g_cclosure_new (G_CALLBACK (cancel_callback),
+			       (confirm_mode? "":NULL), NULL);
+      gtk_accel_group_connect (acc, GDK_KEY_Escape, 0, 0, acc_cl);
+
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
 
