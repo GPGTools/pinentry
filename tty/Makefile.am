@@ -1,4 +1,4 @@
-# Makefile.am - PIN entry curses frontend.
+# Makefile.am - PIN entry tty frontend.
 # Copyright (C) 2002, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.
