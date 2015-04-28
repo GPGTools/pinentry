@@ -199,6 +199,8 @@ utf8_to_local (char *lc_ctype, char *string)
   memset (&ps, 0, sizeof(mbstate_t));
   mbsrtowcs (wcs, &p, len, &ps);
 
+  free (local);
+  
  leave:
   if (old_ctype)
     {
