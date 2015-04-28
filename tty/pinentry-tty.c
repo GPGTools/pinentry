@@ -1,5 +1,6 @@
 /* pinentry-curses.c - A secure curses dialog for PIN entry, library version
    Copyright (C) 2014 Serge Voilokov
+   Copyright (C) 2015 Daniel Kahn Gillmor <dkg@fifthhorseman.net>
 
    This file is part of PINENTRY.
 
@@ -59,36 +60,13 @@ cbreak (int fd)
 }
 
 static int
-read_password (pinentry_t pinentry, const char *tty_name, const char *tty_type)
+read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
-  FILE *ttyfi = stdin;
-  FILE *ttyfo = stdout;
   int count;
-
-  if (tty_name)
-    {
-      ttyfi = fopen (tty_name, "r");
-      if (!ttyfi)
-        return -1;
-
-      ttyfo = fopen (tty_name, "w");
-      if (!ttyfo)
-        {
-          int err = errno;
-          fclose (ttyfi);
-          errno = err;
-          return -1;
-        }
-    }
 
   if (cbreak (fileno (ttyfi)) == -1)
     {
       int err = errno;
-      if (tty_name)
-        {
-          fclose (ttyfi);
-          fclose (ttyfo);
-        }
       fprintf (stderr, "cbreak failure, exiting\n");
       errno = err;
       return -1;
@@ -113,11 +91,6 @@ read_password (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     }
 
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
-  if (tty_name)
-    {
-      fclose (ttyfi);
-      fclose (ttyfo);
-    }
   return strlen (pinentry->pin);
 }
 
@@ -158,7 +131,9 @@ catchsig(int sig)
 int
 tty_cmd_handler(pinentry_t pinentry)
 {
-  int rc;
+  int rc = 0;
+  FILE *ttyfi = stdin;
+  FILE *ttyfo = stdout;
 
 #ifndef HAVE_DOSISH_SYSTEM
   timed_out = 0;
@@ -174,8 +149,36 @@ tty_cmd_handler(pinentry_t pinentry)
     }
 #endif
 
-  rc = read_password (pinentry, pinentry->ttyname, pinentry->ttytype);
-  do_touch_file (pinentry);
+  if (pinentry->ttyname)
+    {
+      ttyfi = fopen (pinentry->ttyname, "r");
+      if (!ttyfi)
+        rc = -1;
+      else
+        {
+          ttyfo = fopen (pinentry->ttyname, "w");
+          if (!ttyfo)
+            {
+              int err = errno;
+              fclose (ttyfi);
+              errno = err;
+              rc = -1;
+            }
+        }
+    }
+
+  if (rc == 0)
+    {
+      rc = read_password (pinentry, ttyfi, ttyfo);
+      do_touch_file (pinentry);
+    }
+  
+  if (pinentry->ttyname)
+    {
+      fclose (ttyfi);
+      fclose (ttyfo);
+    }
+
   return rc;
 }
 
