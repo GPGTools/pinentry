@@ -169,7 +169,14 @@ tty_cmd_handler(pinentry_t pinentry)
 
   if (rc == 0)
     {
-      rc = read_password (pinentry, ttyfi, ttyfo);
+      if (pinentry->pin)
+        rc = read_password (pinentry, ttyfi, ttyfo);
+      else
+        {
+          fprintf (ttyfo, "%s\n",
+                   pinentry->description? pinentry->description:"");
+          fflush (ttyfo);
+        }
       do_touch_file (pinentry);
     }
   
