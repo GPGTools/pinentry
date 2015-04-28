@@ -60,6 +60,24 @@ cbreak (int fd)
 }
 
 static int
+confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
+{
+  char buf[32], *ret;
+  pinentry->canceled = 1;
+  fprintf (ttyfo, "%s [y/N]? ", pinentry->ok ? pinentry->ok : "OK");
+  fflush (ttyfo);
+  buf[0] = '\0';
+  ret = fgets (buf, sizeof(buf), ttyfi);
+  if (ret && (buf[0] == 'y' || buf[0] == 'Y'))
+    {
+      pinentry->canceled = 0;
+      return 1;
+    }
+  return 0;
+}
+  
+
+static int
 read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   int count;
@@ -176,6 +194,8 @@ tty_cmd_handler(pinentry_t pinentry)
           fprintf (ttyfo, "%s\n",
                    pinentry->description? pinentry->description:"");
           fflush (ttyfo);
+          if (! pinentry->one_button)
+            rc = confirm (pinentry, ttyfi, ttyfo);
         }
       do_touch_file (pinentry);
     }
