@@ -1,6 +1,7 @@
 /* pinentry-curses.c - A secure curses dialog for PIN entry, library version
    Copyright (C) 2014 Serge Voilokov
    Copyright (C) 2015 Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+ * Copyright (C) 2015 g10 Code GmbH
 
    This file is part of PINENTRY.
 
@@ -81,6 +82,7 @@ static int
 read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   int count;
+  char *prompt = NULL;
 
   if (cbreak (fileno (ttyfi)) == -1)
     {
@@ -90,9 +92,16 @@ read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       return -1;
     }
 
-  fprintf (ttyfo, "%s\n%s:\n",
+  prompt = pinentry->prompt;
+  if (! prompt)
+    prompt = "PIN";
+
+  fprintf (ttyfo, "%s\n%s%s ",
            pinentry->description? pinentry->description:"",
-           pinentry->prompt? pinentry->prompt:"PIN? ");
+           prompt,
+	   /* Make sure the prompt ends in a : or a question mark.  */
+	   (prompt[strlen(prompt) - 1] == ':'
+	    || prompt[strlen(prompt) - 1] == '?') ? "" : ":");
   fflush (ttyfo);
 
   memset (pinentry->pin, 0, pinentry->pin_len);
@@ -107,6 +116,7 @@ read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       fflush (ttyfo);
       pinentry->pin[count++] = c;
     }
+  fputc('\n', stdout);
 
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
   return strlen (pinentry->pin);
