@@ -7,7 +7,7 @@ http://www.gnupg.org/aegypten/ for details.
 
 There are programs for different toolkits available.  For all GUIs it
 is automatically detected which modules can be built, but it can also
-be requested explicitely.
+be requested explicitly.
 
 GUI		OPTION			 DEPENDENCIES
 Curses		--enable-pinentry-curses Curses library, for example ncurses
@@ -16,7 +16,7 @@ GTK+ V2.0	--enable-pinentry-gtk2	 Gimp Toolkit Library, Version 2.0
 Qt4		--enable-pinentry-qt4	 Qt4
 TTY		--enable-pinentry-tty	 Simple TTY version, no dependencies
 
-The GTK+ and Qt pinentries can fall back to the curses mode.  The
+The GTK+ and Qt pinentries can fall back to curses mode.  The
 option to enable this is --enable-fallback-curses, but this is also
 detected automatically in the same way --enable-pinentry-curses is.
 The fallback to curses also works if --disable-pinentry-curses is

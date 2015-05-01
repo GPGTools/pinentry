@@ -56,7 +56,7 @@ section entitled ``Copying''.
 @ifnottex
 @dircategory GNU Utilities
 @direntry
-* pinentry: (pinentry).    Ask securely for a passphrase or PIN.
+* pinentry: (pinentry).    Securely ask for a passphrase or PIN.
 @end direntry
 This file documents the use and the internals of the @pinentry{}.
 
@@ -102,13 +102,15 @@ passphrases. It is usually invoked by @sc{gpg-agent}
 (@pxref{Invoking GPG-AGENT, ,Invoking the gpg-agent, gnupg,
     The `GNU Privacy Guard' Manual}, for details).       
 
-@pinentry{} comes in 3 flavors to fit the look and feel of the used
-GUI toolkit:  A @sc{GTK+} based one named @code{pinentry-gtk}, a
-@sc{Qt} based one named @code{pinentry-qt} and a non-graphical one based
-on curses and named @code{pinentry-curses}.  Not all of them might be
-available on your installation.  If curses is supported on your system,
-the GUI based flavors fall back to curses when the @code{DISPLAY}
-variable is not set.
+@pinentry{} comes in several flavors to fit the look and feel of the
+used GUI toolkit: A @sc{GTK+} based one named @code{pinentry-gtk}; a
+@sc{Qt} based one named @code{pinentry-qt}; and, two non-graphical
+ones @code{pinentry-curses}, which uses curses and
+@code{pinentry-tty}, which doesn't require anything more than a simple
+terminal.  Not all of them are necessarily available on your
+installation.  If curses is supported on your system, the GUI-based
+flavors fall back to curses when the @code{DISPLAY} variable is not
+set.
 
 
 @menu
@@ -143,7 +145,7 @@ commands according to the Assuan protocol via stdin/stdout.
 
 @c man begin OPTIONS
 
-Here is a list of options supported by all 3 flavors of pinentry
+Here is a list of options supported by all flavors of pinentry:
 
 @table @gnupgtabopt
 @item --version
@@ -186,8 +188,8 @@ Note, that this is not fully supported by all flavors of @pinentry{}.
 @opindex timeout
 Give up waiting for input from the user after the specified number of
 seconds and return an error. The error returned is the same as if the
-Cancel button was selected. To disable the timeout and wait indefinately
-then set to 0, the default.
+Cancel button was selected. To disable the timeout and wait
+indefinitely, set this to 0, which is the default.
 
 @item --display @var{string}
 @itemx --ttyname @var{string}
@@ -201,9 +203,9 @@ then set to 0, the default.
 @opindex lc-messa
 These options are used to pass localization information to
 @pinentry{}.  They are required because @pinentry{} is usually called
-by some background process which does not have any information on the
-locale and terminal to use.  Assuan protocol options are an
-alternative way to pass these information.
+by some background process which does not have any information about
+the locale and terminal to use.  It is also possible to pass these
+options using Assuan protocol options.
 @end table
 
 @c 
@@ -212,28 +214,28 @@ alternative way to pass these information.
 @node Protocol
 @chapter pinentry's Assuan Protocol
 
-The PIN-Entry should never service more than one connection at once.
+The @pinentry{} should never service more than one connection at once.
 It is reasonable to exec the PIN-Entry prior to a request.
 
-The PIN-Entry does not need to stay in memory because the
+The @pinentry{} does not need to stay in memory because the
 @sc{gpg-agent} has the ability to cache passphrases.  The usual way to
-run the PIN-Entry is by setting up a pipe (and not a socket) and then
-fork/exec the PIN-Entry.  The communication is then done by means of
+run the @pinentry{} is by setting up a pipe (not a socket) and then
+fork/exec the @pinentry{}.  The communication is then done by means of
 the protocol described here until the client is satisfied with the
 result.
 
-Although it is called a PIN-Entry, it does allow to enter reasonably
-long strings (at least 2048 characters are supported by every
-pinentry).  The client using the PIN-Entry has to check for
+Although it is called a @pinentry{}, it allow entering reasonably long
+strings (strings that are up to 2048 characters long are supported by
+every pinentry).  The client using the PIN-Entry has to check for
 correctness.
 
 Note that all strings are expected to be encoded as UTF-8; @pinentry{}
 takes care of converting it to the locally used codeset.  To include
 linefeeds or other special characters, you may percent-escape them
-(i.e. a line feed is encoded as @code{%0A}, the percent sign itself
-is encoded as @code{%25}).
+(e.g., a line feed is encoded as @code{%0A}, the percent sign itself
+is encoded as @code{%25}, etc.).
 
-Here is the list of supported commands:
+The following is a list of supported commands:
 
 @table @gnupgtabopt
 
@@ -243,13 +245,13 @@ Here is the list of supported commands:
   S: OK
 @end example
 
-@item Set the descriptive text to be displayed
+@item Set the descriptive text to display
 @example
   C: SETDESC Enter PIN for Richard Nixon <nobody@@trickydicky.gov>
   S: OK
 @end example
 
-@item Set the prompt to be shown
+@item Set the prompt to show
 When asking for a PIN, set the text just before the widget for
 passphrase entry.
 @example
@@ -257,11 +259,11 @@ passphrase entry.
   S: OK
 @end example
 
-You should use an underscore in the text only if you known that a modern
-version of pinentry is used.  Modern versions underline the next
-character after the underscore and use the first such underlined
-character as a keyboard accelerator.  Use a double underscore to escape
-an underscore.
+You should use an underscore in the text only if you know that a
+modern version of pinentry is used.  Modern versions underline the
+next character after the underscore and use the first such underlined
+character as a keyboard accelerator.  Use a double underscore to
+escape an underscore.
 
 @item Set the window title
 This command may be used to change the default window title.  When
@@ -292,10 +294,11 @@ To set the text for the button signaling cancellation or disagreement
 @end example
 
 
-In case tree buttons are required, use the follwing command to set the
-text (UTF-8) for the non-affirmative response button.  The affirmative button
-text is still set using SETOK and the CANCEL button text with SETCANCEL.
-See SETPROMPT on how to use an keyboard accelerator.
+In case three buttons are required, use the following command to set
+the text (UTF-8) for the non-affirmative response button.  The
+affirmative button text is still set using SETOK and the CANCEL button
+text with SETCANCEL.  See SETPROMPT on how to use an keyboard
+accelerator.
 @example
   C: SETNOTOK Do not do this
   S: OK
@@ -305,7 +308,7 @@ See SETPROMPT on how to use an keyboard accelerator.
 
 @item Set the Error text
 This is used by the client to display an error message.  In contrast
-to the other commands this error message is automatically reset with
+to the other commands, the error message is automatically reset with
 a GETPIN or CONFIRM, and is only displayed when asking for a PIN.
 @example
   C: SETERROR Invalid PIN entered - please try again
@@ -325,9 +328,9 @@ displayed in red.
 @end example
 
 If a custom label for the quality bar is required, just add that label
-as an argument as percent escaped string.  You will need this feature to
-translate the label because pinentry has no internal gettext except for
-stock strings from the toolkit library.
+as an argument as a percent-escaped string.  You will need this
+feature to translate the label because @pinentry{} has no internal
+gettext except for stock strings from the toolkit library.
 
 If you want to show a tooltip for the quality bar, you may use
 @example
@@ -367,7 +370,7 @@ To show a message, you can use this command:
   C: MESSAGE
   S: OK
 @end example
-alternativly you may add an option to confirm:
+alternatively you may add an option to confirm:
 @example
   C: CONFIRM --one-button
   S: OK
@@ -396,8 +399,8 @@ appropriate for this tty and @code{lc-ctype} to the locale which
 defines the character set to use for this terminal.
 
 @item Set the default strings
-To avoid having transaltions in Pinentry proper, the caller may set
-certain translated strings which are used by Pinentry as default
+To avoid having translations in Pinentry proper, the caller may set
+certain translated strings which are used by @pinentry{} as default
 strings.
 
 @example
