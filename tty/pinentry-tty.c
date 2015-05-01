@@ -82,6 +82,7 @@ static int
 read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   int count;
+  int done;
   char *prompt = NULL;
 
   if (cbreak (fileno (ttyfi)) == -1)
@@ -106,16 +107,29 @@ read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 
   memset (pinentry->pin, 0, pinentry->pin_len);
 
-  count = 0;
-  while (count+1 < pinentry->pin_len)
+  done = count = 0;
+  while (!done && count < pinentry->pin_len - 1)
     {
       char c = fgetc (ttyfi);
-      if (c == '\n')
-        break;
 
-      fflush (ttyfo);
-      pinentry->pin[count++] = c;
+      switch (c)
+	{
+	case '\n':
+	  done = 1;
+	  break;
+
+	case 0x7f:
+	  /* Backspace.  */
+	  if (count > 0)
+	    count --;
+	  break;
+
+	default:
+	  pinentry->pin[count ++] = c;
+	  break;
+	}
     }
+  pinentry->pin[count] = '\0';
   fputc('\n', stdout);
 
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
