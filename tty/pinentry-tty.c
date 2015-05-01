@@ -218,6 +218,11 @@ tty_cmd_handler(pinentry_t pinentry)
           fprintf (ttyfo, "%s\n",
                    pinentry->description? pinentry->description:"");
           fflush (ttyfo);
+
+	  /* If pinentry->one_button is set, then
+	     pinentry->description contains an informative message,
+	     which the user needs to dismiss.  Since we are showing
+	     this in a terminal, there is no window to dismiss.  */
           if (! pinentry->one_button)
             rc = confirm (pinentry, ttyfi, ttyfo);
         }
