@@ -19,7 +19,9 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define WINVER 0x0403  /* Required for SendInput.  */
+#if WINVER < 0x0403
+# define WINVER 0x0403  /* Required for SendInput.  */
+#endif
 #include <windows.h>
 #ifdef HAVE_W32CE_SYSTEM
 # include <winioctl.h>
@@ -370,12 +372,59 @@ set_dlg_item_text (HWND dlg, int item, const char *string)
 }
 
 
+/* Load our butmapped icon from the resource and display it.  */
+static void
+set_bitmap (HWND dlg, int item)
+{
+  HWND hwnd;
+  HBITMAP bitmap;
+  RECT rect;
+  int resid;
+
+  hwnd = GetDlgItem (dlg, item);
+  if (!hwnd)
+    return;
+
+  rect.left = 0;
+  rect.top = 0;
+  rect.right = 32;
+  rect.bottom = 32;
+  if (!MapDialogRect (dlg, &rect))
+    {
+      fprintf (stderr, "MapDialogRect failed: %s\n",  w32_strerror (-1));
+      return;
+    }
+  /* fprintf (stderr, "MapDialogRect: %d/%d\n", rect.right, rect.bottom); */
+
+  switch (rect.right)
+    {
+    case 32: resid = IDB_ICON_32; break;
+    case 48: resid = IDB_ICON_48; break;
+    case 64: resid = IDB_ICON_64; break;
+    case 96: resid = IDB_ICON_96; break;
+    default: resid = IDB_ICON_128;break;
+    }
+
+  bitmap = LoadImage (GetModuleHandle (NULL),
+                      MAKEINTRESOURCE (resid),
+                      IMAGE_BITMAP,
+                      rect.right, rect.bottom,
+                      (LR_SHARED | LR_LOADTRANSPARENT | LR_LOADMAP3DCOLORS));
+  if (!bitmap)
+    {
+      fprintf (stderr, "LoadImage failed: %s\n",  w32_strerror (-1));
+      return;
+    }
+  SendMessage(hwnd, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)bitmap);
+}
+
+
 /* Dialog processing loop.  */
 static BOOL CALLBACK
 dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   static pinentry_t pe;
-  static int item;
+  /* static int item; */
 
 
 /*   { */
@@ -400,6 +449,7 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
       set_dlg_item_text (dlg, IDC_PINENT_PROMPT, pe->prompt);
       set_dlg_item_text (dlg, IDC_PINENT_DESC, pe->description);
       set_dlg_item_text (dlg, IDC_PINENT_TEXT, "");
+      set_bitmap (dlg, IDC_PINENT_ICON);
       if (pe->ok)
         {
           set_dlg_item_text (dlg, IDOK, pe->ok);
@@ -419,10 +469,10 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
           SetWindowPos (GetDlgItem (dlg, IDC_PINENT_TEXT), NULL, 0, 0, 0, 0,
                         (SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_HIDEWINDOW));
 
-          item = IDOK;
+          /* item = IDOK; */
         }
-      else
-        item = IDC_PINENT_TEXT;
+      /* else */
+      /*   item = IDC_PINENT_TEXT; */
 
       center_window (dlg, HWND_TOP);
 
@@ -470,6 +520,16 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
            EndDialog (dlg, TRUE);
          }
        break;
+
+    case WM_CTLCOLORSTATIC:
+      if ((HWND)lparam == GetDlgItem (dlg, IDC_PINENT_ERR))
+        {
+          /* Display the error prompt in red.  */
+          SetTextColor ((HDC)wparam, RGB (255, 0, 0));
+          SetBkMode ((HDC)wparam, TRANSPARENT);
+          return (BOOL)GetStockObject (NULL_BRUSH);
+        }
+      break;
 
     }
   return FALSE;

@@ -19,6 +19,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
+logos = logo-32.bmp logo-48.bmp logo-64.bmp logo-96.bmp logo-128.bmp
+
+EXTRA_DIST = $(logos)
+
 bin_PROGRAMS = pinentry-w32
 
 AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
@@ -33,6 +37,6 @@ pinentry_w32_LDADD = pinentry-w32.o \
 	../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a
 
 
-pinentry-w32.o: pinentry-w32.rc resource.h
+pinentry-w32.o: pinentry-w32.rc resource.h $(logos)
 	$(WINDRES) -I.. -v -o $@ $<
 
