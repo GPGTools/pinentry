@@ -76,7 +76,7 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
     }
   return 0;
 }
-  
+
 
 static int
 read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
@@ -94,7 +94,7 @@ read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
     }
 
   prompt = pinentry->prompt;
-  if (! prompt)
+  if (! prompt || !*prompt)
     prompt = "PIN";
 
   fprintf (ttyfo, "%s\n%s%s ",
@@ -228,7 +228,7 @@ tty_cmd_handler(pinentry_t pinentry)
         }
       do_touch_file (pinentry);
     }
-  
+
   if (pinentry->ttyname)
     {
       fclose (ttyfi);
