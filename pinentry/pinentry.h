@@ -1,5 +1,5 @@
 /* pinentry.h - The interface for the PIN entry support library.
-   Copyright (C) 2002, 2003, 2010 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2010, 2015 g10 Code GmbH
 
    This file is part of PINENTRY.
 
@@ -57,6 +57,9 @@ struct pinentry
   char *pin;
   /* The length of the buffer.  */
   int pin_len;
+  /* Whether the pin was read from an external cache (1) or entered by
+     the user (0). */
+  int pin_from_cache;
 
   /* The name of the X display to use if X is available and supported.  */
   char *display;
@@ -111,7 +114,7 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
-  /* If true a second prompt for the passphrase is show and the user
+  /* If true a second prompt for the passphrase is shown and the user
      is expected to enter the same passphrase again.  Pinentry checks
      that both match.  */
   char *repeat_passphrase;
@@ -146,6 +149,22 @@ struct pinentry
   char *default_cancel;
   char *default_prompt;
 
+  /* Whether we are allowed to read the password from an external
+     cache.  */
+  int allow_external_password_cache;
+
+  /* We only try the cache once.  */
+  int tried_password_cache;
+
+  /* A stable identifier for the key.  */
+  char *keyinfo;
+
+  /* Whether we may cache the password (according to the user).  */
+  int may_cache_password;
+
+  /* NOTE: If you add any additional fields to this structure, be sure
+     to update the initializer in pinentry/pinentry.c!!!  */
+
   /* For the quality indicator we need to do an inquiry.  Thus we need
      to save the assuan ctx.  */
   void *ctx_assuan;
@@ -158,7 +177,8 @@ typedef struct pinentry *pinentry_t;
    PIN.  If PIN->pin is zero, request a confirmation, otherwise a PIN
    entry.  On confirmation, the function should return TRUE if
    confirmed, and FALSE otherwise.  On PIN entry, the function should
-   return -1 if cancelled and the length of the secret otherwise.  */
+   return -1 if an error occured or the user cancelled the operation
+   and the length of the secret otherwise.  */
 typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
 
 /* Start the pinentry event loop.  The program will start to process

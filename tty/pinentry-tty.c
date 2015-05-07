@@ -1,7 +1,7 @@
 /* pinentry-curses.c - A secure curses dialog for PIN entry, library version
    Copyright (C) 2014 Serge Voilokov
    Copyright (C) 2015 Daniel Kahn Gillmor <dkg@fifthhorseman.net>
- * Copyright (C) 2015 g10 Code GmbH
+   Copyright (C) 2015 g10 Code GmbH
 
    This file is part of PINENTRY.
 

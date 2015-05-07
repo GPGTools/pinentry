@@ -1,6 +1,6 @@
 # Makefile.am
 # Copyright (C) 2002 g10 Code GmbH, Klarälvdalens Datakonsult AB
-# Copyright (C) 2008 g10 Code GmbH
+# Copyright (C) 2008, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.
 #
@@ -34,10 +34,12 @@ libcurses =
 endif
 
 
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
+AM_CPPFLAGS = $(COMMON_CFLAGS) \
+	-I$(top_srcdir) -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
 	$(ncurses_include) -I$(top_srcdir)/pinentry
 AM_CXXFLAGS = $(QT4_CORE_CFLAGS) $(QT4_GUI_CFLAGS)
-pinentry_qt4_LDADD = $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
+pinentry_qt4_LDADD = $(COMMON_LIBS) \
+	$(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) \
 	../pinentry/libpinentry.a $(top_builddir)/assuan/libassuan.a \
 	$(top_builddir)/secmem/libsecmem.a $(LIBCAP)
 

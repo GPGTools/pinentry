@@ -1,5 +1,5 @@
 # Pinentry support library Makefile
-# Copyright (C) 2002 g10 Code GmbH
+# Copyright (C) 2002, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.
 #
@@ -29,7 +29,9 @@ endif
 
 noinst_LIBRARIES = libpinentry.a $(pinentry_curses)
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem
+LDADD = $(COMMON_LIBS)
+AM_CPPFLAGS = $(COMMON_CFLAGS) -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem
 
-libpinentry_a_SOURCES = pinentry.h pinentry.c argparse.c argparse.h
+libpinentry_a_SOURCES = pinentry.h pinentry.c argparse.c argparse.h \
+	password-cache.h password-cache.c
 libpinentry_curses_a_SOURCES = pinentry-curses.h pinentry-curses.c

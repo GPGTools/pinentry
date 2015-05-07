@@ -1,5 +1,5 @@
 # Makefile.am - PIN entry curses frontend.
-# Copyright (C) 2002 g10 Code GmbH
+# Copyright (C) 2002, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.
 #
@@ -20,8 +20,8 @@
 
 bin_PROGRAMS = pinentry-tty
 
-AM_CPPFLAGS = -I$(top_srcdir)/pinentry
-LDADD = ../pinentry/libpinentry.a \
+AM_CPPFLAGS = $(COMMON_CFLAGS) -I$(top_srcdir)/pinentry
+LDADD = $(COMMON_LIBS) ../pinentry/libpinentry.a \
 	../assuan/libassuan.a ../secmem/libsecmem.a \
 	$(LIBCAP) $(LIBICONV)
 

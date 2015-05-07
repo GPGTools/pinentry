@@ -414,6 +414,51 @@ strings.
 The strings are subject to accelerator marking, see SETPROMPT for
 details.
 
+@item Passphrase caching
+
+Some environments, such as GNOME, cache passwords and passphrases.
+The @pinentry{} should only use an external cache if the
+@code{allow-external-password-cache} option was set and a stable key
+identifier (using SETKEYINFO) was provided.  In this case, if the
+passphrase was read from the cache, the @pinentry{} should send the
+@code{PASSWORD_FROM_CACHE} status message before returning the
+passphrase.  This indicates to GPG Agent that it should not increment
+the passphrase retry counter.
+
+@example
+  C: OPTION allow-external-password-cache
+  S: OK
+  C: SETKEYINFO key-grip
+  S: OK
+  C: getpin
+  S: S PASSWORD_FROM_CACHE
+  S: D 1234
+  C: OK
+@end example
+
+Note: if @code{allow-external-password-cache} is not specified, an
+external password cache must not be used: this can lead to subtle
+bugs.  In particular, if this option is not specified, then GPG Agent
+does not recognize the @code{PASSWORD_FROM_CACHE} status message and
+will count trying a cached password against the password retry count.
+If the password retry count is 1, then the user will never have the
+opportunity to correct the cached password.
+
+Note: it is strongly recommended that a pinentry supporting this
+feature provide the user an option to enable it manually.  That is,
+saving a passphrase in an external password manager should be opt-in.
+
+The key identifier provided by SETKEYINFO is the key grip, which is
+not the OpenPGP Key ID.  To map the key grip to a key, you can use the
+following:
+
+@example
+  # gpg2 --with-keygrip --list-secret-keys
+@end example
+
+@noindent
+and search for the key grip.
+
 @end table
 
 @c ---------------------------------------------------------------------
