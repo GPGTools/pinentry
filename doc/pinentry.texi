@@ -448,16 +448,20 @@ Note: it is strongly recommended that a pinentry supporting this
 feature provide the user an option to enable it manually.  That is,
 saving a passphrase in an external password manager should be opt-in.
 
-The key identifier provided by SETKEYINFO is the key grip, which is
-not the OpenPGP Key ID.  To map the key grip to a key, you can use the
-following:
+The key identifier provided SETKEYINFO must be considered opaque and
+may change in the future.  It currently has the form
+@code{X/HEXSTRING} where @code{X} is either @code{n}, @code{s}, or
+@code{u}.  In the former two cases, the HEXSTRING corresponds to the
+key grip.  The key grip is not the OpenPGP Key ID, but it can be
+mapped to the key using the following:
 
 @example
   # gpg2 --with-keygrip --list-secret-keys
 @end example
 
 @noindent
-and search for the key grip.
+and searching the output for the key grip.  The same command-line
+options can also be used with gpgsm.
 
 @end table
 
