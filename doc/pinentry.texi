@@ -105,7 +105,7 @@ passphrases. It is usually invoked by @sc{gpg-agent}
 @pinentry{} comes in several flavors to fit the look and feel of the
 used GUI toolkit: A @sc{GTK+} based one named @code{pinentry-gtk}; a
 @sc{Qt} based one named @code{pinentry-qt}; and, two non-graphical
-ones @code{pinentry-curses}, which uses curses and
+ones @code{pinentry-curses}, which uses curses, and
 @code{pinentry-tty}, which doesn't require anything more than a simple
 terminal.  Not all of them are necessarily available on your
 installation.  If curses is supported on your system, the GUI-based
@@ -212,10 +212,10 @@ options using Assuan protocol options.
 @c  Assuan Protocol
 @c
 @node Protocol
-@chapter pinentry's Assuan Protocol
+@chapter @pinentry{}'s Assuan Protocol
 
 The @pinentry{} should never service more than one connection at once.
-It is reasonable to exec the PIN-Entry prior to a request.
+It is reasonable to exec the @pinentry{} prior to a request.
 
 The @pinentry{} does not need to stay in memory because the
 @sc{gpg-agent} has the ability to cache passphrases.  The usual way to
@@ -224,10 +224,10 @@ fork/exec the @pinentry{}.  The communication is then done by means of
 the protocol described here until the client is satisfied with the
 result.
 
-Although it is called a @pinentry{}, it allow entering reasonably long
-strings (strings that are up to 2048 characters long are supported by
-every pinentry).  The client using the PIN-Entry has to check for
-correctness.
+Although it is called a @pinentry{}, it allows entering reasonably
+long strings (strings that are up to 2048 characters long are
+supported by every pinentry).  The client using the @pinentry{} has to
+check for correctness.
 
 Note that all strings are expected to be encoded as UTF-8; @pinentry{}
 takes care of converting it to the locally used codeset.  To include
