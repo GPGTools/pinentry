@@ -40,7 +40,7 @@ gpg_schema (void)
         "org.gnupg.Passphrase", SECRET_SCHEMA_NONE,
         {
 	  { "stored-by", SECRET_SCHEMA_ATTRIBUTE_STRING },
-	  { "key-grip", SECRET_SCHEMA_ATTRIBUTE_STRING },
+	  { "keygrip", SECRET_SCHEMA_ATTRIBUTE_STRING },
 	  { "NULL", 0 },
 	}
     };
@@ -48,26 +48,32 @@ gpg_schema (void)
 }
 
 static char *
-key_grip_to_label (const char *key_grip)
+keygrip_to_label (const char *keygrip)
 {
-  char *label = NULL;
-  if (asprintf(&label, "GnuPG: %s", key_grip) < 0)
-    return NULL;
+  char const prefix[] = "GnuPG: ";
+  char *label;
+
+  label = malloc (sizeof (prefix) + strlen (keygrip));
+  if (label)
+    {
+      memcpy (label, prefix, sizeof (prefix) - 1);
+      strcpy (&label[sizeof (prefix) - 1], keygrip);
+    }
   return label;
 }
 #endif
 
 void
-password_cache_save (const char *key_grip, const char *password)
+password_cache_save (const char *keygrip, const char *password)
 {
 #ifdef HAVE_LIBSECRET
   char *label;
   GError *error = NULL;
 
-  if (! *key_grip)
+  if (! *keygrip)
     return;
 
-  label = key_grip_to_label (key_grip);
+  label = keygrip_to_label (keygrip);
   if (! label)
     return;
 
@@ -75,10 +81,10 @@ password_cache_save (const char *key_grip, const char *password)
 				    SECRET_COLLECTION_DEFAULT,
 				    label, password, NULL, &error,
 				    "stored-by", "GnuPG Pinentry",
-				    "key-grip", key_grip, NULL))
+				    "keygrip", keygrip, NULL))
     {
       printf("Failed to cache password for key %s with secret service: %s\n",
-	     key_grip, error->message);
+	     keygrip, error->message);
 
       g_error_free (error);
     }
@@ -90,24 +96,24 @@ password_cache_save (const char *key_grip, const char *password)
 }
 
 char *
-password_cache_lookup (const char *key_grip)
+password_cache_lookup (const char *keygrip)
 {
 #ifdef HAVE_LIBSECRET
   GError *error = NULL;
   char *password;
   char *password2;
 
-  if (! *key_grip)
+  if (! *keygrip)
     return NULL;
 
   password = secret_password_lookup_nonpageable_sync
     (gpg_schema (), NULL, &error,
-     "key-grip", key_grip, NULL);
+     "keygrip", keygrip, NULL);
 
   if (error != NULL)
     {
       printf("Failed to lookup password for key %s with secret service: %s\n",
-	     key_grip, error->message);
+	     keygrip, error->message);
       g_error_free (error);
       return NULL;
     }
