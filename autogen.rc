@@ -7,15 +7,13 @@ case "$myhost:$myhostsub" in
     extraoptions="--disable-pinentry-gtk2 --disable-pinentry-qt4"
     ;;
   w32:)
-    extraoptions="--enable-pinentry-gtk2"
+    extraoptions=""
     ;;
 esac
 
 case "$myhost" in
   w32)
     configure_opts="
-      --disable-pinentry-gtk
-      --disable-pinentry-qt
       --with-libiconv-prefix=@SYSROOT@
       PKG_CONFIG_LIBDIR=@SYSROOT@/lib/pkgconfig
       "

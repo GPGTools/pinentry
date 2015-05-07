@@ -168,7 +168,7 @@ AC_CHECK_FUNCS(seteuid stpcpy mmap)
 GNUPG_CHECK_MLOCK
 
 dnl Checks for libassuan.
-dnl -> None required becuase we use a stripped down version of libassuan.
+dnl -> None required because we use a stripped down version of libassuan.
 
 
 dnl Checks for libsecmem.
