@@ -356,11 +356,11 @@ pinentry_setbufferlen (pinentry_t pin, int len)
   char *newp;
   if (len < pinentry.pin_len)
     return NULL;
-  newp = secmem_realloc (pin->pin, 2 * pin->pin_len);
+  newp = secmem_realloc (pin->pin, len);
   if (newp)
     {
       pin->pin = newp;
-      pin->pin_len *= 2;
+      pin->pin_len = len;
     }
   else
     {
