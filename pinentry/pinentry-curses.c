@@ -200,7 +200,7 @@ utf8_to_local (char *lc_ctype, char *string)
   mbsrtowcs (wcs, &p, len, &ps);
 
   free (local);
-  
+
  leave:
   if (old_ctype)
     {
@@ -796,9 +796,26 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     }
   refresh ();
 
-  /* XXX */
+  /* Create the dialog.  */
   if (dialog_create (pinentry, &diag))
-    return -2;
+    {
+      endwin ();
+      if (screen)
+        delscreen (screen);
+
+#ifdef HAVE_NCURSESW
+      if (old_ctype)
+        {
+          setlocale (LC_CTYPE, old_ctype);
+          free (old_ctype);
+        }
+#endif
+      if (ttyfi)
+        fclose (ttyfi);
+      if (ttyfo)
+        fclose (ttyfo);
+      return -2;
+    }
   dialog_switch_pos (&diag, diag.pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
 
 #ifndef HAVE_DOSISH_SYSTEM
