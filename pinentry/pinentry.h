@@ -148,6 +148,7 @@ struct pinentry
   char *default_ok;
   char *default_cancel;
   char *default_prompt;
+  char *default_pwmngr;
 
   /* Whether we are allowed to read the password from an external
      cache.  */

@@ -100,6 +100,7 @@ struct pinentry pinentry =
     NULL,        /* default_ok  */
     NULL,        /* default_cancel  */
     NULL,        /* default_prompt  */
+    NULL,        /* default_pwmngr  */
     0,           /* allow_external_password_cache.  */
     0,           /* tried_password_cached.  */
     NULL,        /* keyinfo  */
@@ -715,6 +716,12 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
     {
       pinentry.default_prompt = strdup (value);
       if (!pinentry.default_prompt)
+	return ASSUAN_Out_Of_Core;
+    }
+  else if (!strcmp (key, "default-pwmngr"))
+    {
+      pinentry.default_pwmngr = strdup (value);
+      if (!pinentry.default_pwmngr)
 	return ASSUAN_Out_Of_Core;
     }
   else if (!strcmp (key, "allow-external-password-cache") && !*value)

@@ -576,7 +576,15 @@ create_window (pinentry_t ctx, int confirm_mode)
     /* Only show this if we can cache passwords and we have a stable
        key identifier.  */
     {
-      w = gtk_check_button_new_with_label ("Save passphrase using libsecret");
+      if (pinentry->default_pwmngr)
+        {
+          msg = pinentry_utf8_validate (pinentry->default_pwmngr);
+          w = gtk_check_button_new_with_mnemonic (msg);
+          g_free (msg);
+        }
+      else
+        w = gtk_check_button_new_with_label ("Save passphrase using libsecret");
+
       gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
       gtk_widget_show (w);
 
