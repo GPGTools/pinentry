@@ -1132,14 +1132,21 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   if (pinentry.close_button)
     assuan_write_status (ctx, "BUTTON_INFO", "close");
 
-  return result ? 0
-                : (pinentry.specific_err? pinentry.specific_err :
-                   pinentry.locale_err? ASSUAN_Locale_Problem
-                                      : (pinentry.one_button
-                                         ? 0
-                                         : (pinentry.canceled
-                                            ? ASSUAN_Canceled
-                                            : ASSUAN_Not_Confirmed)));
+  if (result)
+    return 0;
+
+  if (pinentry.specific_err)
+    return pinentry.specific_err;
+
+  if (pinentry.locale_err)
+    return ASSUAN_Locale_Problem;
+
+  if (pinentry.one_button)
+    return 0;
+
+  if (pinentry.canceled)
+    return ASSUAN_Canceled;
+  return ASSUAN_Not_Confirmed;
 }
 
 
