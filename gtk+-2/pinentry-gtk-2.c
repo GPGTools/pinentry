@@ -25,7 +25,14 @@
 #include "config.h"
 #endif
 #include <gdk/gdkkeysyms.h>
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7 )
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-prototypes"
+#endif
 #include <gtk/gtk.h>
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7 )
+# pragma GCC diagnostic pop
+#endif
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
