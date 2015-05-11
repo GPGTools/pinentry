@@ -1146,27 +1146,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_message (ASSUAN_CONTEXT ctx, char *line)
 {
-  int result;
-
-  pinentry.one_button = 1;
-  pinentry.quality_bar = 0;
-  pinentry.close_button = 0;
-  pinentry.locale_err = 0;
-  pinentry.specific_err = 0;
-  result = (*pinentry_cmd_handler) (&pinentry);
-  if (pinentry.error)
-    {
-      free (pinentry.error);
-      pinentry.error = NULL;
-    }
-
-  if (pinentry.close_button)
-    assuan_write_status (ctx, "BUTTON_INFO", "close");
-
-  return result ? 0
-                : (pinentry.specific_err? pinentry.specific_err :
-                   pinentry.locale_err? ASSUAN_Locale_Problem
-                                      : 0);
+  return cmd_confirm (ctx, "--one-button");
 }
 
 /* GETINFO <what>
