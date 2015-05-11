@@ -25,7 +25,7 @@
 #include <sys/types.h>
 
 #ifdef __cplusplus
-extern "C" { 
+extern "C" {
 #if 0
  }
 #endif
@@ -64,6 +64,9 @@ typedef enum {
   ASSUAN_Invalid_Option = ASSUAN_ERROR (174), /* GPG_ERR_UNKNOWN_OPTION */
   ASSUAN_Locale_Problem = ASSUAN_ERROR (166),
   ASSUAN_Not_Confirmed = ASSUAN_ERROR (114),
+  ASSUAN_Too_Short = ASSUAN_ERROR (66),
+  ASSUAN_ENOENT    = ASSUAN_ERROR (81 | (1 << 15)),
+  ASSUAN_ENOTTY    = ASSUAN_ERROR (102 | (1 << 15)),
 
 } assuan_error_t;
 
@@ -91,7 +94,7 @@ typedef enum {
 #define ASSUAN_LINELENGTH 1002 /* 1000 + [CR,]LF */
 
 struct assuan_context_s;
-typedef struct assuan_context_s *assuan_context_t; 
+typedef struct assuan_context_s *assuan_context_t;
 typedef struct assuan_context_s *ASSUAN_CONTEXT; /* Deprecated.  */
 
 /*-- assuan-handler.c --*/
@@ -153,7 +156,7 @@ void assuan_disconnect (ASSUAN_CONTEXT ctx);
 pid_t assuan_get_pid (ASSUAN_CONTEXT ctx);
 
 /*-- assuan-client.c --*/
-AssuanError 
+AssuanError
 assuan_transact (ASSUAN_CONTEXT ctx,
                  const char *command,
                  AssuanError (*data_cb)(void *, const void *, size_t),

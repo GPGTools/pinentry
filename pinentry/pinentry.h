@@ -104,6 +104,12 @@ struct pinentry
      conversion occured. */
   int locale_err;
 
+  /* The user should set this to an gpg-error so that commands are
+     abale to return specific error codes.  This is an ugly hack due
+     to the fact that pinentry_cmd_handler_t return the length of the
+     passphrase or an negative error code.  */
+  int specific_err;
+
   /* The user should set this to true if the window close button has
      been used.  This flag is used in addition to a regular return
      value.  */

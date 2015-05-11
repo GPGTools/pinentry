@@ -86,6 +86,7 @@ struct pinentry pinentry =
     0,		/* Canceled.  */
     0,		/* Close button flag.  */
     0,          /* Locale error flag. */
+    0,          /* Specific error flag. */
     0,          /* One-button flag.  */
     NULL,       /* Repeat passphrase flag.  */
     NULL,       /* Repeat error string.  */
@@ -1037,6 +1038,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       set_prompt = 1;
     }
   pinentry.locale_err = 0;
+  pinentry.specific_err = 0;
   pinentry.close_button = 0;
   pinentry.repeat_okay = 0;
   pinentry.one_button = 0;
@@ -1068,6 +1070,8 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 	  secmem_free (pinentry.pin);
 	  pinentry.pin = NULL;
 	}
+      if (pinentry.specific_err)
+        return pinentry.specific_err;
       return pinentry.locale_err? ASSUAN_Locale_Problem: ASSUAN_Canceled;
     }
 
@@ -1116,6 +1120,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   pinentry.quality_bar = 0;
   pinentry.close_button = 0;
   pinentry.locale_err = 0;
+  pinentry.specific_err = 0;
   pinentry.canceled = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
@@ -1128,7 +1133,8 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
     assuan_write_status (ctx, "BUTTON_INFO", "close");
 
   return result ? 0
-                : (pinentry.locale_err? ASSUAN_Locale_Problem
+                : (pinentry.specific_err? pinentry.specific_err :
+                   pinentry.locale_err? ASSUAN_Locale_Problem
                                       : (pinentry.one_button
                                          ? 0
                                          : (pinentry.canceled
@@ -1146,6 +1152,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
   pinentry.quality_bar = 0;
   pinentry.close_button = 0;
   pinentry.locale_err = 0;
+  pinentry.specific_err = 0;
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
@@ -1157,7 +1164,8 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
     assuan_write_status (ctx, "BUTTON_INFO", "close");
 
   return result ? 0
-                : (pinentry.locale_err? ASSUAN_Locale_Problem
+                : (pinentry.specific_err? pinentry.specific_err :
+                   pinentry.locale_err? ASSUAN_Locale_Problem
                                       : 0);
 }
 
