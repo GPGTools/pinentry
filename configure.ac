@@ -274,28 +274,34 @@ fi
 
 
 dnl
-dnl Check for GTK+-2 pinentry program.
+dnl Check for GTK+-2 / GNOME3 pinentry programs.
 dnl
 AC_ARG_ENABLE(pinentry-gtk2,
             AC_HELP_STRING([--enable-pinentry-gtk2], [build GTK+-2 pinentry]),
             pinentry_gtk_2=$enableval, pinentry_gtk_2=maybe)
 
+AC_ARG_ENABLE(pinentry-gnome3,
+            AC_HELP_STRING([--enable-pinentry-gnome3], [build GNOME 3 pinentry]),
+            pinentry_gnome_3=$enableval, pinentry_gnome_3=maybe)
+
 dnl check for pkg-config
-if test "$pinentry_gtk_2" != "no"; then
+if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
 	if test x"${PKG_CONFIG}" = xno ; then
 		pinentry_gtk_2=no
+		pinentry_gnome_3=no
 	fi
 fi
 
 dnl check if the module gtk+-2.0 exists
-if test "$pinentry_gtk_2" != "no"; then
+if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
 	AC_MSG_CHECKING([for gtk+-2])
 	"${PKG_CONFIG}" --exists gtk+-2.0
 	if test $? -ne 0 ; then
 		AC_MSG_RESULT([no])
 		AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
 		pinentry_gtk_2=no
+		pinentry_gnome_3=no
 	else
 		AC_MSG_RESULT([yes])
 		AC_MSG_CHECKING([gtk+-2 version >= 2.4.0])
@@ -305,16 +311,44 @@ if test "$pinentry_gtk_2" != "no"; then
 		if test $? -ne 0 ; then
 			AC_MSG_WARN([building GTK+-2 pinentry disabled])
 			pinentry_gtk_2=no
+			pinentry_gnome_3=no
 		else
 			GTK2CFLAGS=`"${PKG_CONFIG}" --cflags gtk+-2.0`
 			GTK2LIBS=`"${PKG_CONFIG}" --libs gtk+-2.0`
 			AC_SUBST(GTK2CFLAGS)
 			AC_SUBST(GTK2LIBS)
-			pinentry_gtk_2=yes
+			if test "$pinentry_gtk_2" != "no"
+			then
+			  pinentry_gtk_2=yes
+			fi
+			if test "$pinentry_gnome_3" != "no"
+			then
+			  pinentry_gnome_3=yes
+			fi
 		fi
 	fi
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
+
+if test "$pinentry_gnome_3" != "no"; then
+	AC_MSG_CHECKING([for gcr])
+	"${PKG_CONFIG}" --exists gcr-3,gcr-base-3
+	if test $? -ne 0 ; then
+		AC_MSG_RESULT([no])
+		AC_MSG_WARN([pkg-config could not find the module gcr-3,gcr-base-3])
+		pinentry_gnome_3=no
+	else
+		AC_MSG_RESULT([yes])
+		GNOME3CFLAGS=`"${PKG_CONFIG}" --cflags gcr-3,gcr-base-3`
+		GNOME3LIBS=`"${PKG_CONFIG}" --libs gcr-3,gcr-base-3`
+		AC_SUBST(GNOME3CFLAGS)
+		AC_SUBST(GNOME3LIBS)
+		AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
+		pinentry_gnome_3=yes
+	fi
+fi
+
+AM_CONDITIONAL(BUILD_PINENTRY_GNOME_3, test "$pinentry_gnome_3" = "yes")
 
 dnl
 dnl Check for libsecret.
@@ -450,16 +484,20 @@ else
   if test "$pinentry_qt4" = "yes"; then
     PINENTRY_DEFAULT=pinentry-qt4
   else
-    if test "$pinentry_curses" = "yes"; then
-      PINENTRY_DEFAULT=pinentry-curses
+    if test "$pinentry_gnome_3" = "yes"; then
+      PINENTRY_DEFAULT=pinentry-gnome3
     else
-      if test "$pinentry_tty" = "yes"; then
-        PINENTRY_DEFAULT=pinentry-tty
+      if test "$pinentry_curses" = "yes"; then
+        PINENTRY_DEFAULT=pinentry-curses
       else
-        if test "$pinentry_w32" = "yes"; then
-          PINENTRY_DEFAULT=pinentry-w32
+        if test "$pinentry_tty" = "yes"; then
+          PINENTRY_DEFAULT=pinentry-tty
         else
-          AC_MSG_ERROR([[No pinentry enabled.]])
+          if test "$pinentry_w32" = "yes"; then
+            PINENTRY_DEFAULT=pinentry-w32
+          else
+            AC_MSG_ERROR([[No pinentry enabled.]])
+          fi
         fi
       fi
     fi
@@ -475,6 +513,7 @@ pinentry/Makefile
 curses/Makefile
 tty/Makefile
 gtk+-2/Makefile
+gnome3/Makefile
 qt4/Makefile
 w32/Makefile
 doc/Makefile
@@ -493,6 +532,7 @@ AC_MSG_NOTICE([
 	Curses Pinentry ..: $pinentry_curses
 	TTY Pinentry .....: $pinentry_tty
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
+	GNOME 3 Pinentry .: $pinentry_gnome_3
 	Qt4 Pinentry .....: $pinentry_qt4 $pinentry_qt4_clip_msg
 	W32 Pinentry .....: $pinentry_w32
 

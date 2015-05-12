@@ -1,5 +1,5 @@
 # Makefile.am
-# Copyright (C) 2002, 2012 g10 Code GmbH
+# Copyright (C) 2002, 2012, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.
 #
@@ -46,6 +46,12 @@ else
 pinentry_gtk_2 =
 endif
 
+if BUILD_PINENTRY_GNOME_3
+pinentry_gnome_3 = gnome3
+else
+pinentry_gnome_3 =
+endif
+
 if BUILD_PINENTRY_QT4
 pinentry_qt4 = qt4
 else
@@ -59,7 +65,8 @@ pinentry_w32 =
 endif
 
 SUBDIRS = assuan secmem pinentry ${pinentry_curses} ${pinentry_tty} \
-	  ${pinentry_gtk_2} ${pinentry_qt4} ${pinentry_w32} doc
+	${pinentry_gtk_2} ${pinentry_gnome_3} ${pinentry_qt4} \
+	${pinentry_w32} doc
 
 
 install-exec-local:
