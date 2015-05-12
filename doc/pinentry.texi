@@ -5,7 +5,7 @@
 @include version.texi
 
 @macro copyrightnotice
-Copyright @copyright{} 2002, 2005 g10 Code GmbH
+Copyright @copyright{} 2002, 2005, 2015 g10 Code GmbH
 @end macro
 @macro permissionnotice
 Permission is granted to copy, distribute and/or modify this document
@@ -119,6 +119,7 @@ set.
 Developer information
 
 * Protocol::            The Assuan protocol description.
+* Implementation Details:: For those extending or writing a new pinentry.
 
 Miscellaneous
 
@@ -464,6 +465,180 @@ and searching the output for the key grip.  The same command-line
 options can also be used with gpgsm.
 
 @end table
+
+@node Implementation Details
+@chapter Implementation Details
+
+The pinentry source code can be divided into three categories.  There
+is a backend module, which lives in @code{pinentry/}, there are
+utility functions, e.g., in @code{secmem/}, and there are various
+frontends.
+
+All of the low-level logic lives in the backend.  This frees the
+frontends from having to implement, e.g., the Assuan protocol.  When
+the backend receives an option, it updates the state in a
+@code{pinentry_t} struct.  The frontend is called when the client
+either calls @code{GETPIN}, @code{CONFIRM} or @code{MESSAGE}.  In
+these cases, the backend invokes the @code{pinentry_cmd_handler},
+which is passed the @code{pinentry_t} struct.
+
+When the callback is invoked, the frontend should create a window
+based on the state in the @code{pinentry_t} struct.  For instance, the
+title to use for the dialog's window (if any) is stored in the
+@code{title} field.  If the is @code{NULL}, the frontend should choose
+a reasonable default value.  (Default is not always provided, because
+different tool kits and environments have different reasonable
+defaults.)
+
+The widget needs to support a number of different interactions with
+the user.  Each of them is described below.
+
+@table @gnupgtabopt
+@item Passphrase Confirmation
+
+When creating a new key, the passphrase should be entered twice.  The
+client (typically GPG Agent) indicates this to the @pinentry{} by
+invoking @code{SETREPEAT}.  In this case, the backend sets the
+@code{repeat_passphrase} field to a copy of the passed string.  The
+value of this field should be used to label a second text input.
+
+It is the frontend's responsibility to check that the passwords match.
+If they don't match, the frontend should display an error message and
+continue to prompt the user.
+
+If the passwords do match, then, when the user presses the okay
+button, the @code{repeat_okay} field should be set to @code{1} (this
+causes the backend to emit the @code{S PIN_REPEATED} status message).
+
+@item Message Box
+
+Sometimes GPG Agent needs to display a message.  In this case, the
+@code{pin} variable is @code{NULL}.
+
+At the Assuan level, this mode is selected by using either the
+@code{MESSAGE} or the @code{CONFIRM} command instead of the
+@code{GETPIN} command.  The @code{MESSAGE} command never shows the
+cancel or an other button.  The same holds for @code{CONFIRM} if it
+was passed the ``--one-button'' argument.  If @code{CONFIRM} was not
+passed this argument, the dialog for @code{CONFIRM} should show both
+the @code{ok} and the @code{cancel} buttons and optionally the
+@code{notok} button.  The frontend can determine whether the dialog is
+a one-button dialog by inspecting the @code{one_button} variable.
+
+@item Passphrase Entry
+
+If neither of the above cases holds, then GPG Agent is simply
+requesting the passphrase.  In this case, the @code{ok} and
+@code{cancel} buttons should be displayed.
+
+@end table
+
+The layout of the three variants is quite similar.  Here are the
+relevant elements that describe the layout:
+
+@table @gnupgtabopt
+@item @code{title}
+The window's title.
+
+@item @code{description}
+The reason for the dialog.  When requesting a passphrase, this
+describes the key.  When showing a message box, this is the message to
+show.
+
+@item @code{error}
+If GPG Agent determines that the passphrase was incorrect, it will
+call @code{GETPIN} again (up to a configurable number of times) to
+again prompt the user.  In this case, this variable contains a
+description of the error message.  This text should typically be
+highlighted in someway.
+
+@item @code{prompt}
+The string to associate with the passphrase entry box.
+
+@item @code{repeat_passphrase}
+The string to associate with the second passphrase entry box.  The
+second passphrase entry box should only be shown if this is not
+@code{NULL}.
+
+@item @code{ok}, @code{default-ok}
+The string to show in the @code{ok} button.
+
+If there are any @code{_} characters, the following character should
+be used as an accelerator.  (A double underscore means a plain
+underscore should be shown.)  If the frontend does not support
+accelerators, then the underscores should be removed manually.
+
+There is a subtle difference between @code{ok} and @code{default-ok}.
+@code{default-ok} means that a stylized OK button should be used.  For
+instance, it could include a check mark.  @code{ok} means that the
+button's meaning is not consistent with such an icon and, as such, no
+icon should be used.  Thus, if the @code{ok} button should have the
+text ``No password required'' then @code{ok} should be used because a
+check mark icon doesn't make sense.
+
+If this variable is @code{NULL}, the frontend should choose a
+reasonable default.
+
+If both variables are set, the @code{ok} variant takes precedence.
+
+@item @code{cancel}, @code{default-cancel}
+Like the @code{ok} and @code{default-ok} buttons except these strings
+are used for the cancel button.
+
+This button should not be shown if @code{one_button} is set.
+
+@item @code{notok}, @code{default-notok}
+Like the @code{ok} and @code{default-ok} buttons except these strings
+are used for the other button.
+
+This button should only be display when showing a message box.  If
+these variables are @code{NULL} or @code{one_button} is set, this
+button should not be displayed.
+
+@item @code{quality_bar}
+If this is set, a widget should be used to show the password's
+quality.  The value of this field is a label for the widget.
+
+Note: to update the password quality, whenever the password changes,
+call the @code{pinentry_inq_quality} function and then update the
+password quality widget correspondingly.
+
+@item @code{quality_bar_tt}
+A tooltip for the quality bar.
+
+@item @code{default_pwmngr}
+If @code{may_cache_password} and @code{keyinfo} are set and the user
+consents, then the @pinentry{} may cache the password with an external
+manager.  Note: getting the user's consent is essential, because
+password managers often provide a different level of security.  If the
+above condition is true and @code{tried_password_cache} is false, then
+a check box with the specified string should be displayed.  The check
+box must default to off.
+
+@end table
+
+When the handler is done, it should store the passphrase in
+@code{pin}, if appropriate.  This variable is allocated in secure
+memory.  Use @code{pinentry_setbufferlen} to size the buffer.
+
+If an error occured, the handler should return @code{-1} and the error
+code should be stored in @code{specific_err} or @code{locale_err}
+should be set to @code{1} (for locale specific errors).
+
+If the dialog was canceled, then the handler should return @code{1}
+and set the @code{canceled} variable to @code{1}.
+
+If the user pressed the not ok button, then the handler should return
+@code{1}.
+
+If no error occured and the user pressed the ok button, then the
+handler should return @code{0}.
+
+If the window was closed, then the handler should set the
+@code{close_button} variable and otherwise act as if the cancel button
+was pressed.
+
+
 
 @c ---------------------------------------------------------------------
 @c Legal Blurbs
