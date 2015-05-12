@@ -587,11 +587,11 @@ are used for the cancel button.
 
 This button should not be shown if @code{one_button} is set.
 
-@item @code{notok}, @code{default-notok}
-Like the @code{ok} and @code{default-ok} buttons except these strings
-are used for the other button.
+@code{default-notok}
+Like the @code{default-ok} button except this string is used for the
+other button.
 
-This button should only be display when showing a message box.  If
+This button should only be displayed when showing a message box.  If
 these variables are @code{NULL} or @code{one_button} is set, this
 button should not be displayed.
 
@@ -621,18 +621,20 @@ When the handler is done, it should store the passphrase in
 @code{pin}, if appropriate.  This variable is allocated in secure
 memory.  Use @code{pinentry_setbufferlen} to size the buffer.
 
-If an error occured, the handler should return @code{-1} and the error
-code should be stored in @code{specific_err} or @code{locale_err}
-should be set to @code{1} (for locale specific errors).
+The actual return code is dependent on whether the dialog is in
+message mode or in passphrase mode.
 
-If the dialog was canceled, then the handler should return @code{1}
-and set the @code{canceled} variable to @code{1}.
+If the dialog is in message mode and the user pressed ok, return 1.
+Otherwise, return 0.  If an error occured, indicate this by setting it
+in @code{specific_err} or setting @code{locale_err} to @code{1} (for
+locale specific errors).  If the dialog was canceled, then the handler
+should set the @code{canceled} variable to @code{1}.  If the not ok
+button was pressed, don't do anything else.
 
-If the user pressed the not ok button, then the handler should return
-@code{1}.
-
-If no error occured and the user pressed the ok button, then the
-handler should return @code{0}.
+If the dialog is in passphrase mode return @code{1} if the user
+entered a password and pressed ok.  If an error occured, return
+@code{-1} and set @code{specific_err} or @code{locale_err}, as above.
+If the user canceled the dialog box, return @code{-1}.
 
 If the window was closed, then the handler should set the
 @code{close_button} variable and otherwise act as if the cancel button
