@@ -240,6 +240,12 @@ int pinentry_inq_quality (pinentry_t pin,
    PIN.  Returns new buffer on success and 0 on failure.  */
 char *pinentry_setbufferlen (pinentry_t pin, int len);
 
+/* Use the buffer at BUFFER for PIN->PIN.  BUFFER must be NULL or
+   allocated using secmem_alloc.  LEN is the size of the buffer.  If
+   it is unknown, but BUFFER is a NUL terminated string, you pass 0 to
+   just use strlen(buffer)+1.  */
+void pinentry_setbuffer_use (pinentry_t pin, char *buffer, int len);
+
 /* Initialize the secure memory subsystem, drop privileges and
    return.  Must be called early.  */
 void pinentry_init (const char *pgmname);

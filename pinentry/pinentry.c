@@ -405,6 +405,28 @@ pinentry_setbuffer_init (pinentry_t pin)
   pinentry_setbufferlen (pin, 0);
 }
 
+/* passphrase better be alloced with secmem_alloc.  */
+void
+pinentry_setbuffer_use (pinentry_t pin, char *passphrase, int len)
+{
+  if (! passphrase)
+    {
+      assert (len == 0);
+      pinentry_setbuffer_clear (pin);
+
+      return;
+    }
+
+  if (passphrase && len == 0)
+    len = strlen (passphrase) + 1;
+
+  if (pin->pin)
+    secmem_free (pin->pin);
+
+  pin->pin = passphrase;
+  pin->pin_len = len;
+}
+
 /* Initialize the secure memory subsystem, drop privileges and return.
    Must be called early. */
 void
