@@ -36,6 +36,7 @@
 #endif /*HAVE_UTIME_H*/
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <ctype.h>
 
 #include "pinentry.h"
 
@@ -60,21 +61,180 @@ cbreak (int fd)
   return 1;
 }
 
+#define UNDERLINE_START "\033[4m"
+/* Bold, red.  */
+#define ALERT_START "\033[1;31m"
+#define NORMAL_RESTORE "\033[0m"
+
+static char
+button (char *text, char *default_text, FILE *ttyfo)
+{
+  char *highlight;
+
+  if (! text)
+    return 0;
+
+  /* Skip any leading white space.  */
+  while (*text == ' ')
+    text ++;
+
+  highlight = text;
+  while ((highlight = strchr (highlight, '_')))
+    {
+      highlight = highlight + 1;
+      if (*highlight == '_')
+	/* Escaped underscore.  */
+	continue;
+      else
+	break;
+    }
+
+  if (! highlight)
+    /* Not accelerator.  Take the first alpha-numeric character.  */
+    {
+      highlight = text;
+      while (*highlight && !isalnum (*highlight))
+	highlight ++;
+    }
+
+  if (! highlight)
+    /* Hmm, no alpha-num characters.  */
+    {
+      if (! default_text)
+	return 0;
+      text = highlight = default_text;
+    }
+
+  fputs ("  ", ttyfo);
+  for (; *text; text ++)
+    {
+      /* Skip accelerator prefix.  */
+      if (*text == '_')
+	continue;
+
+      if (text == highlight)
+	fputs (UNDERLINE_START, ttyfo);
+      fputc (*text, ttyfo);
+      if (text == highlight)
+	fputs (NORMAL_RESTORE, ttyfo);
+    }
+  fputc ('\n', ttyfo);
+
+  return *highlight;
+}
+
 static int
 confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
-  char buf[32], *ret;
-  pinentry->canceled = 1;
-  fprintf (ttyfo, "%s [y/N]? ", pinentry->ok ? pinentry->ok : "OK");
-  fflush (ttyfo);
-  buf[0] = '\0';
-  ret = fgets (buf, sizeof(buf), ttyfi);
-  if (ret && (buf[0] == 'y' || buf[0] == 'Y'))
+  char *msg;
+
+  char ok = 0;
+  char notok = 0;
+  char cancel = 0;
+
+  int ret;
+
+  if (pinentry->error)
+    fprintf (ttyfo, "*** %s%s%s ***\n",
+	     ALERT_START, pinentry->error, NORMAL_RESTORE);
+
+  msg = pinentry->description;
+  if (! msg)
+    /* If there is no description, fallback to the title.  */
+    msg = pinentry->title;
+  if (! msg)
+    msg = "Confirm:";
+
+  if (msg)
     {
-      pinentry->canceled = 0;
-      return 1;
+      fputs (msg, ttyfo);
+      fputc ('\n', ttyfo);
     }
-  return 0;
+
+  fflush (ttyfo);
+
+  if (pinentry->default_ok)
+    ok = button (pinentry->default_ok, "OK", ttyfo);
+  else if (pinentry->ok)
+    ok = button (pinentry->ok, "OK", ttyfo);
+  else
+    ok = button ("OK", NULL, ttyfo);
+
+  if (! pinentry->one_button)
+    {
+      if (pinentry->default_cancel)
+	cancel = button (pinentry->default_cancel, "Cancel", ttyfo);
+      else if (pinentry->cancel)
+	cancel = button (pinentry->cancel, "Cancel", ttyfo);
+
+      if (pinentry->notok)
+	notok = button (pinentry->notok, NULL, ttyfo);
+    }
+
+  if (cbreak (fileno (ttyfi)) == -1)
+    {
+      int err = errno;
+      fprintf (stderr, "cbreak failure, exiting\n");
+      errno = err;
+      return -1;
+    }
+
+  if (pinentry->one_button)
+    fprintf (ttyfo, "Press any key to continue.");
+  else
+    {
+      fputc ('[', ttyfo);
+      if (ok)
+	fputc (tolower (ok), ttyfo);
+      if (cancel)
+	fputc (tolower (cancel), ttyfo);
+      if (notok)
+	fputc (tolower (notok), ttyfo);
+      fputs("]? ", ttyfo);
+    }
+
+  while (1)
+    {
+      int input = fgetc (ttyfi);
+      if (input == EOF || input == 0x4)
+	/* End of file or control-d (= end of file).  */
+	{
+	  pinentry->close_button = 1;
+
+	  pinentry->canceled = 1;
+	  ret = 0;
+	  break;
+	}
+
+      if (pinentry->one_button)
+	{
+	  ret = 1;
+	  break;
+	}
+
+      if (cancel && (input == toupper (cancel) || input == tolower (cancel)))
+	{
+	  pinentry->canceled = 1;
+	  ret = 0;
+	  break;
+	}
+      else if (notok && (input == toupper (notok) || input == tolower (notok)))
+	{
+	  ret = 0;
+	  break;
+	}
+      else if (ok && (input == toupper (ok) || input == tolower (ok)))
+	{
+	  ret = 1;
+	  break;
+	}
+    }
+
+  fputc('\n', ttyfo);
+
+  tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
+
+  return ret;
 }
 
 
@@ -209,23 +369,13 @@ tty_cmd_handler(pinentry_t pinentry)
         }
     }
 
-  if (rc == 0)
+  if (! rc)
     {
       if (pinentry->pin)
-        rc = read_password (pinentry, ttyfi, ttyfo);
+	rc = read_password (pinentry, ttyfi, ttyfo);
       else
-        {
-          fprintf (ttyfo, "%s\n",
-                   pinentry->description? pinentry->description:"");
-          fflush (ttyfo);
+	rc = confirm (pinentry, ttyfi, ttyfo);
 
-	  /* If pinentry->one_button is set, then
-	     pinentry->description contains an informative message,
-	     which the user needs to dismiss.  Since we are showing
-	     this in a terminal, there is no window to dismiss.  */
-          if (! pinentry->one_button)
-            rc = confirm (pinentry, ttyfi, ttyfo);
-        }
       do_touch_file (pinentry);
     }
 
