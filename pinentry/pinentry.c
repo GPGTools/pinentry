@@ -1109,7 +1109,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
     {
       if (pinentry.repeat_okay)
         assuan_write_status (ctx, "PIN_REPEATED", "");
-      result = assuan_send_data (ctx, pinentry.pin, result);
+      result = assuan_send_data (ctx, pinentry.pin, strlen(pinentry.pin));
       if (!result)
 	result = assuan_send_data (ctx, NULL, 0);
 
