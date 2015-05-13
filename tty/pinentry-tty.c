@@ -375,9 +375,9 @@ tty_cmd_handler(pinentry_t pinentry)
 	rc = read_password (pinentry, ttyfi, ttyfo);
       else
 	rc = confirm (pinentry, ttyfi, ttyfo);
-
-      do_touch_file (pinentry);
     }
+
+  do_touch_file (pinentry);
 
   if (pinentry->ttyname)
     {
