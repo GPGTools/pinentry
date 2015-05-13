@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #ifndef HAVE_W32CE_SYSTEM
 # include <locale.h>
 #endif
@@ -67,7 +68,7 @@ struct pinentry pinentry =
     NULL,	/* Not-Ok button.  */
     NULL,	/* Cancel button.  */
     NULL,	/* PIN.  */
-    2048,	/* PIN length.  */
+    0,		/* PIN length.  */
     0,          /* pin_from_cache.  */
     0,		/* Display.  */
     0,		/* TTY name.  */
@@ -354,8 +355,18 @@ char *
 pinentry_setbufferlen (pinentry_t pin, int len)
 {
   char *newp;
-  if (len < pinentry.pin_len)
+
+  if (pin->pin_len)
+    assert (pin->pin);
+  else
+    assert (!pin->pin);
+
+  if (len < 2048)
+    len = 2048;
+
+  if (len <= pin->pin_len)
     return NULL;
+
   newp = secmem_realloc (pin->pin, len);
   if (newp)
     {
@@ -371,6 +382,28 @@ pinentry_setbufferlen (pinentry_t pin, int len)
   return newp;
 }
 
+static void
+pinentry_setbuffer_clear (pinentry_t pin)
+{
+  if (! pin->pin)
+    {
+      assert (pin->pin_len == 0);
+      return;
+    }
+
+  assert (pin->pin_len > 0);
+
+  secmem_free (pin->pin);
+  pin->pin = NULL;
+  pin->pin_len = 0;
+}
+
+static void
+pinentry_setbuffer_init (pinentry_t pin)
+{
+  pinentry_setbuffer_clear (pin);
+  pinentry_setbufferlen (pin, 0);
+}
 
 /* Initialize the secure memory subsystem, drop privileges and return.
    Must be called early. */
@@ -983,7 +1016,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
   int set_prompt = 0;
   int just_read_password_from_cache = 0;
 
-  pinentry.pin = secmem_malloc (pinentry.pin_len);
+  pinentry_setbuffer_init (&pinentry);
   if (!pinentry.pin)
     return ASSUAN_Out_Of_Core;
 
@@ -1065,11 +1098,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 
   if (result < 0)
     {
-      if (pinentry.pin)
-	{
-	  secmem_free (pinentry.pin);
-	  pinentry.pin = NULL;
-	}
+      pinentry_setbuffer_clear (&pinentry);
       if (pinentry.specific_err)
         return pinentry.specific_err;
       return pinentry.locale_err? ASSUAN_Locale_Problem: ASSUAN_Canceled;
@@ -1094,11 +1123,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 	password_cache_save (pinentry.keyinfo, pinentry.pin);
     }
 
-  if (pinentry.pin)
-    {
-      secmem_free (pinentry.pin);
-      pinentry.pin = NULL;
-    }
+  pinentry_setbuffer_clear (&pinentry);
 
   return result;
 }
@@ -1122,6 +1147,7 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
   pinentry.locale_err = 0;
   pinentry.specific_err = 0;
   pinentry.canceled = 0;
+  pinentry_setbuffer_clear (&pinentry);
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
     {
