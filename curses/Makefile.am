@@ -22,9 +22,8 @@
 bin_PROGRAMS = pinentry-curses
 
 AM_CPPFLAGS = $(COMMON_CFLAGS) $(NCURSES_INCLUDE) -I$(top_srcdir)/pinentry
-LDADD = $(COMMON_LIBS) \
-	../pinentry/libpinentry.a ../pinentry/libpinentry-curses.a \
+LDADD = ../pinentry/libpinentry.a ../pinentry/libpinentry-curses.a \
 	../assuan/libassuan.a ../secmem/libsecmem.a \
-	$(LIBCAP) $(LIBCURSES) $(LIBICONV)
+	$(COMMON_LIBS) $(LIBCAP) $(LIBCURSES) $(LIBICONV)
 
 pinentry_curses_SOURCES = pinentry-curses.c

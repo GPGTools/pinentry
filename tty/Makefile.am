@@ -21,8 +21,8 @@
 bin_PROGRAMS = pinentry-tty
 
 AM_CPPFLAGS = $(COMMON_CFLAGS) -I$(top_srcdir)/pinentry
-LDADD = $(COMMON_LIBS) ../pinentry/libpinentry.a \
+LDADD = ../pinentry/libpinentry.a \
 	../assuan/libassuan.a ../secmem/libsecmem.a \
-	$(LIBCAP) $(LIBICONV)
+	$(COMMON_LIBS) $(LIBCAP) $(LIBICONV)
 
 pinentry_tty_SOURCES = pinentry-tty.c
