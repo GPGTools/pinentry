@@ -39,6 +39,7 @@
 #include <ctype.h>
 
 #include "pinentry.h"
+#include "memory.h"
 
 #ifndef HAVE_DOSISH_SYSTEM
 static int timed_out;
@@ -237,43 +238,52 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
   return ret;
 }
 
-
-static int
-read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
+static char *
+read_password (FILE *ttyfi, FILE *ttyfo)
 {
-  int count;
-  int done;
-  char *prompt = NULL;
+  int done = 0;
+  int len = 128;
+  int count = 0;
+  char *buffer;
 
   if (cbreak (fileno (ttyfi)) == -1)
     {
       int err = errno;
       fprintf (stderr, "cbreak failure, exiting\n");
       errno = err;
-      return -1;
+      return NULL;
     }
 
-  prompt = pinentry->prompt;
-  if (! prompt || !*prompt)
-    prompt = "PIN";
+  buffer = secmem_malloc (len);
+  if (! buffer)
+    return NULL;
 
-  fprintf (ttyfo, "%s\n%s%s ",
-           pinentry->description? pinentry->description:"",
-           prompt,
-	   /* Make sure the prompt ends in a : or a question mark.  */
-	   (prompt[strlen(prompt) - 1] == ':'
-	    || prompt[strlen(prompt) - 1] == '?') ? "" : ":");
-  fflush (ttyfo);
-
-  memset (pinentry->pin, 0, pinentry->pin_len);
-
-  done = count = 0;
-  while (!done && count < pinentry->pin_len - 1)
+  while (!done)
     {
-      char c = fgetc (ttyfi);
+      int c;
 
+      if (count == len - 1)
+	/* Double the buffer's size.  Note: we check if count is len -
+	   1 and not len so that we always have space for the NUL
+	   character.  */
+	{
+	  char *tmp = secmem_realloc (buffer, 2 * len);
+	  if (! tmp)
+	    {
+	      secmem_free (tmp);
+	      return NULL;
+	    }
+	  buffer = tmp;
+	}
+
+      c = fgetc (ttyfi);
       switch (c)
 	{
+	case 0x4: case EOF:
+	  /* Control-d (i.e., end of file) or a real EOF.  */
+	  done = -1;
+	  break;
+
 	case '\n':
 	  done = 1;
 	  break;
@@ -285,15 +295,102 @@ read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	  break;
 
 	default:
-	  pinentry->pin[count ++] = c;
+	  buffer[count ++] = c;
 	  break;
 	}
     }
-  pinentry->pin[count] = '\0';
-  fputc('\n', stdout);
+  buffer[count] = '\0';
 
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
-  return strlen (pinentry->pin);
+
+  if (done == -1)
+    {
+      secmem_free (buffer);
+      return NULL;
+    }
+
+  return buffer;
+}
+
+
+static int
+password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
+{
+  char *msg;
+  int done = 0;
+
+  msg = pinentry->description;
+  if (! msg)
+    msg = pinentry->title;
+  if (! msg)
+    msg = "Enter your passphrase.";
+
+  fprintf (ttyfo, "%s\n ", msg);
+
+  while (! done)
+    {
+      char *passphrase;
+
+      char *prompt = pinentry->prompt;
+      if (! prompt || !*prompt)
+	prompt = "PIN";
+
+      fprintf (ttyfo, "%s%s ",
+	       prompt,
+	       /* Make sure the prompt ends in a : or a question mark.  */
+	       (prompt[strlen(prompt) - 1] == ':'
+		|| prompt[strlen(prompt) - 1] == '?') ? "" : ":");
+      fflush (ttyfo);
+
+      passphrase = read_password (ttyfi, ttyfo);
+      fputc ('\n', ttyfo);
+      if (! passphrase)
+	{
+	  done = -1;
+	  break;
+	}
+
+      if (! pinentry->repeat_passphrase)
+	done = 1;
+      else
+	{
+	  char *passphrase2;
+
+	  prompt = pinentry->repeat_passphrase;
+	  fprintf (ttyfo, "%s%s ",
+		   prompt,
+		   /* Make sure the prompt ends in a : or a question mark.  */
+		   (prompt[strlen(prompt) - 1] == ':'
+		    || prompt[strlen(prompt) - 1] == '?') ? "" : ":");
+	  fflush (ttyfo);
+
+	  passphrase2 = read_password (ttyfi, ttyfo);
+	  fputc ('\n', ttyfo);
+	  if (! passphrase2)
+	    {
+	      done = -1;
+	      break;
+	    }
+
+	  if (strcmp (passphrase, passphrase2) == 0)
+	    done = 1;
+	  else
+	    fprintf (ttyfo, "*** %s%s%s ***\n",
+		     ALERT_START,
+		     pinentry->repeat_error_string
+		     ?: "Passphrases don't match.",
+		     NORMAL_RESTORE);
+
+	  secmem_free (passphrase2);
+	}
+
+      if (done == 1)
+	pinentry_setbuffer_use (pinentry, passphrase, 0);
+      else
+	secmem_free (passphrase);
+    }
+
+  return done;
 }
 
 
@@ -372,7 +469,7 @@ tty_cmd_handler(pinentry_t pinentry)
   if (! rc)
     {
       if (pinentry->pin)
-	rc = read_password (pinentry, ttyfi, ttyfo);
+	rc = password (pinentry, ttyfi, ttyfo);
       else
 	rc = confirm (pinentry, ttyfi, ttyfo);
     }
