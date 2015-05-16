@@ -1,5 +1,5 @@
 /* pinentry-curses.c - A secure curses dialog for PIN entry, library version
-   Copyright (C) 2002 g10 Code GmbH
+   Copyright (C) 2002, 2015 g10 Code GmbH
 
    This file is part of PINENTRY.
 
@@ -535,7 +535,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       move (dialog->ok_y, dialog->ok_x);
       addstr (dialog->ok);
 
-      if (dialog->notok)
+      if (! pinentry->pin && dialog->notok)
 	{
 	  dialog->notok_y = ypos;
 	  /* Calculating the left edge of the middle button, rounding up.  */
