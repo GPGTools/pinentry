@@ -88,7 +88,6 @@ struct dialog
   int pin_size;
   /* Cursor location in PIN field.  */
   int pin_loc;
-  char *pin;
   int pin_max;
   /* Length of PIN.  */
   int pin_len;
@@ -102,6 +101,8 @@ struct dialog
   int notok_y;
   int notok_x;
   char *notok;
+
+  pinentry_t pinentry;
 };
 typedef struct dialog *dialog_t;
 
@@ -238,6 +239,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   CH *description = NULL;
   CH *error = NULL;
   CH *prompt = NULL;
+
+  dialog->pinentry = pinentry;
 
 #define COPY_OUT(what)							\
   do									\
@@ -417,7 +420,6 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     }
 
   dialog->pos = DIALOG_POS_NONE;
-  dialog->pin = pinentry->pin;
   dialog->pin_max = pinentry->pin_len;
   dialog->pin_loc = 0;
   dialog->pin_len = 0;
@@ -679,7 +681,7 @@ static void
 dialog_input (dialog_t diag, int chr)
 {
   int old_loc = diag->pin_loc;
-  assert (diag->pin);
+  assert (diag->pinentry->pin);
   assert (diag->pos == DIALOG_POS_PIN);
 
   switch (chr)
@@ -701,7 +703,7 @@ dialog_input (dialog_t diag, int chr)
     default:
       if (chr > 0 && chr < 256 && diag->pin_len < diag->pin_max)
 	{
-	  diag->pin[diag->pin_len] = (char) chr;
+	  diag->pinentry->pin[diag->pin_len] = (char) chr;
 	  diag->pin_len++;
 	  diag->pin_loc++;
 	  if (diag->pin_loc == diag->pin_size && diag->pin_len < diag->pin_max)
@@ -842,7 +844,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
         fclose (ttyfo);
       return -2;
     }
-  dialog_switch_pos (&diag, diag.pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
+  dialog_switch_pos (&diag,
+		     diag.pinentry->pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
 
 #ifndef HAVE_DOSISH_SYSTEM
   wtimeout (stdscr, 70);
@@ -876,7 +879,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  switch (diag.pos)
 	    {
 	    case DIALOG_POS_OK:
-	      if (diag.pin)
+	      if (diag.pinentry->pin)
 		dialog_switch_pos (&diag, DIALOG_POS_PIN);
 	      break;
 	    case DIALOG_POS_NOTOK:
@@ -930,7 +933,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
 	      break;
 	    case DIALOG_POS_CANCEL:
-	      if (diag.pin)
+	      if (diag.pinentry->pin)
 		dialog_switch_pos (&diag, DIALOG_POS_PIN);
 	      else
 		dialog_switch_pos (&diag, DIALOG_POS_OK);
@@ -1012,7 +1015,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (done == -2)
     pinentry->canceled = 1;
 
-  return diag.pin ? (done < 0 ? -1 : diag.pin_len) : (done < 0 ? 0 : 1);
+  if (diag.pinentry->pin)
+    return done < 0 ? -1 : diag.pin_len;
+  else
+    return done < 0 ? 0 : 1;
 }
 
 
