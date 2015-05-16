@@ -57,59 +57,125 @@
 /* Keep the name of our program here. */
 static char this_pgmname[50];
 
+struct pinentry pinentry;
 
-struct pinentry pinentry =
-  {
-    NULL,	/* Title.  */
-    NULL,	/* Description.  */
-    NULL,	/* Error.  */
-    NULL,	/* Prompt.  */
-    NULL,	/* Ok button.  */
-    NULL,	/* Not-Ok button.  */
-    NULL,	/* Cancel button.  */
-    NULL,	/* PIN.  */
-    0,		/* PIN length.  */
-    0,          /* pin_from_cache.  */
-    0,		/* Display.  */
-    0,		/* TTY name.  */
-    0,		/* TTY type.  */
-    0,		/* TTY LC_CTYPE.  */
-    0,		/* TTY LC_MESSAGES.  */
-    0,		/* Debug mode.  */
-    60,		/* Pinentry timeout in seconds.  */
+static void
+pinentry_reset (int use_defaults)
+{
+  /* GPG Agent sets these options once when it starts the pinentry.
+     Don't reset them.  */
+  int grab = pinentry.grab;
+  char *ttyname = pinentry.ttyname;
+  char *ttytype = pinentry.ttytype;
+  char *lc_ctype = pinentry.lc_ctype;
+  char *lc_messages = pinentry.lc_messages;
+  int allow_external_password_cache = pinentry.allow_external_password_cache;
+  char *default_ok = pinentry.default_ok;
+  char *default_cancel = pinentry.default_cancel;
+  char *default_prompt = pinentry.default_prompt;
+  char *default_pwmngr = pinentry.default_pwmngr;
+  char *touch_file = pinentry.touch_file;
+
+  /* These options are set from the command line.  Don't reset
+     them.  */
+  int debug = pinentry.debug;
 #ifdef ENABLE_ENHANCED
-    0,		/* Enhanced mode.  */
+  int enhanced = pinentry.enhanced;
 #endif
-    1,		/* Global grab.  */
-    0,		/* Parent Window ID.  */
-    NULL,       /* Touch file.  */
-    0,		/* Result.  */
-    0,		/* Canceled.  */
-    0,		/* Close button flag.  */
-    0,          /* Locale error flag. */
-    0,          /* Specific error flag. */
-    0,          /* One-button flag.  */
-    NULL,       /* Repeat passphrase flag.  */
-    NULL,       /* Repeat error string.  */
-    0,          /* Correctly repeated flag.  */
-    NULL,       /* Quality-Bar flag and description.  */
-    NULL,       /* Quality-Bar tooltip.  */
-    PINENTRY_COLOR_DEFAULT,
-    0,
-    PINENTRY_COLOR_DEFAULT,
-    PINENTRY_COLOR_DEFAULT,
-    0,
-    NULL,        /* default_ok  */
-    NULL,        /* default_cancel  */
-    NULL,        /* default_prompt  */
-    NULL,        /* default_pwmngr  */
-    0,           /* allow_external_password_cache.  */
-    0,           /* tried_password_cached.  */
-    NULL,        /* keyinfo  */
-    0,           /* may_cache_password. */
-    NULL         /* Assuan context.  */
-  };
+  char *display = pinentry.display;
+  int parent_wid = pinentry.parent_wid;
 
+  pinentry_color_t color_fg = pinentry.color_fg;
+  int color_fg_bright = pinentry.color_fg_bright;
+  pinentry_color_t color_bg = pinentry.color_bg;
+  pinentry_color_t color_so = pinentry.color_so;
+  int color_so_bright = pinentry.color_so_bright;
+
+  int timout = pinentry.timeout;
+
+  /* Free any allocated memory.  */
+  if (use_defaults)
+    {
+      free (pinentry.ttyname);
+      free (pinentry.ttytype);
+      free (pinentry.lc_ctype);
+      free (pinentry.lc_messages);
+      free (pinentry.default_ok);
+      free (pinentry.default_cancel);
+      free (pinentry.default_prompt);
+      free (pinentry.default_pwmngr);
+      free (pinentry.touch_file);
+      free (pinentry.display);
+    }
+
+  free (pinentry.title);
+  free (pinentry.description);
+  free (pinentry.error);
+  free (pinentry.prompt);
+  free (pinentry.ok);
+  free (pinentry.notok);
+  free (pinentry.cancel);
+  secmem_free (pinentry.pin);
+  free (pinentry.repeat_passphrase);
+  free (pinentry.repeat_error_string);
+  free (pinentry.quality_bar);
+  free (pinentry.quality_bar_tt);
+  free (pinentry.keyinfo);
+
+  /* Reset the pinentry structure.  */
+  memset (&pinentry, 0, sizeof (pinentry));
+
+  if (use_defaults)
+    {
+      /* Pinentry timeout in seconds.  */
+      pinentry.timeout = 60;
+
+      /* Global grab.  */
+      pinentry.grab = 1;
+
+      pinentry.color_fg = PINENTRY_COLOR_DEFAULT;
+      pinentry.color_fg_bright = 0;
+      pinentry.color_bg = PINENTRY_COLOR_DEFAULT;
+      pinentry.color_so = PINENTRY_COLOR_DEFAULT;
+      pinentry.color_so_bright = 0;
+    }
+  else
+    /* Restore the options.  */
+    {
+      pinentry.grab = grab;
+      pinentry.ttyname = ttyname;
+      pinentry.ttytype = ttytype;
+      pinentry.lc_ctype = lc_ctype;
+      pinentry.lc_messages = lc_messages;
+      pinentry.allow_external_password_cache = allow_external_password_cache;
+      pinentry.default_ok = default_ok;
+      pinentry.default_cancel = default_cancel;
+      pinentry.default_prompt = default_prompt;
+      pinentry.default_pwmngr = default_pwmngr;
+      pinentry.touch_file = touch_file;
+
+      pinentry.debug = debug;
+#ifdef ENABLE_ENHANCED
+      pinentry.enhanced = enhanced;
+#endif
+      pinentry.display = display;
+      pinentry.parent_wid = parent_wid;
+
+      pinentry.color_fg = color_fg;
+      pinentry.color_fg_bright = color_fg_bright;
+      pinentry.color_bg = color_bg;
+      pinentry.color_so = color_so;
+      pinentry.color_so_bright = color_so_bright;
+
+      pinentry.timeout = timout;
+    }
+}
+
+static void
+pinentry_assuan_reset_handler (ASSUAN_CONTEXT ctx)
+{
+  pinentry_reset (0);
+}
 
 static int lc_ctype_unknown_warning = 0;
 
@@ -600,6 +666,8 @@ pinentry_parse_opts (int argc, char *argv[])
   ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
 
   set_strusage (my_strusage);
+
+  pinentry_reset (1);
 
   while (arg_parse  (&pargs, opts))
     {
@@ -1327,6 +1395,7 @@ pinentry_loop2 (int infd, int outfd)
 #if 0
   assuan_set_log_stream (ctx, stderr);
 #endif
+  assuan_register_reset_notify (ctx, pinentry_assuan_reset_handler);
 
   for (;;)
     {
