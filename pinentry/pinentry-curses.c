@@ -982,6 +982,11 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     }
   while (!done);
 
+  if (diag.pinentry->pin)
+    /* NUL terminate the passphrase.  dialog_run makes sure there is
+       enough space for the terminating NUL byte.  */
+    diag.pinentry->pin[diag.pin_len] = 0;
+
   set_cursor_state (1);
   endwin ();
   if (screen)
