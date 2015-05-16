@@ -154,19 +154,19 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 
   fflush (ttyfo);
 
-  if (pinentry->default_ok)
-    ok = button (pinentry->default_ok, "OK", ttyfo);
-  else if (pinentry->ok)
+  if (pinentry->ok)
     ok = button (pinentry->ok, "OK", ttyfo);
+  else if (pinentry->default_ok)
+    ok = button (pinentry->default_ok, "OK", ttyfo);
   else
     ok = button ("OK", NULL, ttyfo);
 
   if (! pinentry->one_button)
     {
-      if (pinentry->default_cancel)
-	cancel = button (pinentry->default_cancel, "Cancel", ttyfo);
-      else if (pinentry->cancel)
+      if (pinentry->cancel)
 	cancel = button (pinentry->cancel, "Cancel", ttyfo);
+      else if (pinentry->default_cancel)
+	cancel = button (pinentry->default_cancel, "Cancel", ttyfo);
 
       if (pinentry->notok)
 	notok = button (pinentry->notok, NULL, ttyfo);
