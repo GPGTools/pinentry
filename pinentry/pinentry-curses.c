@@ -678,11 +678,15 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 
 /* XXX Assume that field width is at least > 5.  */
 static void
-dialog_input (dialog_t diag, int chr)
+dialog_input (dialog_t diag, int alt, int chr)
 {
   int old_loc = diag->pin_loc;
   assert (diag->pinentry->pin);
   assert (diag->pos == DIALOG_POS_PIN);
+
+  if (alt && chr == KEY_BACKSPACE)
+    /* Remap alt-backspace to control-W.  */
+    chr = 'w' - 'a' + 1;
 
   switch (chr)
     {
@@ -698,6 +702,43 @@ dialog_input (dialog_t diag, int chr)
 		diag->pin_loc = diag->pin_len;
 	    }
 	}
+      break;
+
+    case 'u' - 'a' + 1: /* control-u */
+      /* Erase the whole line.  */
+      if (diag->pin_len > 0)
+	{
+	  diag->pin_len = 0;
+	  diag->pin_loc = 0;
+	}
+      break;
+
+    case 'w' - 'a' + 1: /* control-w.  */
+      while (diag->pin_len > 0
+	     && diag->pinentry->pin[diag->pin_len - 1] == ' ')
+	{
+	  diag->pin_len --;
+	  diag->pin_loc --;
+	  if (diag->pin_loc < 0)
+	    {
+	      diag->pin_loc += diag->pin_size;
+	      if (diag->pin_loc > diag->pin_len)
+		diag->pin_loc = diag->pin_len;
+	    }
+	}
+      while (diag->pin_len > 0
+	     && diag->pinentry->pin[diag->pin_len - 1] != ' ')
+	{
+	  diag->pin_len --;
+	  diag->pin_loc --;
+	  if (diag->pin_loc < 0)
+	    {
+	      diag->pin_loc += diag->pin_size;
+	      if (diag->pin_loc > diag->pin_len)
+		diag->pin_loc = diag->pin_len;
+	    }
+	}
+
       break;
 
     default:
@@ -752,6 +793,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 #endif
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
+  int alt = 0;
 
   if (pinentry->lc_ctype)
     {
@@ -881,6 +923,11 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
           break;
 #endif
 
+	case 27: /* Alt was pressed.  */
+	  alt = 1;
+	  /* Get the next key press.  */
+	  continue;
+
 	case KEY_LEFT:
 	case KEY_UP:
 	  switch (diag.pos)
@@ -974,11 +1021,13 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 
 	default:
 	  if (diag.pos == DIALOG_POS_PIN)
-	    dialog_input (&diag, c);
+	    dialog_input (&diag, alt, c);
 	}
 #ifndef HAVE_DOSISH_SYSTEM
       no_input = 0;
 #endif
+      if (c != -1)
+	alt = 0;
     }
   while (!done);
 
