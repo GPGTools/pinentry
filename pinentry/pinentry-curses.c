@@ -257,13 +257,23 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   COPY_OUT (error);
   COPY_OUT (prompt);
 
+  /* There is no pinentry->default_notok.  Map it to
+     pinentry->notok.  */
+#define default_notok notok
 #define MAKE_BUTTON(which,default)					\
   do									\
     {									\
       char *new = NULL;							\
-      if (pinentry->which)						\
+      if (pinentry->default_##which || pinentry->which)			\
         {								\
-          int len = strlen (pinentry->which);				\
+	  int len;							\
+	  char *msg;							\
+									\
+	  msg = pinentry->which;					\
+	  if (! msg)							\
+	    msg = pinentry->default_##which;				\
+          len = strlen (msg);						\
+									\
           new = malloc (len + 3);				       	\
 	  if (!new)							\
 	    {								\
@@ -272,7 +282,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	      goto out;							\
 	    }								\
 	  new[0] = '<';							\
-	  memcpy (&new[1], pinentry->which, len);			\
+	  memcpy (&new[1], msg, len);					\
           new[len + 1] = '>';						\
 	  new[len + 2] = '\0';						\
         }								\
