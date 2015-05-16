@@ -75,6 +75,7 @@ static GtkWidget *time_out;
 #endif
 static GtkTooltips *tooltips;
 static gboolean got_input;
+static guint timeout_source;
 
 /* Gnome hig small and large space in pixels.  */
 #define HIG_SMALL      6
@@ -353,6 +354,9 @@ timeout_cb (gpointer data)
   (void)data;
   if (!got_input)
     gtk_main_quit ();
+
+  /* Don't run again.  */
+  timeout_source = 0;
   return FALSE;
 }
 
@@ -687,7 +691,7 @@ create_window (pinentry_t ctx, int confirm_mode)
   gtk_window_present (GTK_WINDOW (win));  /* Make sure it has the focus.  */
 
   if (pinentry->timeout > 0)
-    g_timeout_add (pinentry->timeout*1000, timeout_cb, NULL);
+    timeout_source = g_timeout_add (pinentry->timeout*1000, timeout_cb, NULL);
 
   return win;
 }
@@ -708,6 +712,13 @@ gtk_cmd_handler (pinentry_t pe)
   gtk_widget_destroy (w);
   while (gtk_events_pending ())
     gtk_main_iteration ();
+
+  if (timeout_source)
+    /* There is a timer running.  Cancel it.  */
+    {
+      g_source_remove (timeout_source);
+      timeout_source = 0;
+    }
 
   if (confirm_value == CONFIRM_CANCEL || grab_failed)
     pe->canceled = 1;
