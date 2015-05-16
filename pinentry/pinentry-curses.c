@@ -703,6 +703,13 @@ dialog_input (dialog_t diag, int chr)
     default:
       if (chr > 0 && chr < 256 && diag->pin_len < diag->pin_max)
 	{
+	  /* Make sure there is enough room for this character and a
+	     following NUL byte.  */
+	  if (! pinentry_setbufferlen (diag->pinentry, diag->pin_len + 2))
+	    {
+	      /* XXX: Bail.  */
+	    }
+
 	  diag->pinentry->pin[diag->pin_len] = (char) chr;
 	  diag->pin_len++;
 	  diag->pin_loc++;
