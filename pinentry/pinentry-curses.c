@@ -863,10 +863,14 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 
       switch (c)
 	{
-#ifndef HAVE_DOSISH_SYSTEM
 	case ERR:
+#ifndef HAVE_DOSISH_SYSTEM
 	  continue;
+#else
+          done = -2;
+          break;
 #endif
+
 	case KEY_LEFT:
 	case KEY_UP:
 	  switch (diag.pos)
