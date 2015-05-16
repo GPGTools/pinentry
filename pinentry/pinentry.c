@@ -111,6 +111,8 @@ struct pinentry pinentry =
   };
 
 
+static int lc_ctype_unknown_warning = 0;
+
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
 char *
 pinentry_utf8_to_local (const char *lc_ctype, const char *text)
@@ -129,8 +131,12 @@ pinentry_utf8_to_local (const char *lc_ctype, const char *text)
      string.  */
   if (!lc_ctype)
     {
-      fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
-               this_pgmname);
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   this_pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
       return strdup (text);
     }
 
@@ -191,8 +197,12 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
      string.  */
   if (!lc_ctype)
     {
-      fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
-               this_pgmname);
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   this_pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
       output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
       if (output_buf)
         strcpy (output_buf, input);
