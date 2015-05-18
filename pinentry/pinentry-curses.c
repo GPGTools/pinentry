@@ -705,6 +705,12 @@ dialog_input (dialog_t diag, int alt, int chr)
 	}
       break;
 
+    case 'l' - 'a' + 1: /* control-l */
+      /* Refresh the screen.  */
+      endwin ();
+      refresh ();
+      break;
+
     case 'u' - 'a' + 1: /* control-u */
       /* Erase the whole line.  */
       if (diag->pin_len > 0)
