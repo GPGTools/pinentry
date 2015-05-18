@@ -28,13 +28,17 @@ AC_DEFUN([IU_LIB_NCURSES], [
   AC_ARG_ENABLE(ncurses,    [  --disable-ncurses       don't prefer -lncurses over -lcurses],
               , enable_ncurses=yes)
   if test "$enable_ncurses" = yes; then
-    AC_CHECK_LIB(ncursesw, initscr, LIBNCURSES="-lncursesw",
-      AC_CHECK_LIB(ncurses, initscr, LIBNCURSES="-lncurses"))
-    if test "$ac_cv_lib_ncursesw_initscr" = yes; then
-      have_ncursesw=yes
-    else
-      have_ncursesw=no
-    fi
+    PKG_CHECK_MODULES([NCURSES], [ncursesw], [LIBNCURSES="${NCURSES_LIBS}" have_ncursesw=yes], [
+        PKG_CHECK_MODULES([NCURSES], [ncurses], [LIBNCURSES="${NCURSES_LIBS}" have_ncursesw=no], [
+            AC_CHECK_LIB(ncursesw, initscr, LIBNCURSES="-lncursesw",
+              AC_CHECK_LIB(ncurses, initscr, LIBNCURSES="-lncurses"))
+            if test "$ac_cv_lib_ncursesw_initscr" = yes; then
+              have_ncursesw=yes
+            else
+              have_ncursesw=no
+            fi
+        ])
+    ])
     if test "$LIBNCURSES"; then
       # Use ncurses header files instead of the ordinary ones, if possible;
       # is there a better way of doing this, that avoids looking in specific
