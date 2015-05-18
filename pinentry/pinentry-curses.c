@@ -691,6 +691,7 @@ dialog_input (dialog_t diag, int alt, int chr)
   switch (chr)
     {
     case KEY_BACKSPACE:
+    case 'h' - 'a' + 1: /* control-h.  */
       if (diag->pin_len > 0)
 	{
 	  diag->pin_len--;
