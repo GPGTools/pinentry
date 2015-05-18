@@ -271,6 +271,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
         {								\
 	  int len;							\
 	  char *msg;							\
+	  int i, j;							\
 									\
 	  msg = pinentry->which;					\
 	  if (! msg)							\
@@ -284,10 +285,22 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
               pinentry->specific_err = ASSUAN_Out_Of_Core;              \
 	      goto out;							\
 	    }								\
-	  new[0] = '<';							\
-	  memcpy (&new[1], msg, len);					\
-          new[len + 1] = '>';						\
-	  new[len + 2] = '\0';						\
+									\
+	  new[0] = '<'; 						\
+	  for (i = 0, j = 1; i < len; i ++, j ++)			\
+	    {								\
+	      if (msg[i] == '_')					\
+		{							\
+		  i ++;							\
+		  if (msg[i] == 0)					\
+		    /* _ at end of string.  */				\
+		    break;						\
+		}							\
+	      new[j] = msg[i];						\
+	    }								\
+									\
+	  new[j] = '>';							\
+	  new[j + 1] = 0;						\
         }								\
       dialog->which = pinentry_utf8_to_local (pinentry->lc_ctype,	\
 					      new ? new : default);	\
