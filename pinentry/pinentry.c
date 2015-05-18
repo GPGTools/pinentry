@@ -79,9 +79,6 @@ pinentry_reset (int use_defaults)
   /* These options are set from the command line.  Don't reset
      them.  */
   int debug = pinentry.debug;
-#ifdef ENABLE_ENHANCED
-  int enhanced = pinentry.enhanced;
-#endif
   char *display = pinentry.display;
   int parent_wid = pinentry.parent_wid;
 
@@ -155,9 +152,6 @@ pinentry_reset (int use_defaults)
       pinentry.touch_file = touch_file;
 
       pinentry.debug = debug;
-#ifdef ENABLE_ENHANCED
-      pinentry.enhanced = enhanced;
-#endif
       pinentry.display = display;
       pinentry.parent_wid = parent_wid;
 
@@ -652,9 +646,6 @@ pinentry_parse_opts (int argc, char *argv[])
     ARGPARSE_s_s('N', "ttytype",  "|NAME|Set the tty terminal type"),
     ARGPARSE_s_s('C', "lc-ctype", "|STRING|Set the tty LC_CTYPE value"),
     ARGPARSE_s_s('M', "lc-messages", "|STRING|Set the tty LC_MESSAGES value"),
-#ifdef ENABLE_ENHANCED
-    ARGPARSE_s_n('e', "enhanced", "Ask for timeout and insurance, too"),
-#endif
     ARGPARSE_s_i('o', "timeout",
                  "|SECS|Timeout waiting for input after this many seconds"),
     ARGPARSE_s_n('g', "no-global-grab",
@@ -676,11 +667,6 @@ pinentry_parse_opts (int argc, char *argv[])
         case 'd':
           pinentry.debug = 1;
           break;
-#ifdef ENABLE_ENHANCED
-        case 'e':
-          pinentry.enhanced = 1;
-          break;
-#endif
         case 'g':
           pinentry.grab = 0;
           break;

@@ -69,10 +69,6 @@ static GtkWidget *entry;
 static GtkWidget *repeat_entry;
 static GtkWidget *error_label;
 static GtkWidget *qualitybar;
-#ifdef ENABLE_ENHANCED
-static GtkWidget *insure;
-static GtkWidget *time_out;
-#endif
 static GtkTooltips *tooltips;
 static gboolean got_input;
 static guint timeout_source;
@@ -189,16 +185,6 @@ button_clicked (GtkWidget *widget, gpointer data)
       const char *s, *s2;
 
       /* Okay button or enter used in text field.  */
-#ifdef ENABLE_ENHANCED
-      /* FIXME: This is not compatible with assuan.  We can't just
-	 print stuff on stdout.  */
-      /* if (pinentry->enhanced) */
-      /*   printf ("Options: %s\nTimeout: %d\n\n", */
-      /*   	gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (insure)) */
-      /*   	? "insure" : "", */
-      /*   	gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (time_out))); */
-#endif
-
       s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (entry));
       if (!s)
 	s = "";
@@ -539,35 +525,6 @@ create_window (pinentry_t ctx, int confirm_mode)
           gtk_widget_show (entry);
           nrow++;
         }
-
-
-#ifdef ENABLE_ENHANCED
-      if (pinentry->enhanced)
-	{
-	  GtkWidget *sbox = gtk_hbox_new (FALSE, HIG_SMALL);
-	  gtk_box_pack_start (GTK_BOX (box), sbox, FALSE, FALSE, 0);
-
-	  w = gtk_label_new ("Forget secret after");
-	  gtk_box_pack_start (GTK_BOX (sbox), w, FALSE, FALSE, 0);
-	  gtk_widget_show (w);
-
-	  time_out = gtk_spin_button_new
-	    (GTK_ADJUSTMENT (gtk_adjustment_new (0, 0, HUGE_VAL, 1, 60, 60)),
-	     2, 0);
-	  gtk_box_pack_start (GTK_BOX (sbox), time_out, FALSE, FALSE, 0);
-	  gtk_widget_show (time_out);
-
-	  w = gtk_label_new ("seconds");
-	  gtk_box_pack_start (GTK_BOX (sbox), w, FALSE, FALSE, 0);
-	  gtk_widget_show (w);
-	  gtk_widget_show (sbox);
-
-	  insure = gtk_check_button_new_with_label ("ask before giving out "
-						    "secret");
-	  gtk_box_pack_start (GTK_BOX (box), insure, FALSE, FALSE, 0);
-	  gtk_widget_show (insure);
-	}
-#endif
     }
 
   bbox = gtk_hbutton_box_new ();

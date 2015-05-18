@@ -27,8 +27,6 @@ extern "C" {
 #endif
 #endif
 
-#undef ENABLE_ENHANCED
-
 typedef enum {
   PINENTRY_COLOR_NONE, PINENTRY_COLOR_DEFAULT,
   PINENTRY_COLOR_BLACK, PINENTRY_COLOR_RED,
@@ -89,11 +87,6 @@ struct pinentry
 
   /* The number of seconds before giving up while waiting for user input. */
   int timeout;
-
-#ifdef ENABLE_ENHANCED
-  /* True if enhanced mode is requested.  */
-  int enhanced;
-#endif
 
   /* True if caller should grab the keyboard.  (Assuan: "OPTION grab"
      or "OPTION no-grab".)  */
