@@ -715,7 +715,6 @@ void QSecureLineEditPrivate::_q_completionHighlighted(QString newText)
 
 QSize QSecureLineEdit::sizeHint() const
 {
-    Q_D(const QSecureLineEdit);
     ensurePolished();
     QFontMetrics fm(font());
     int leftmargin, topmargin, rightmargin, bottommargin;
@@ -739,7 +738,6 @@ QSize QSecureLineEdit::sizeHint() const
 
 QSize QSecureLineEdit::minimumSizeHint() const
 {
-    Q_D(const QSecureLineEdit);
     ensurePolished();
     QFontMetrics fm = fontMetrics();
     int leftmargin, topmargin, rightmargin, bottommargin;
@@ -773,7 +771,7 @@ void QSecureLineEdit::setCursorPosition(int pos)
     if (pos < 0)
         pos = 0;
 
-    if (pos <= d->text.length())
+    if (pos <= static_cast<int>(d->text.length()))
         d->moveCursor(pos);
 }
 
@@ -2922,7 +2920,7 @@ void QSecureLineEditPrivate::setText(const secqstring& txt, int pos, bool edited
     }
     history.clear();
     modifiedState =  undoState = 0;
-    cursor = (pos < 0 || pos > text.size()) ? text.size() : pos;
+    cursor = (pos < 0 || pos > static_cast<int>(text.size())) ? text.size() : pos;
     textDirty = (oldText != text);
     finishChange(-1, true, edited);
 }
@@ -3211,7 +3209,7 @@ bool QSecureLineEditPrivate::hasAcceptableInput(const secqstring &str) const
     if (!maskData)
         return true;
 
-    if (str.length() != maxLength)
+    if (static_cast<int>(str.length()) != maxLength)
         return false;
 
     for (int i=0; i < maxLength; ++i) {
@@ -3240,51 +3238,51 @@ secqstring QSecureLineEditPrivate::maskString(uint pos, const secqstring &str, b
     secqstring fill;
     fill = clear ? clearString(0, maxLength) : text;
 
-    int strIndex = 0;
+    unsigned int strIndex = 0;
     secqstring s;
     int i = pos;
     while (i < maxLength) {
         if (strIndex < str.length()) {
             if (maskData[i].separator) {
                 s += maskData[i].maskChar;
-                if (str[(int)strIndex] == maskData[i].maskChar)
+                if (str[strIndex] == maskData[i].maskChar)
                     strIndex++;
                 ++i;
             } else {
-                if (isValidInput(str[(int)strIndex], maskData[i].maskChar)) {
+                if (isValidInput(str[strIndex], maskData[i].maskChar)) {
                     switch (maskData[i].caseMode) {
                     case MaskInputData::Upper:
-                        s += str[(int)strIndex].toUpper();
+                        s += str[strIndex].toUpper();
                         break;
                     case MaskInputData::Lower:
-                        s += str[(int)strIndex].toLower();
+                        s += str[strIndex].toLower();
                         break;
                     default:
-                        s += str[(int)strIndex];
+                        s += str[strIndex];
                     }
                     ++i;
                 } else {
                     // search for separator first
-                    int n = findInMask(i, true, true, str[(int)strIndex]);
+                    int n = findInMask(i, true, true, str[strIndex]);
                     if (n != -1) {
-                        if (str.length() != 1 || i == 0 || (i > 0 && (!maskData[i-1].separator || maskData[i-1].maskChar != str[(int)strIndex]))) {
+                        if (str.length() != 1 || i == 0 || (i > 0 && (!maskData[i-1].separator || maskData[i-1].maskChar != str[strIndex]))) {
                             s += fill.substr(i, n-i+1);
                             i = n + 1; // update i to find + 1
                         }
                     } else {
                         // search for valid blank if not
-                        n = findInMask(i, true, false, str[(int)strIndex]);
+                        n = findInMask(i, true, false, str[strIndex]);
                         if (n != -1) {
                             s += fill.substr(i, n-i);
                             switch (maskData[n].caseMode) {
                             case MaskInputData::Upper:
-                                s += str[(int)strIndex].toUpper();
+                                s += str[strIndex].toUpper();
                                 break;
                             case MaskInputData::Lower:
-                                s += str[(int)strIndex].toLower();
+                                s += str[strIndex].toLower();
                                 break;
                             default:
-                                s += str[(int)strIndex];
+                                s += str[strIndex];
                             }
                             i = n + 1; // updates i to find + 1
                         }
