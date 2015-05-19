@@ -1114,7 +1114,10 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       && pinentry.allow_external_password_cache
       && pinentry.keyinfo
       /* Only read from the cache if we haven't already tried it.  */
-      && ! pinentry.tried_password_cache)
+      && ! pinentry.tried_password_cache
+      /* If the last read resulted in an error, then don't read from
+	 the cache.  */
+      && ! pinentry.error)
     {
       char *password;
 
