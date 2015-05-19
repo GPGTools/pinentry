@@ -135,3 +135,29 @@ password_cache_lookup (const char *keygrip)
   return NULL;
 #endif
 }
+
+/* Try and remove the cached password for key grip.  Returns -1 on
+   error, 0 if the key is not found and 1 if the password was
+   removed.  */
+int
+password_cache_clear (const char *keygrip)
+{
+#ifdef HAVE_LIBSECRET
+  GError *error = NULL;
+  int removed = secret_password_clear_sync (gpg_schema (), NULL, &error,
+					    "keygrip", keygrip, NULL);
+  if (error != NULL)
+    {
+      printf("Failed to clear password for key %s with secret service: %s\n",
+	     keygrip, error->message);
+      debug(error->message);
+      g_error_free (error);
+      return -1;
+    }
+  if (removed)
+    return 1;
+  return 0;
+#else
+  return -1;
+#endif
+}

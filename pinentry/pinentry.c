@@ -1301,6 +1301,30 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   return rc;
 }
 
+/* CLEARPASSPHRASE <cacheid>
+
+   Clear the cache passphrase associated with the key identified by
+   cacheid.
+ */
+static int
+cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
+{
+  if (! line)
+    return ASSUAN_Invalid_Value;
+
+  /* Remove leading and trailing white space.  */
+  while (*line == ' ')
+    line ++;
+  while (line[strlen (line) - 1] == ' ')
+    line[strlen (line) - 1] = 0;
+
+  switch (password_cache_clear (line))
+    {
+    case 1: return 0;
+    case 0: return ASSUAN_Invalid_Value;
+    default: return ASSUAN_General_Error;
+    }
+}
 
 /* Tell the assuan library about our commands.  */
 static int
@@ -1330,6 +1354,7 @@ register_commands (ASSUAN_CONTEXT ctx)
       { "GETINFO",    0,  cmd_getinfo },
       { "SETTITLE",   0,  cmd_settitle },
       { "SETTIMEOUT",   0,  cmd_settimeout },
+      { "CLEARPASSPHRASE", 0, cmd_clear_passphrase },
       { NULL }
     };
   int i, j, rc;

@@ -24,4 +24,6 @@ void password_cache_save (const char *key_grip, const char *password);
 
 char *password_cache_lookup (const char *key_grip);
 
+int password_cache_clear (const char *keygrip);
+
 #endif
