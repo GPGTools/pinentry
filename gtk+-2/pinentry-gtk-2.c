@@ -546,6 +546,9 @@ create_window (pinentry_t ctx, int confirm_mode)
       else
         w = gtk_check_button_new_with_label ("Save passphrase using libsecret");
 
+      /* Make sure it is off by default.  */
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), FALSE);
+
       gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
       gtk_widget_show (w);
 
