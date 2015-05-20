@@ -24,8 +24,6 @@ gtk+-2/Makefile.in
 gtk+-2/Makefile
 gnome3/Makefile.in
 gnome3/Makefile
-gtk/Makefile.in
-gtk/Makefile
 pinentry/Makefile.in
 pinentry/Makefile
 qt/Makefile.in
