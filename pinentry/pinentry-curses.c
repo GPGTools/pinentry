@@ -768,7 +768,10 @@ dialog_input (dialog_t diag, int alt, int chr)
 	     following NUL byte.  */
 	  if (! pinentry_setbufferlen (diag->pinentry, diag->pin_len + 2))
 	    {
-	      /* XXX: Bail.  */
+	      /* Bail.  Here we use a simple approach.  It would be
+                 better to have a pinentry_bug function.  */
+              assert (!"setbufferlen failed");
+              abort ();
 	    }
 
 	  diag->pinentry->pin[diag->pin_len] = (char) chr;
@@ -808,12 +811,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   SCREEN *screen = 0;
   int done = 0;
   char *pin_utf8;
+  int alt = 0;
 #ifndef HAVE_DOSISH_SYSTEM
   int no_input = 1;
 #endif
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
-  int alt = 0;
 
   if (pinentry->lc_ctype)
     {

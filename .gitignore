@@ -22,6 +22,8 @@ doc/stamp-vti
 doc/version.texi
 gtk+-2/Makefile.in
 gtk+-2/Makefile
+gnome3/Makefile.in
+gnome3/Makefile
 gtk/Makefile.in
 gtk/Makefile
 pinentry/Makefile.in
@@ -36,7 +38,6 @@ w32/Makefile.in
 w32/Makefile
 tty/Makefile.in
 tty/Makefile
-
 /qt4/pinentryconfirm.moc
 /qt4/pinentrydialog.moc
 /qt4/qsecurelineedit.moc
