@@ -1,8 +1,0 @@
-pinentry for Debian
--------------------
-
-The pinentry-* packages use alternatives.  The versions that can run
-under the X Window System have a higher priority because they support
-text mode as well.
-
- -- Marcus Brinkmann <mb@g10code.de>, Thu, 25 Jul 2002 23:09:08 +0200
