@@ -26,8 +26,6 @@ gnome3/Makefile.in
 gnome3/Makefile
 pinentry/Makefile.in
 pinentry/Makefile
-qt/Makefile.in
-qt/Makefile
 qt4/Makefile.in
 qt4/Makefile
 secmem/Makefile.in
