@@ -1,5 +1,20 @@
-Noteworthy changes in version 0.9.3 (unreleased)
+Noteworthy changes in version 0.9.3 (2015-06-01)
 ------------------------------------------------
+
+ * Improved documentation
+
+ * New pinentry-gnome3
+
+ * More improvements for pinentry-tty.
+
+ * Fixes for pinentry-curses including support for Ctrl-W, Ctrl-U,
+   Ctrl-H, Ctrl-L, and Alt-Backspace
+
+ * New Assuan command to request clearing an external cache.
+
+ * Fixed problems linking to ncursesw.
+
+ * All kind of other minor fixes.
 
 
 Noteworthy changes in version 0.9.2 (2015-05-11)
