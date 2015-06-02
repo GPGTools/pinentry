@@ -144,17 +144,73 @@ AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 dnl Checks for compiler features.
 if test "$GCC" = yes; then
-    CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+    # Check whether gcc does not emit a diagnositc for unknown -Wno-*
+    # options.  This is the case for gcc >= 4.6
+    AC_MSG_CHECKING([if gcc ignores unknown -Wno-* options])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6 )
+#kickerror
+#endif]],[])],[_gcc_silent_wno=yes],[_gcc_silent_wno=no])
+    AC_MSG_RESULT($_gcc_silent_wno)
+
+    if test "$USE_MAINTAINER_MODE" = "yes"; then
+        CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+        CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
+
+        if test x"$_gcc_silent_wno" = xyes ; then
+          _gcc_warn=yes
+        else
+          AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+          _gcc_cflags_save=$CFLAGS
+          CFLAGS="-Wno-missing-field-initializers"
+          AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                            [_gcc_warn=yes],[_gcc_warn=no])
+          AC_MSG_RESULT($_gcc_warn)
+          CFLAGS=$_gcc_cflags_save;
+        fi
+        if test x"$_gcc_warn" = xyes ; then
+          CFLAGS="$CFLAGS -W -Wno-missing-field-initializers"
+        fi
+
+        AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
+        _gcc_cflags_save=$CFLAGS
+        CFLAGS="-Wdeclaration-after-statement"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_warn=yes,_gcc_warn=no)
+        AC_MSG_RESULT($_gcc_warn)
+        CFLAGS=$_gcc_cflags_save;
+        if test x"$_gcc_warn" = xyes ; then
+          CFLAGS="$CFLAGS -Wdeclaration-after-statement"
+        fi
+
+    else
+        # Not in maintainer mode: Use standard warnings.
+        CFLAGS="$CFLAGS -Wall"
+    fi
+
     CPPFLAGS="$CPPFLAGS -Wall"
 
-    AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
-    _gcc_cflags_save=$CFLAGS
-    CFLAGS="-Wno-pointer-sign"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_psign=yes,_gcc_psign=no)
-    AC_MSG_RESULT($_gcc_psign)
-    CFLAGS=$_gcc_cflags_save;
-    if test x"$_gcc_psign" = xyes ; then
+    if test x"$_gcc_silent_wno" = xyes ; then
+      _gcc_warn=yes
+    else
+      AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
+      _gcc_cflags_save=$CFLAGS
+      CFLAGS="-Wno-pointer-sign"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],[_gcc_warn=yes],[_gcc_warn=no])
+      AC_MSG_RESULT($_gcc_warn)
+      CFLAGS=$_gcc_cflags_save;
+    fi
+    if test x"$_gcc_warn" = xyes ; then
        CFLAGS="$CFLAGS -Wno-pointer-sign"
+    fi
+
+    AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wpointer-arith"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_warn=yes,_gcc_warn=no)
+    AC_MSG_RESULT($_gcc_warn)
+    CFLAGS=$_gcc_cflags_save;
+    if test x"$_gcc_warn" = xyes ; then
+       CFLAGS="$CFLAGS -Wpointer-arith"
     fi
 fi
 
