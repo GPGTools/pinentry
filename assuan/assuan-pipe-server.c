@@ -1,4 +1,4 @@
-/* assuan-pipe-server.c - Assuan server working over a pipe 
+/* assuan-pipe-server.c - Assuan server working over a pipe
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -27,12 +27,14 @@
 static void
 deinit_pipe_server (ASSUAN_CONTEXT ctx)
 {
+  (void)ctx;
   /* nothing to do for this simple server */
 }
 
 static int
 accept_connection (ASSUAN_CONTEXT ctx)
 {
+  (void)ctx;
   /* This is a NOP for a pipe server */
   return 0;
 }
@@ -40,6 +42,7 @@ accept_connection (ASSUAN_CONTEXT ctx)
 static int
 finish_connection (ASSUAN_CONTEXT ctx)
 {
+  (void)ctx;
   /* This is a NOP for a pipe server */
   return 0;
 }

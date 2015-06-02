@@ -1,4 +1,4 @@
-/* assuan-handler.c - dispatch commands 
+/* assuan-handler.c - dispatch commands
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -32,6 +32,7 @@
 static int
 dummy_handler (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)line;
   return set_error (ctx, Server_Fault, "no handler registered");
 }
 
@@ -39,15 +40,18 @@ dummy_handler (ASSUAN_CONTEXT ctx, char *line)
 static int
 std_handler_nop (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)ctx;
+  (void)line;
   return 0; /* okay */
 }
-  
+
 static int
 std_handler_cancel (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)line;
   if (ctx->cancel_notify_fnc)
     ctx->cancel_notify_fnc (ctx);
-  return set_error (ctx, Not_Implemented, NULL); 
+  return set_error (ctx, Not_Implemented, NULL);
 }
 
 static int
@@ -96,37 +100,41 @@ std_handler_option (ASSUAN_CONTEXT ctx, char *line)
     return ctx->option_handler_fnc (ctx, key, value);
   return 0;
 }
-  
+
 static int
 std_handler_bye (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)line;
   if (ctx->bye_notify_fnc)
     ctx->bye_notify_fnc (ctx);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
   return -1; /* pretty simple :-) */
 }
-  
+
 static int
 std_handler_auth (ASSUAN_CONTEXT ctx, char *line)
 {
-  return set_error (ctx, Not_Implemented, NULL); 
+  (void)line;
+  return set_error (ctx, Not_Implemented, NULL);
 }
-  
+
 static int
 std_handler_reset (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)line;
   if (ctx->reset_notify_fnc)
     ctx->reset_notify_fnc (ctx);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
   return 0;
 }
-  
+
 static int
 std_handler_end (ASSUAN_CONTEXT ctx, char *line)
 {
-  return set_error (ctx, Not_Implemented, NULL); 
+  (void)line;
+  return set_error (ctx, Not_Implemented, NULL);
 }
 
 static int
@@ -182,7 +190,7 @@ std_handler_output (ASSUAN_CONTEXT ctx, char *line)
 
 
 
-  
+
 
 /* This is a table with the standard commands and handler for them.
    The table is used to initialize a new context and assuciate strings
@@ -214,13 +222,13 @@ static struct {
  * @cmd_id: An ID value for the command
  * @cmd_name: A string with the command name
  * @handler: The handler function to be called
- * 
+ *
  * Register a handler to be used for a given command.
- * 
+ *
  * The @cmd_name must be %NULL or an empty string for all @cmd_ids
  * below %ASSUAN_CMD_USER because predefined values are used.
- * 
- * Return value: 
+ *
+ * Return value:
  **/
 int
 assuan_register_command (ASSUAN_CONTEXT ctx,
@@ -233,7 +241,7 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
     cmd_name = NULL;
 
   if (cmd_id < ASSUAN_CMD_USER)
-    { 
+    {
       if (cmd_name)
         return ASSUAN_Invalid_Value; /* must be NULL for these values*/
 
@@ -250,7 +258,7 @@ assuan_register_command (ASSUAN_CONTEXT ctx,
       if (!std_cmd_table[i].name)
         return ASSUAN_Invalid_Value; /* not a pre-registered one */
     }
-  
+
   if (!handler)
     handler = dummy_handler;
 
@@ -359,7 +367,7 @@ _assuan_register_std_commands (ASSUAN_CONTEXT ctx)
           if (rc)
             return rc;
         }
-    } 
+    }
   return 0;
 }
 
@@ -370,6 +378,8 @@ _assuan_register_std_commands (ASSUAN_CONTEXT ctx)
 static int
 handle_data_line (ASSUAN_CONTEXT ctx, char *line, int linelen)
 {
+  (void)line;
+  (void)linelen;
   return set_error (ctx, Not_Implemented, NULL);
 }
 
@@ -391,7 +401,7 @@ my_strcasecmp (const char *a, const char *b)
 /* Parse the line, break out the command, find it in the command
    table, remove leading and white spaces from the arguments, all the
    handler with the argument line and return the error */
-static int 
+static int
 dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
 {
   char *p;
@@ -404,8 +414,8 @@ dispatch_command (ASSUAN_CONTEXT ctx, char *line, int linelen)
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
   if (p==line)
-    return set_error (ctx, Syntax_Error, "leading white-space"); 
-  if (*p) 
+    return set_error (ctx, Syntax_Error, "leading white-space");
+  if (*p)
     { /* Skip over leading WS after the keyword */
       *p++ = 0;
       while ( *p == ' ' || *p == '\t')
@@ -476,11 +486,11 @@ process_request (ASSUAN_CONTEXT ctx)
       rc = assuan_write_line (ctx, ctx->okay_line? ctx->okay_line : "OK");
     }
   else if (rc == -1)
-    { /* No error checking because the peer may have already disconnect */ 
+    { /* No error checking because the peer may have already disconnect */
       assuan_write_line (ctx, "OK closing connection");
       ctx->finish_handler (ctx);
     }
-  else 
+  else
     {
       char errline[256];
 
@@ -509,11 +519,11 @@ process_request (ASSUAN_CONTEXT ctx)
 /**
  * assuan_process:
  * @ctx: assuan context
- * 
+ *
  * This fucntion is used to handle the assuan protocol after a
  * connection has been established using assuan_accept().  This is the
  * main protocol handler.
- * 
+ *
  * Return value: 0 on success or an error code if the assuan operation
  * failed.  Note, that no error is returned for operational errors.
  **/
@@ -536,15 +546,15 @@ assuan_process (ASSUAN_CONTEXT ctx)
 /**
  * assuan_process_next:
  * @ctx: Assuan context
- * 
+ *
  * Same as assuan_process() but the user has to provide the outer
  * loop.  He should loop as long as the return code is zero and stop
  * otherwise; -1 is regular end.
- * 
+ *
  * See also: assuan_get_active_fds()
  * Return value: -1 for end of server, 0 on success or an error code
  **/
-int 
+int
 assuan_process_next (ASSUAN_CONTEXT ctx)
 {
   return process_request (ctx);
@@ -557,18 +567,18 @@ assuan_process_next (ASSUAN_CONTEXT ctx)
  * @what: 0 for read fds, 1 for write fds
  * @fdarray: Caller supplied array to store the FDs
  * @fdarraysize: size of that array
- * 
+ *
  * Return all active filedescriptors for the given context.  This
  * function can be used to select on the fds and call
  * assuan_process_next() if there is an active one.  The first fd in
  * the array is the one used for the command connection.
  *
  * Note, that write FDs are not yet supported.
- * 
+ *
  * Return value: number of FDs active and put into @fdarray or -1 on
  * error which is most likely a too small fdarray.
  **/
-int 
+int
 assuan_get_active_fds (ASSUAN_CONTEXT ctx, int what,
                        int *fdarray, int fdarraysize)
 {

@@ -168,8 +168,11 @@ pinentry_reset (int use_defaults)
 static void
 pinentry_assuan_reset_handler (ASSUAN_CONTEXT ctx)
 {
+  (void)ctx;
   pinentry_reset (0);
 }
+
+
 
 static int lc_ctype_unknown_warning = 0;
 
@@ -514,8 +517,9 @@ pinentry_init (const char *pgmname)
   drop_privs ();
 
   if (atexit (secmem_term))
-    /* FIXME: Could not register at-exit function, bail out.  */
-    ;
+    {
+      /* FIXME: Could not register at-exit function, bail out.  */
+    }
 
   assuan_set_malloc_hooks (secmem_malloc, secmem_realloc, secmem_free);
 }
@@ -754,6 +758,8 @@ pinentry_parse_opts (int argc, char *argv[])
 static int
 option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 {
+  (void)ctx;
+
   if (!strcmp (key, "no-grab") && !*value)
     pinentry.grab = 0;
   else if (!strcmp (key, "grab") && !*value)
@@ -879,8 +885,10 @@ static int
 cmd_setdesc (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newd;
-  newd = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newd = malloc (strlen (line) + 1);
   if (!newd)
     return ASSUAN_Out_Of_Core;
 
@@ -896,8 +904,10 @@ static int
 cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newp;
-  newp = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newp = malloc (strlen (line) + 1);
   if (!newp)
     return ASSUAN_Out_Of_Core;
 
@@ -916,6 +926,8 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_setkeyinfo (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)ctx;
+
   if (pinentry.keyinfo)
     free (pinentry.keyinfo);
 
@@ -933,6 +945,8 @@ cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
 {
   char *p;
 
+  (void)ctx;
+
   p = malloc (strlen (line) + 1);
   if (!p)
     return ASSUAN_Out_Of_Core;
@@ -949,6 +963,8 @@ cmd_setrepeaterror (ASSUAN_CONTEXT ctx, char *line)
 {
   char *p;
 
+  (void)ctx;
+
   p = malloc (strlen (line) + 1);
   if (!p)
     return ASSUAN_Out_Of_Core;
@@ -964,8 +980,10 @@ static int
 cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newe;
-  newe = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newe = malloc (strlen (line) + 1);
   if (!newe)
     return ASSUAN_Out_Of_Core;
 
@@ -981,8 +999,10 @@ static int
 cmd_setok (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newo;
-  newo = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newo = malloc (strlen (line) + 1);
   if (!newo)
     return ASSUAN_Out_Of_Core;
 
@@ -998,8 +1018,10 @@ static int
 cmd_setnotok (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newo;
-  newo = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newo = malloc (strlen (line) + 1);
   if (!newo)
     return ASSUAN_Out_Of_Core;
 
@@ -1015,8 +1037,10 @@ static int
 cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newc;
-  newc = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newc = malloc (strlen (line) + 1);
   if (!newc)
     return ASSUAN_Out_Of_Core;
 
@@ -1031,18 +1055,22 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_settimeout (ASSUAN_CONTEXT ctx, char *line)
 {
-    if (line && *line)
-	pinentry.timeout = atoi(line);
+  (void)ctx;
 
-    return 0;
+  if (line && *line)
+    pinentry.timeout = atoi (line);
+
+  return 0;
 }
 
 static int
 cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newt;
-  newt = malloc (strlen (line) + 1);
 
+  (void)ctx;
+
+  newt = malloc (strlen (line) + 1);
   if (!newt)
     return ASSUAN_Out_Of_Core;
 
@@ -1057,6 +1085,8 @@ static int
 cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newval;
+
+  (void)ctx;
 
   if (!*line)
     line = "Quality:";
@@ -1077,6 +1107,8 @@ static int
 cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
 {
   char *newval;
+
+  (void)ctx;
 
   if (*line)
     {
@@ -1101,6 +1133,8 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
   int result;
   int set_prompt = 0;
   int just_read_password_from_cache = 0;
+
+  (void)line;
 
   pinentry_setbuffer_init (&pinentry);
   if (!pinentry.pin)
@@ -1268,6 +1302,8 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
 static int
 cmd_message (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)line;
+
   return cmd_confirm (ctx, "--one-button");
 }
 
@@ -1309,6 +1345,8 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 static int
 cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
 {
+  (void)ctx;
+
   if (! line)
     return ASSUAN_Invalid_Value;
 

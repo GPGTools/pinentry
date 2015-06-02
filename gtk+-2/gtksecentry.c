@@ -1350,6 +1350,8 @@ gtk_secure_entry_focus_in(GtkWidget * widget, GdkEventFocus * event)
 {
     GtkSecureEntry *entry = GTK_SECURE_ENTRY(widget);
 
+    (void)event;
+
     gtk_widget_queue_draw(widget);
 
     entry->need_im_reset = TRUE;
@@ -1369,6 +1371,8 @@ static gint
 gtk_secure_entry_focus_out(GtkWidget * widget, GdkEventFocus * event)
 {
     GtkSecureEntry *entry = GTK_SECURE_ENTRY(widget);
+
+    (void)event;
 
     gtk_widget_queue_draw(widget);
 
@@ -1423,6 +1427,8 @@ gtk_secure_entry_state_changed(GtkWidget * widget,
 {
     GtkSecureEntry *entry = GTK_SECURE_ENTRY(widget);
 
+    (void)previous_state;
+
     if (GTK_WIDGET_REALIZED(widget)) {
 	gdk_window_set_background(widget->window,
 				  &widget->style->
@@ -1444,6 +1450,8 @@ gtk_secure_entry_state_changed(GtkWidget * widget,
 static void
 gtk_secure_entry_screen_changed(GtkWidget * widget, GdkScreen * old_screen)
 {
+    (void)old_screen;
+
     gtk_secure_entry_recompute(GTK_SECURE_ENTRY(widget));
 }
 
@@ -1575,6 +1583,8 @@ gtk_secure_entry_style_set(GtkWidget * widget, GtkStyle * previous_style)
 static void
 gtk_cell_editable_secure_entry_activated(GtkSecureEntry * entry, gpointer data)
 {
+    (void)data;
+
     gtk_cell_editable_editing_done(GTK_CELL_EDITABLE(entry));
     gtk_cell_editable_remove_widget(GTK_CELL_EDITABLE(entry));
 }
@@ -1583,6 +1593,8 @@ static gboolean
 gtk_cell_editable_key_press_event(GtkSecureEntry * entry,
 				  GdkEventKey * key_event, gpointer data)
 {
+    (void)data;
+
     if (key_event->keyval == GDK_Escape) {
 	entry->editing_canceled = TRUE;
 	gtk_cell_editable_editing_done(GTK_CELL_EDITABLE(entry));
@@ -1606,6 +1618,8 @@ static void
 gtk_secure_entry_start_editing(GtkCellEditable * cell_editable,
 			       GdkEvent * event)
 {
+    (void)event;
+
     GTK_SECURE_ENTRY(cell_editable)->is_cell_renderer = TRUE;
 
     g_signal_connect(cell_editable, "activate",
@@ -1950,6 +1964,8 @@ paste_received (GtkClipboard *clipboard,
   GtkSecureEntry *entry = GTK_SECURE_ENTRY (data);
   GtkEditable *editable = GTK_EDITABLE (entry);
 
+  (void)clipboard;
+
   if (entry->button == 2)
     {
       gint pos, start, end;
@@ -2043,7 +2059,9 @@ static void
 gtk_secure_entry_keymap_direction_changed(GdkKeymap * keymap,
 					  GtkSecureEntry * entry)
 {
-    gtk_secure_entry_recompute(entry);
+  (void)keymap;
+
+  gtk_secure_entry_recompute(entry);
 }
 
 /* IM Context Callbacks
@@ -2053,7 +2071,9 @@ static void
 gtk_secure_entry_commit_cb(GtkIMContext * context,
 			   const gchar * str, GtkSecureEntry * entry)
 {
-    gtk_secure_entry_enter_text(entry, str);
+  (void)context;
+
+  gtk_secure_entry_enter_text(entry, str);
 }
 
 static void
@@ -2062,6 +2082,8 @@ gtk_secure_entry_preedit_changed_cb(GtkIMContext * context,
 {
     gchar *preedit_string;
     gint cursor_pos;
+
+    (void)context;
 
     gtk_im_context_get_preedit_string(entry->im_context,
 				      &preedit_string, NULL, &cursor_pos);
@@ -2094,6 +2116,8 @@ gtk_secure_entry_delete_surrounding_cb(GtkIMContext * slave,
 				       gint n_chars,
 				       GtkSecureEntry * entry)
 {
+    (void)slave;
+
     gtk_editable_delete_text(GTK_EDITABLE(entry),
 			     entry->current_pos + offset,
 			     entry->current_pos + offset + n_chars);
@@ -3287,6 +3311,8 @@ static gboolean
 gtk_secure_entry_mnemonic_activate(GtkWidget * widget,
 				   gboolean group_cycling)
 {
+    (void)group_cycling;
+
     gtk_widget_grab_focus(widget);
     return TRUE;
 }
@@ -3476,6 +3502,9 @@ _gtk_marshal_VOID__ENUM_INT_BOOLEAN(GClosure * closure,
     register GCClosure *cc = (GCClosure *) closure;
     register gpointer data1, data2;
 
+    (void)return_value;
+    (void)invocation_hint;
+
     g_return_if_fail(n_param_values == 4);
 
     if (G_CCLOSURE_SWAP_DATA(closure)) {
@@ -3510,6 +3539,9 @@ _gtk_marshal_VOID__ENUM_INT(GClosure * closure,
     register GMarshalFunc_VOID__ENUM_INT callback;
     register GCClosure *cc = (GCClosure *) closure;
     register gpointer data1, data2;
+
+    (void)return_value;
+    (void)invocation_hint;
 
     g_return_if_fail(n_param_values == 3);
 

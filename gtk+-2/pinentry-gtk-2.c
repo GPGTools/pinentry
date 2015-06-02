@@ -93,6 +93,8 @@ constrain_size (GtkWidget *win, GtkRequisition *req, gpointer data)
   static gint width, height;
   GdkGeometry geo;
 
+  (void)data;
+
   if (req->width == width && req->height == height)
     return;
   width = req->width;
@@ -126,6 +128,9 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
   GdkScreen *screen;
   GdkWindow *root;
 
+  (void)event;
+  (void)data;
+
   if (! pinentry->grab)
     return;
 
@@ -140,6 +145,8 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
+  (void)data;
+
   if (! pinentry->grab)
     return FALSE;
 
@@ -157,6 +164,8 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
+  (void)data;
+
   gdk_keyboard_ungrab (gdk_event_get_time (event));
   /* Unmake window transient for the root window.  */
   /* gdk_window_set_transient_for cannot be used with parent = NULL to
@@ -171,6 +180,10 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 static int
 delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+  (void)widget;
+  (void)event;
+  (void)data;
+
   pinentry->close_button = 1;
   gtk_main_quit ();
   return TRUE;
@@ -180,6 +193,8 @@ delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 static void
 button_clicked (GtkWidget *widget, gpointer data)
 {
+  (void)widget;
+
   if (data)
     {
       const char *s, *s2;
@@ -218,6 +233,8 @@ button_clicked (GtkWidget *widget, gpointer data)
 static void
 enter_callback (GtkWidget *widget, GtkWidget *anentry)
 {
+  (void)anentry;
+
   button_clicked (widget, (gpointer) CONFIRM_OK);
 }
 
@@ -225,6 +242,8 @@ enter_callback (GtkWidget *widget, GtkWidget *anentry)
 static void
 confirm_button_clicked (GtkWidget *widget, gpointer data)
 {
+  (void)widget;
+
   confirm_value = (confirm_value_t) data;
   gtk_main_quit ();
 }
@@ -235,6 +254,10 @@ cancel_callback (GtkAccelGroup *acc, GObject *accelerable,
                  guint keyval, GdkModifierType modifier, gpointer data)
 {
   int confirm_mode = !!data;
+
+  (void)acc;
+  (void)keyval;
+  (void)modifier;
 
   if (confirm_mode)
     confirm_button_clicked (GTK_WIDGET (accelerable),

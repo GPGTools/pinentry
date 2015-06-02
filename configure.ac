@@ -169,7 +169,7 @@ if test "$GCC" = yes; then
           CFLAGS=$_gcc_cflags_save;
         fi
         if test x"$_gcc_warn" = xyes ; then
-          CFLAGS="$CFLAGS -W -Wno-missing-field-initializers"
+          CFLAGS="$CFLAGS -W -Wno-sign-compare -Wno-missing-field-initializers"
         fi
 
         AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
