@@ -150,7 +150,7 @@ password_cache_clear (const char *keygrip)
     {
       printf("Failed to clear password for key %s with secret service: %s\n",
 	     keygrip, error->message);
-      g_debug(error->message);
+      g_debug("%s", error->message);
       g_error_free (error);
       return -1;
     }
