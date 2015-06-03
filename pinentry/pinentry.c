@@ -438,7 +438,7 @@ pinentry_setbufferlen (pinentry_t pin, int len)
     len = 2048;
 
   if (len <= pin->pin_len)
-    return NULL;
+    return pin->pin;
 
   newp = secmem_realloc (pin->pin, len);
   if (newp)
