@@ -363,7 +363,8 @@ secmem_malloc( size_t size )
     if( cur_blocks > max_blocks )
 	max_blocks = cur_blocks;
 
-    memset (&mb->u.aligned.c, 0, size);
+    memset (&mb->u.aligned.c, 0,
+	    size - (size_t) &((struct memblock_struct *) 0)->u.aligned.c);
 
     return &mb->u.aligned.c;
 }
