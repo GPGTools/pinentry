@@ -145,6 +145,7 @@ create_prompt (pinentry_t pe, int confirm)
   /* XXX: gcr expects a string; we have a int.  */
   // gcr_prompt_set_caller_window (prompt, pe->parent_wid);
 
+#ifdef HAVE_LIBSECRET
   if (! confirm && pe->allow_external_password_cache && pe->keyinfo)
     {
       if (pe->default_pwmngr)
@@ -157,6 +158,7 @@ create_prompt (pinentry_t pe, int confirm)
 	gcr_prompt_set_choice_label
 	  (prompt, "Automatically unlock this key, whenever I'm logged in");
     }
+#endif
 
   return prompt;
 }
@@ -202,6 +204,11 @@ gnome3_cmd_handler (pinentry_t pe)
 
 	  if (pe->repeat_passphrase)
 	    pe->repeat_okay = 1;
+
+#ifdef HAVE_LIBSECRET
+	  if (pe->allow_external_password_cache && pe->keyinfo)
+	    pe->may_cache_password = gcr_prompt_get_choice_chosen (prompt);
+#endif
 
 	  ret = 1;
 	}
