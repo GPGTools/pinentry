@@ -64,7 +64,7 @@ else
 pinentry_w32 =
 endif
 
-SUBDIRS = assuan secmem pinentry ${pinentry_curses} ${pinentry_tty} \
+SUBDIRS = secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_gtk_2} ${pinentry_gnome_3} ${pinentry_qt4} \
 	${pinentry_w32} doc
 

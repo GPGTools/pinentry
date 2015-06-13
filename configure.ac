@@ -229,8 +229,42 @@ COMMON_LIBS=
 AC_SUBST(COMMON_CFLAGS)
 AC_SUBST(COMMON_LIBS)
 
+dnl Checks for libgpg-error
+#
+# libgpg-error is a library with error codes shared between GnuPG
+# related projects.
+#
+NEED_GPG_ERROR_VERSION=1.16
+have_gpg_error=no
+
+AM_PATH_GPG_ERROR("$NEED_GPG_ERROR_VERSION",
+                  have_gpg_error=yes,have_gpg_error=no)
+COMMON_CFLAGS="$GPG_ERROR_CFLAGS $COMMON_CFLAGS"
+COMMON_LIBS="$GPG_ERROR_LIBS $COMMON_LIBS"
+
+AC_DEFINE_UNQUOTED(GPG_ERR_ENABLE_GETTEXT_MACROS, 1,
+                   [Under Windows we use the gettext code from libgpg-error])
+
+AC_DEFINE_UNQUOTED(GPG_ERR_ENABLE_ERRNO_MACROS, 1,
+                   [Under WindowsCE we use the strerror replacement from libgpg-error.])
+
+
 dnl Checks for libassuan.
-dnl -> None required because we use a stripped down version of libassuan.
+#
+# libassuan is used for IPC
+#
+NEED_LIBASSUAN_API=2
+NEED_LIBASSUAN_VERSION=2.1.0
+have_libassuan=no
+AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
+                  have_libassuan=yes,have_libassuan=no)
+if test "$have_libassuan" = "yes"; then
+  AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
+                     [version of the libassuan library])
+fi
+
+COMMON_CFLAGS="$LIBASSUAN_CFLAGS $COMMON_CFLAGS"
+COMMON_LIBS="$LIBASSUAN_LIBS $COMMON_LIBS"
 
 
 dnl Checks for libsecmem.
@@ -442,8 +476,8 @@ if test "$libsecret" = "yes"; then
   AC_DEFINE(HAVE_LIBSECRET, 1,
     [The pinentries should optionally cache the passphrase using libsecret.])
 
-  COMMON_CFLAGS="$COMMON_CFLAGS $LIBSECRET_CFLAGS"
-  COMMON_LIBS="$COMMON_LIBS $LIBSECRET_LIBS"
+  COMMON_CFLAGS="$LIBSECRET_CFLAGS $COMMON_CFLAGS"
+  COMMON_LIBS="$LIBSECRET_LIBS $COMMON_LIBS"
 fi
 
 dnl
@@ -561,9 +595,66 @@ else
 fi
 AC_SUBST(PINENTRY_DEFAULT)
 
+#
+# Print errors here so that they are visible all
+# together and the user can acquire them all together.
+#
+die=no
+if test "$have_gpg_error" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** You need libgpg-error to build this program.
+**  This library is for example available at
+***   ftp://ftp.gnupg.org/gcrypt/libgpg-error
+*** (at least version $NEED_GPG_ERROR_VERSION is required.)
+***]])
+fi
+
+if test "$have_libassuan" = "no"; then
+   die=yes
+   AC_MSG_NOTICE([[
+***
+*** You need libassuan to build this program.
+*** This library is for example available at
+***   ftp://ftp.gnupg.org/gcrypt/libassuan/
+*** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).
+***]])
+fi
+
+if test "$die" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Required libraries not found. Please consult the above messages
+*** and install them before running configure again.
+***]])
+fi
+
+
+
+#
+# To avoid double inclusion of config.h which might happen at some
+# places, we add the usual double inclusion protection at the top of
+# config.h.
+#
+AH_TOP([
+#ifndef GNUPG_CONFIG_H_INCLUDED
+#define GNUPG_CONFIG_H_INCLUDED
+])
+
+#
+# Stuff which goes at the bottom of config.h.
+#
+AH_BOTTOM([
+#ifdef GPG_ERR_SOURCE_DEFAULT
+# error GPG_ERR_SOURCE_DEFAULT already defined
+#endif
+#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_PINENTRY
+#endif /*GNUPG_CONFIG_H_INCLUDED*/
+])
+
 
 AC_CONFIG_FILES([
-assuan/Makefile
 secmem/Makefile
 pinentry/Makefile
 curses/Makefile

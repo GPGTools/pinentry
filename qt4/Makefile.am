@@ -35,12 +35,11 @@ endif
 
 
 AM_CPPFLAGS = $(COMMON_CFLAGS) \
-	-I$(top_srcdir) -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
+	-I$(top_srcdir) -I$(top_srcdir)/secmem \
 	$(ncurses_include) -I$(top_srcdir)/pinentry
 AM_CXXFLAGS = $(QT4_CORE_CFLAGS) $(QT4_GUI_CFLAGS)
 pinentry_qt4_LDADD = \
-	../pinentry/libpinentry.a $(top_builddir)/assuan/libassuan.a \
-	$(top_builddir)/secmem/libsecmem.a \
+	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
 	$(COMMON_LIBS) $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) $(LIBCAP)
 
 BUILT_SOURCES = \

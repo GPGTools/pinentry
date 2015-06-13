@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#include "assuan.h"
+#include <assuan.h>
 
 #include "memory.h"
 
@@ -189,7 +189,7 @@ gnome3_cmd_handler (pinentry_t pe)
       if (error)
 	/* Error.  */
 	{
-	  pe->specific_err = ASSUAN_General_Error;
+	  pe->specific_err = gpg_error (GPG_ERR_ASS_GENERAL);
 	  g_error_free (error);
 	  ret = -1;
 	}
@@ -231,7 +231,7 @@ gnome3_cmd_handler (pinentry_t pe)
       reply = gcr_prompt_confirm_run (prompt, NULL, &error);
       if (error)
 	{
-	  pe->specific_err = ASSUAN_General_Error;
+	  pe->specific_err = gpg_error (GPG_ERR_ASS_GENERAL);
 	  ret = 0;
 	}
       else if (reply == GCR_PROMPT_REPLY_CONTINUE

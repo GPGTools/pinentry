@@ -50,8 +50,9 @@
 #include <wchar.h>
 #endif /*HAVE_WCHAR_H*/
 
+#include <assuan.h>
+
 #include "pinentry.h"
-#include "assuan.h"
 
 /* FIXME: We should allow configuration of these button labels and in
    any case use the default_ok, default_cancel values if available.
@@ -250,7 +251,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
         if (!what)							\
 	  {								\
 	    err = 1;							\
-            pinentry->specific_err = ASSUAN_Locale_Problem;             \
+            pinentry->specific_err = gpg_error (GPG_ERR_LOCALE_PROBLEM); \
 	    goto out;							\
 	  }								\
       }									\
@@ -282,7 +283,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  if (!new)							\
 	    {								\
 	      err = 1;							\
-              pinentry->specific_err = ASSUAN_Out_Of_Core;              \
+              pinentry->specific_err = gpg_error_from_syserror ();	\
 	      goto out;							\
 	    }								\
 									\
@@ -307,7 +308,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       if (!dialog->which)						\
         {								\
 	  err = 1;							\
-          pinentry->specific_err = ASSUAN_Locale_Problem;               \
+          pinentry->specific_err = gpg_error (GPG_ERR_LOCALE_PROBLEM);	\
 	  goto out;							\
 	}								\
     }									\
@@ -373,7 +374,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   if (y > size_y)
     {
       err = 1;
-      pinentry->specific_err = ASSUAN_Too_Short;
+      pinentry->specific_err = gpg_error (GPG_ERR_ASS_LINE_TOO_LONG);
       goto out;
     }
 
@@ -428,7 +429,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   if (x > size_x)
     {
       err = 1;
-      pinentry->specific_err = ASSUAN_Too_Short;
+      pinentry->specific_err = gpg_error (GPG_ERR_ASS_LINE_TOO_LONG);
       goto out;
     }
 
@@ -833,7 +834,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
       ttyfi = fopen (tty_name, "r");
       if (!ttyfi)
         {
-          pinentry->specific_err = ASSUAN_ENOENT;
+          pinentry->specific_err = gpg_error_from_syserror ();
           return -1;
         }
       ttyfo = fopen (tty_name, "w");
@@ -842,7 +843,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  int err = errno;
 	  fclose (ttyfi);
 	  errno = err;
-          pinentry->specific_err = ASSUAN_ENOENT;
+          pinentry->specific_err = gpg_error_from_syserror ();
 	  return -1;
 	}
       screen = newterm (tty_type, ttyfo, ttyfi);
@@ -855,7 +856,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
           if (!(isatty(fileno(stdin)) && isatty(fileno(stdout))))
             {
               errno = ENOTTY;
-              pinentry->specific_err = ASSUAN_ENOTTY;
+              pinentry->specific_err = gpg_error_from_syserror ();
               return -1;
             }
 	  init_screen = 1;

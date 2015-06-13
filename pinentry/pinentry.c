@@ -43,7 +43,8 @@
 #include <iconv.h>
 #endif
 
-#include "assuan.h"
+#include <assuan.h>
+
 #include "memory.h"
 #include "secmem-util.h"
 #include "argparse.h"
@@ -165,11 +166,15 @@ pinentry_reset (int use_defaults)
     }
 }
 
-static void
-pinentry_assuan_reset_handler (ASSUAN_CONTEXT ctx)
+static gpg_error_t
+pinentry_assuan_reset_handler (assuan_context_t ctx, char *line)
 {
   (void)ctx;
+  (void)line;
+
   pinentry_reset (0);
+
+  return 0;
 }
 
 
@@ -356,7 +361,7 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
 int
 pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
 {
-  ASSUAN_CONTEXT ctx = pin->ctx_assuan;
+  assuan_context_t ctx = pin->ctx_assuan;
   const char prefix[] = "INQUIRE QUALITY ";
   char *command;
   char *line;
@@ -500,6 +505,10 @@ pinentry_setbuffer_use (pinentry_t pin, char *passphrase, int len)
   pin->pin_len = len;
 }
 
+static struct assuan_malloc_hooks assuan_malloc_hooks = {
+  secmem_malloc, secmem_realloc, secmem_free
+};
+
 /* Initialize the secure memory subsystem, drop privileges and return.
    Must be called early. */
 void
@@ -509,6 +518,8 @@ pinentry_init (const char *pgmname)
   if (strlen (pgmname) > sizeof this_pgmname - 2)
     abort ();
   strcpy (this_pgmname, pgmname);
+
+  gpgrt_check_version (NULL);
 
   /* Initialize secure memory.  1 is too small, so the default size
      will be used.  */
@@ -521,7 +532,7 @@ pinentry_init (const char *pgmname)
       /* FIXME: Could not register at-exit function, bail out.  */
     }
 
-  assuan_set_malloc_hooks (secmem_malloc, secmem_realloc, secmem_free);
+  assuan_set_malloc_hooks (&assuan_malloc_hooks);
 }
 
 /* Simple test to check whether DISPLAY is set or the option --display
@@ -755,8 +766,8 @@ pinentry_parse_opts (int argc, char *argv[])
 }
 
 
-static int
-option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
+static gpg_error_t
+option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   (void)ctx;
 
@@ -779,7 +790,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.display);
       pinentry.display = strdup (value);
       if (!pinentry.display)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "ttyname"))
     {
@@ -787,7 +798,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.ttyname);
       pinentry.ttyname = strdup (value);
       if (!pinentry.ttyname)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "ttytype"))
     {
@@ -795,7 +806,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.ttytype);
       pinentry.ttytype = strdup (value);
       if (!pinentry.ttytype)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "lc-ctype"))
     {
@@ -803,7 +814,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.lc_ctype);
       pinentry.lc_ctype = strdup (value);
       if (!pinentry.lc_ctype)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "lc-messages"))
     {
@@ -811,7 +822,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
 	free (pinentry.lc_messages);
       pinentry.lc_messages = strdup (value);
       if (!pinentry.lc_messages)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "parent-wid"))
     {
@@ -824,31 +835,31 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
         free (pinentry.touch_file);
       pinentry.touch_file = strdup (value);
       if (!pinentry.touch_file)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "default-ok"))
     {
       pinentry.default_ok = strdup (value);
       if (!pinentry.default_ok)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "default-cancel"))
     {
       pinentry.default_cancel = strdup (value);
       if (!pinentry.default_cancel)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "default-prompt"))
     {
       pinentry.default_prompt = strdup (value);
       if (!pinentry.default_prompt)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "default-pwmngr"))
     {
       pinentry.default_pwmngr = strdup (value);
       if (!pinentry.default_pwmngr)
-	return ASSUAN_Out_Of_Core;
+	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "allow-external-password-cache") && !*value)
     {
@@ -856,7 +867,7 @@ option_handler (ASSUAN_CONTEXT ctx, const char *key, const char *value)
       pinentry.tried_password_cache = 0;
     }
   else
-    return ASSUAN_Invalid_Option;
+    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
   return 0;
 }
 
@@ -881,8 +892,8 @@ strcpy_escaped (char *d, const char *s)
 }
 
 
-static int
-cmd_setdesc (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setdesc (assuan_context_t ctx, char *line)
 {
   char *newd;
 
@@ -890,7 +901,7 @@ cmd_setdesc (ASSUAN_CONTEXT ctx, char *line)
 
   newd = malloc (strlen (line) + 1);
   if (!newd)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newd, line);
   if (pinentry.description)
@@ -900,8 +911,8 @@ cmd_setdesc (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setprompt (assuan_context_t ctx, char *line)
 {
   char *newp;
 
@@ -909,7 +920,7 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
 
   newp = malloc (strlen (line) + 1);
   if (!newp)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newp, line);
   if (pinentry.prompt)
@@ -923,8 +934,8 @@ cmd_setprompt (ASSUAN_CONTEXT ctx, char *line)
    to identify a key for caching strategies of its own.  The empty
    string and --clear mean that the key does not have a stable
    identifier.  */
-static int
-cmd_setkeyinfo (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setkeyinfo (assuan_context_t ctx, char *line)
 {
   (void)ctx;
 
@@ -940,8 +951,8 @@ cmd_setkeyinfo (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setrepeat (assuan_context_t ctx, char *line)
 {
   char *p;
 
@@ -949,7 +960,7 @@ cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
 
   p = malloc (strlen (line) + 1);
   if (!p)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (p, line);
   free (pinentry.repeat_passphrase);
@@ -958,8 +969,8 @@ cmd_setrepeat (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setrepeaterror (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setrepeaterror (assuan_context_t ctx, char *line)
 {
   char *p;
 
@@ -967,7 +978,7 @@ cmd_setrepeaterror (ASSUAN_CONTEXT ctx, char *line)
 
   p = malloc (strlen (line) + 1);
   if (!p)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (p, line);
   free (pinentry.repeat_error_string);
@@ -976,8 +987,8 @@ cmd_setrepeaterror (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_seterror (assuan_context_t ctx, char *line)
 {
   char *newe;
 
@@ -985,7 +996,7 @@ cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
 
   newe = malloc (strlen (line) + 1);
   if (!newe)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newe, line);
   if (pinentry.error)
@@ -995,8 +1006,8 @@ cmd_seterror (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setok (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setok (assuan_context_t ctx, char *line)
 {
   char *newo;
 
@@ -1004,7 +1015,7 @@ cmd_setok (ASSUAN_CONTEXT ctx, char *line)
 
   newo = malloc (strlen (line) + 1);
   if (!newo)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newo, line);
   if (pinentry.ok)
@@ -1014,8 +1025,8 @@ cmd_setok (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setnotok (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setnotok (assuan_context_t ctx, char *line)
 {
   char *newo;
 
@@ -1023,7 +1034,7 @@ cmd_setnotok (ASSUAN_CONTEXT ctx, char *line)
 
   newo = malloc (strlen (line) + 1);
   if (!newo)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newo, line);
   if (pinentry.notok)
@@ -1033,8 +1044,8 @@ cmd_setnotok (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setcancel (assuan_context_t ctx, char *line)
 {
   char *newc;
 
@@ -1042,7 +1053,7 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 
   newc = malloc (strlen (line) + 1);
   if (!newc)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newc, line);
   if (pinentry.cancel)
@@ -1052,8 +1063,8 @@ cmd_setcancel (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_settimeout (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_settimeout (assuan_context_t ctx, char *line)
 {
   (void)ctx;
 
@@ -1063,8 +1074,8 @@ cmd_settimeout (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
-static int
-cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_settitle (assuan_context_t ctx, char *line)
 {
   char *newt;
 
@@ -1072,7 +1083,7 @@ cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
 
   newt = malloc (strlen (line) + 1);
   if (!newt)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newt, line);
   if (pinentry.title)
@@ -1081,8 +1092,8 @@ cmd_settitle (ASSUAN_CONTEXT ctx, char *line)
   return 0;
 }
 
-static int
-cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setqualitybar (assuan_context_t ctx, char *line)
 {
   char *newval;
 
@@ -1093,7 +1104,7 @@ cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
 
   newval = malloc (strlen (line) + 1);
   if (!newval)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error_from_syserror ();
 
   strcpy_escaped (newval, line);
   if (pinentry.quality_bar)
@@ -1103,8 +1114,8 @@ cmd_setqualitybar (ASSUAN_CONTEXT ctx, char *line)
 }
 
 /* Set the tooltip to be used for a quality bar.  */
-static int
-cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_setqualitybar_tt (assuan_context_t ctx, char *line)
 {
   char *newval;
 
@@ -1114,7 +1125,7 @@ cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
     {
       newval = malloc (strlen (line) + 1);
       if (!newval)
-        return ASSUAN_Out_Of_Core;
+        return gpg_error_from_syserror ();
 
       strcpy_escaped (newval, line);
     }
@@ -1127,8 +1138,8 @@ cmd_setqualitybar_tt (ASSUAN_CONTEXT ctx, char *line)
 }
 
 
-static int
-cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_getpin (assuan_context_t ctx, char *line)
 {
   int result;
   int set_prompt = 0;
@@ -1138,7 +1149,7 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
 
   pinentry_setbuffer_init (&pinentry);
   if (!pinentry.pin)
-    return ASSUAN_Out_Of_Core;
+    return gpg_error (GPG_ERR_ENOMEM);
 
   /* Try reading from the password cache.  */
   if (/* If repeat passphrase is set, then we don't want to read from
@@ -1224,7 +1235,9 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
       pinentry_setbuffer_clear (&pinentry);
       if (pinentry.specific_err)
         return pinentry.specific_err;
-      return pinentry.locale_err? ASSUAN_Locale_Problem: ASSUAN_Canceled;
+      return (pinentry.locale_err
+	      ? gpg_error (GPG_ERR_LOCALE_PROBLEM)
+	      : gpg_error (GPG_ERR_CANCELED));
     }
 
  out:
@@ -1259,8 +1272,8 @@ cmd_getpin (ASSUAN_CONTEXT ctx, char *line)
    update pinentry or to have the caller test for the message
    command.  New applications which are free to require an updated
    pinentry should use MESSAGE instead. */
-static int
-cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_confirm (assuan_context_t ctx, char *line)
 {
   int result;
 
@@ -1288,19 +1301,19 @@ cmd_confirm (ASSUAN_CONTEXT ctx, char *line)
     return pinentry.specific_err;
 
   if (pinentry.locale_err)
-    return ASSUAN_Locale_Problem;
+    return gpg_error (GPG_ERR_LOCALE_PROBLEM);
 
   if (pinentry.one_button)
     return 0;
 
   if (pinentry.canceled)
-    return ASSUAN_Canceled;
-  return ASSUAN_Not_Confirmed;
+    return gpg_error (GPG_ERR_CANCELED);
+  return gpg_error (GPG_ERR_NOT_CONFIRMED);
 }
 
 
-static int
-cmd_message (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_message (assuan_context_t ctx, char *line)
 {
   (void)line;
 
@@ -1315,7 +1328,7 @@ cmd_message (ASSUAN_CONTEXT ctx, char *line)
      version     - Return the version of the program.
      pid         - Return the process id of the server.
  */
-static int
+static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc;
@@ -1333,7 +1346,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else
-    rc = ASSUAN_Parameter_Error;
+    rc = gpg_error (GPG_ERR_ASS_PARAMETER);
   return rc;
 }
 
@@ -1342,13 +1355,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
    Clear the cache passphrase associated with the key identified by
    cacheid.
  */
-static int
-cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
+static gpg_error_t
+cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
   (void)ctx;
 
   if (! line)
-    return ASSUAN_Invalid_Value;
+    return gpg_error (GPG_ERR_ASS_INV_VALUE);
 
   /* Remove leading and trailing white space.  */
   while (*line == ' ')
@@ -1359,50 +1372,47 @@ cmd_clear_passphrase (ASSUAN_CONTEXT ctx, char *line)
   switch (password_cache_clear (line))
     {
     case 1: return 0;
-    case 0: return ASSUAN_Invalid_Value;
-    default: return ASSUAN_General_Error;
+    case 0: return gpg_error (GPG_ERR_ASS_INV_VALUE);
+    default: return gpg_error (GPG_ERR_ASS_GENERAL);
     }
 }
 
 /* Tell the assuan library about our commands.  */
-static int
-register_commands (ASSUAN_CONTEXT ctx)
+static gpg_error_t
+register_commands (assuan_context_t ctx)
 {
   static struct
   {
     const char *name;
-    int cmd_id;
-    int (*handler) (ASSUAN_CONTEXT, char *line);
+    gpg_error_t (*handler) (assuan_context_t, char *line);
   } table[] =
     {
-      { "SETDESC",    0,  cmd_setdesc },
-      { "SETPROMPT",  0,  cmd_setprompt },
-      { "SETKEYINFO", 0,  cmd_setkeyinfo },
-      { "SETREPEAT",  0,  cmd_setrepeat },
-      { "SETREPEATERROR",0, cmd_setrepeaterror },
-      { "SETERROR",   0,  cmd_seterror },
-      { "SETOK",      0,  cmd_setok },
-      { "SETNOTOK",   0,  cmd_setnotok },
-      { "SETCANCEL",  0,  cmd_setcancel },
-      { "GETPIN",     0,  cmd_getpin },
-      { "CONFIRM",    0,  cmd_confirm },
-      { "MESSAGE",    0,  cmd_message },
-      { "SETQUALITYBAR", 0,  cmd_setqualitybar },
-      { "SETQUALITYBAR_TT", 0,  cmd_setqualitybar_tt },
-      { "GETINFO",    0,  cmd_getinfo },
-      { "SETTITLE",   0,  cmd_settitle },
-      { "SETTIMEOUT",   0,  cmd_settimeout },
-      { "CLEARPASSPHRASE", 0, cmd_clear_passphrase },
+      { "SETDESC",    cmd_setdesc },
+      { "SETPROMPT",  cmd_setprompt },
+      { "SETKEYINFO", cmd_setkeyinfo },
+      { "SETREPEAT",  cmd_setrepeat },
+      { "SETREPEATERROR", cmd_setrepeaterror },
+      { "SETERROR",   cmd_seterror },
+      { "SETOK",      cmd_setok },
+      { "SETNOTOK",   cmd_setnotok },
+      { "SETCANCEL",  cmd_setcancel },
+      { "GETPIN",     cmd_getpin },
+      { "CONFIRM",    cmd_confirm },
+      { "MESSAGE",    cmd_message },
+      { "SETQUALITYBAR", cmd_setqualitybar },
+      { "SETQUALITYBAR_TT", cmd_setqualitybar_tt },
+      { "GETINFO",    cmd_getinfo },
+      { "SETTITLE",   cmd_settitle },
+      { "SETTIMEOUT", cmd_settimeout },
+      { "CLEARPASSPHRASE", cmd_clear_passphrase },
       { NULL }
     };
-  int i, j, rc;
+  int i, j;
+  gpg_error_t rc;
 
   for (i = j = 0; table[i].name; i++)
     {
-      rc = assuan_register_command (ctx,
-                                    table[i].cmd_id ? table[i].cmd_id
-                                                   : (ASSUAN_CMD_USER + j++),
-                                    table[i].name, table[i].handler);
+      rc = assuan_register_command (ctx, table[i].name, table[i].handler, NULL);
       if (rc)
         return rc;
     }
@@ -1413,9 +1423,9 @@ register_commands (ASSUAN_CONTEXT ctx)
 int
 pinentry_loop2 (int infd, int outfd)
 {
-  int rc;
+  gpg_error_t rc;
   int filedes[2];
-  ASSUAN_CONTEXT ctx;
+  assuan_context_t ctx;
 
   /* Extra check to make sure we have dropped privs. */
 #ifndef HAVE_DOSISH_SYSTEM
@@ -1423,23 +1433,31 @@ pinentry_loop2 (int infd, int outfd)
     abort ();
 #endif
 
+  rc = assuan_new (&ctx);
+  if (rc)
+    {
+      fprintf (stderr, "server context creation failed: %s\n",
+	       gpg_strerror (rc));
+      return -1;
+    }
+
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and
      wait for requests on a Unix domain socket.  */
   filedes[0] = infd;
   filedes[1] = outfd;
-  rc = assuan_init_pipe_server (&ctx, filedes);
+  rc = assuan_init_pipe_server (ctx, filedes);
   if (rc)
     {
       fprintf (stderr, "%s: failed to initialize the server: %s\n",
-               this_pgmname, assuan_strerror(rc));
+               this_pgmname, gpg_strerror (rc));
       return -1;
     }
   rc = register_commands (ctx);
   if (rc)
     {
       fprintf (stderr, "%s: failed to the register commands with Assuan: %s\n",
-               this_pgmname, assuan_strerror(rc));
+               this_pgmname, gpg_strerror (rc));
       return -1;
     }
 
@@ -1457,7 +1475,7 @@ pinentry_loop2 (int infd, int outfd)
       else if (rc)
         {
           fprintf (stderr, "%s: Assuan accept problem: %s\n",
-                   this_pgmname, assuan_strerror (rc));
+                   this_pgmname, gpg_strerror (rc));
           break;
         }
 
@@ -1465,12 +1483,12 @@ pinentry_loop2 (int infd, int outfd)
       if (rc)
         {
           fprintf (stderr, "%s: Assuan processing failed: %s\n",
-                   this_pgmname, assuan_strerror (rc));
+                   this_pgmname, gpg_strerror (rc));
           continue;
         }
     }
 
-  assuan_deinit_server (ctx);
+  assuan_release (ctx);
   return 0;
 }
 
