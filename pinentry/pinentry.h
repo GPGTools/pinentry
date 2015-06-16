@@ -202,7 +202,7 @@ typedef struct pinentry *pinentry_t;
    entry.  On confirmation, the function should return TRUE if
    confirmed, and FALSE otherwise.  On PIN entry, the function should
    return -1 if an error occured or the user cancelled the operation
-   and the length of the secret otherwise.  */
+   and 1 otherwise.  */
 typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
 
 /* Start the pinentry event loop.  The program will start to process
