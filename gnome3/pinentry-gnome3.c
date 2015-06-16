@@ -262,7 +262,10 @@ main (int argc, char *argv[])
 
 #ifdef FALLBACK_CURSES
   if (pinentry_have_display (argc, argv))
-    gtk_init (&argc, &argv);
+    {
+      if (! gtk_init_check (&argc, &argv))
+	pinentry_cmd_handler = curses_cmd_handler;
+    }
   else
     pinentry_cmd_handler = curses_cmd_handler;
 #else
