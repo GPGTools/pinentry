@@ -552,8 +552,16 @@ again prompt the user.  In this case, this variable contains a
 description of the error message.  This text should typically be
 highlighted in someway.
 
-@item @code{prompt}
+@item @code{prompt}, @code{default-prompt}
 The string to associate with the passphrase entry box.
+
+There is a subtle difference between @code{prompt} and
+@code{default-prompt}.  @code{default-prompt} means that a stylized
+prompt (e.g., an icon suggesting a prompt) may be used.  @code{prompt}
+means that the entry's meaning is not consistent with such a style
+and, as such, no icon should be used.
+
+If both variables are set, the @code{prompt} variant takes precedence.
 
 @item @code{repeat_passphrase}
 The string to associate with the second passphrase entry box.  The
