@@ -51,6 +51,10 @@
 #include "pinentry.h"
 #include "password-cache.h"
 
+#ifdef INSIDE_EMACS
+#include "pinentry-emacs.h"
+#endif
+
 #ifdef HAVE_W32CE_SYSTEM
 #define getpid() GetCurrentProcessId ()
 #endif
@@ -865,6 +869,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       pinentry.allow_external_password_cache = 1;
       pinentry.tried_password_cache = 0;
+    }
+  else if (!strcmp (key, "allow-emacs-prompt") && !*value)
+    {
+#ifdef INSIDE_EMACS
+      pinentry_enable_emacs_cmd_handler ();
+#else
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+#endif
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);

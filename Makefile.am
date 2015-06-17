@@ -40,6 +40,12 @@ else
 pinentry_tty =
 endif
 
+if BUILD_PINENTRY_EMACS
+pinentry_emacs = emacs
+else
+pinentry_emacs =
+endif
+
 if BUILD_PINENTRY_GTK_2
 pinentry_gtk_2 = gtk+-2
 else
@@ -65,8 +71,8 @@ pinentry_w32 =
 endif
 
 SUBDIRS = secmem pinentry ${pinentry_curses} ${pinentry_tty} \
-	${pinentry_gtk_2} ${pinentry_gnome_3} ${pinentry_qt4} \
-	${pinentry_w32} doc
+	${pinentry_emacs} ${pinentry_gtk_2} ${pinentry_gnome_3} \
+	${pinentry_qt4} ${pinentry_w32} doc
 
 
 install-exec-local:
