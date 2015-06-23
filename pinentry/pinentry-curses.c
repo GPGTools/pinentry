@@ -705,7 +705,11 @@ dialog_input (dialog_t diag, int alt, int chr)
   switch (chr)
     {
     case KEY_BACKSPACE:
-    case 'h' - 'a' + 1: /* control-h.  */
+      /* control-h.  */
+    case 'h' - 'a' + 1:
+      /* ASCII DEL.  What Mac OS X apparently emits when the "delete"
+	 (backspace) key is pressed.  */
+    case 127:
       if (diag->pin_len > 0)
 	{
 	  diag->pin_len--;
