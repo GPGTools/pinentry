@@ -22,11 +22,7 @@
 #include <config.h>
 #endif
 #include <assert.h>
-#ifdef HAVE_NCURSESW
-#include <ncursesw/curses.h>
-#else
 #include <curses.h>
-#endif
 #include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
