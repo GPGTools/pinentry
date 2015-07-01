@@ -709,6 +709,7 @@ AH_BOTTOM([
 
 
 AC_CONFIG_FILES([
+m4/Makefile
 secmem/Makefile
 pinentry/Makefile
 curses/Makefile

@@ -37,3 +37,5 @@ tty/Makefile
 /qt4/pinentryconfirm.moc
 /qt4/pinentrydialog.moc
 /qt4/qsecurelineedit.moc
+/m4/Makefile.in
+/emacs/Makefile.in
