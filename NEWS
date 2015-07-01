@@ -1,5 +1,16 @@
-Noteworthy changes in version 0.9.5 (unreleased)
+Noteworthy changes in version 0.9.5 (2015-07-01)
 ------------------------------------------------
+
+ * Replaced the internal Assuan and gpg-error code by the standard
+   libassuan and libgpg-error libraries.
+
+ * Add a new Emacs pinentry and use as fallback for GUI programs.
+
+ * gnome3: The use-password-manager checkbox does now work.
+
+ * Gtk: Improved fallback to curses feature.
+
+ * curses: Recognize DEL as backspace.
 
 
 Noteworthy changes in version 0.9.4 (2015-06-05)
