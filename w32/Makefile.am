@@ -25,7 +25,7 @@ EXTRA_DIST = $(logos)
 
 bin_PROGRAMS = pinentry-w32
 
-AM_CPPFLAGS = -I$(top_srcdir)/assuan -I$(top_srcdir)/secmem \
+AM_CPPFLAGS = $(COMMON_CFLAGS) -I$(top_srcdir)/secmem \
 	      -I$(top_srcdir)/pinentry
 
 
@@ -34,8 +34,8 @@ pinentry_w32_SOURCES = main.c pinentry-w32.rc resource.h
 # Note: For testing you should add -mconsole to LDFLAGS.
 pinentry_w32_LDFLAGS = -mwindows
 pinentry_w32_LDADD = pinentry-w32.o \
-	../pinentry/libpinentry.a ../assuan/libassuan.a ../secmem/libsecmem.a
-
+	../pinentry/libpinentry.a ../secmem/libsecmem.a \
+        $(COMMON_LIBS)
 
 pinentry-w32.o: pinentry-w32.rc resource.h $(logos)
 	$(WINDRES) -I.. -v -o $@ $<
