@@ -72,6 +72,7 @@ static GtkWidget *qualitybar;
 static GtkTooltips *tooltips;
 static gboolean got_input;
 static guint timeout_source;
+static int confirm_mode;
 
 /* Gnome hig small and large space in pixels.  */
 #define HIG_SMALL      6
@@ -190,10 +191,21 @@ delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 
+/* A button was clicked.  DATA indicates which button was clicked
+   (i.e., the appropriate action) and is either CONFIRM_CANCEL,
+   CONFIRM_OK or CONFIRM_NOTOK.  */
 static void
 button_clicked (GtkWidget *widget, gpointer data)
 {
   (void)widget;
+
+  if (confirm_mode)
+    {
+      confirm_value = (confirm_value_t) data;
+      gtk_main_quit ();
+
+      return;
+    }
 
   if (data)
     {
@@ -240,31 +252,15 @@ enter_callback (GtkWidget *widget, GtkWidget *anentry)
 
 
 static void
-confirm_button_clicked (GtkWidget *widget, gpointer data)
-{
-  (void)widget;
-
-  confirm_value = (confirm_value_t) data;
-  gtk_main_quit ();
-}
-
-
-static void
 cancel_callback (GtkAccelGroup *acc, GObject *accelerable,
                  guint keyval, GdkModifierType modifier, gpointer data)
 {
-  int confirm_mode = !!data;
-
   (void)acc;
   (void)keyval;
   (void)modifier;
+  (void)data;
 
-  if (confirm_mode)
-    confirm_button_clicked (GTK_WIDGET (accelerable),
-                            (gpointer)CONFIRM_CANCEL);
-  else
-    button_clicked (GTK_WIDGET (accelerable),
-                    (gpointer)CONFIRM_CANCEL);
+  button_clicked (GTK_WIDGET (accelerable), (gpointer)CONFIRM_CANCEL);
 }
 
 
@@ -371,13 +367,12 @@ timeout_cb (gpointer data)
 
 
 static GtkWidget *
-create_window (pinentry_t ctx, int confirm_mode)
+create_window (pinentry_t ctx)
 {
   GtkWidget *w;
   GtkWidget *win, *box;
   GtkWidget *wvbox, *chbox, *bbox;
   GtkAccelGroup *acc;
-  GClosure *acc_cl;
   gchar *msg;
 
   tooltips = gtk_tooltips_new ();
@@ -602,18 +597,17 @@ create_window (pinentry_t ctx, int confirm_mode)
             gtk_button_set_image (GTK_BUTTON (w), image);
         }
       else
-          w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
+	w = gtk_button_new_from_stock (GTK_STOCK_CANCEL);
       gtk_container_add (GTK_CONTAINER (bbox), w);
       g_signal_connect (G_OBJECT (w), "clicked",
-                        G_CALLBACK (confirm_mode ? confirm_button_clicked
-                                    : button_clicked),
+                        G_CALLBACK (button_clicked),
 			(gpointer) CONFIRM_CANCEL);
 
-      acc_cl = g_cclosure_new (G_CALLBACK (cancel_callback),
-			       (confirm_mode? "":NULL), NULL);
-      gtk_accel_group_connect (acc, GDK_KEY_Escape, 0, 0, acc_cl);
 
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+      gtk_accel_group_connect (acc, GDK_KEY_Escape, 0, 0,
+			       g_cclosure_new (G_CALLBACK (cancel_callback),
+					       NULL, NULL));
     }
 
   if (confirm_mode && !pinentry->one_button && pinentry->notok)
@@ -624,7 +618,7 @@ create_window (pinentry_t ctx, int confirm_mode)
 
       gtk_container_add (GTK_CONTAINER (bbox), w);
       g_signal_connect (G_OBJECT (w), "clicked",
-                        G_CALLBACK (confirm_button_clicked),
+                        G_CALLBACK (button_clicked),
 			(gpointer) CONFIRM_NOTOK);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
@@ -652,8 +646,6 @@ create_window (pinentry_t ctx, int confirm_mode)
   gtk_container_add (GTK_CONTAINER(bbox), w);
   if (!confirm_mode)
     {
-      g_signal_connect (G_OBJECT (w), "clicked",
-			G_CALLBACK (button_clicked), "ok");
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
       gtk_widget_grab_default (w);
       g_signal_connect_object (G_OBJECT (entry), "focus_in_event",
@@ -662,11 +654,12 @@ create_window (pinentry_t ctx, int confirm_mode)
     }
   else
     {
-      g_signal_connect (G_OBJECT (w), "clicked",
-			G_CALLBACK(confirm_button_clicked),
-			(gpointer) CONFIRM_OK);
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
+
+  g_signal_connect (G_OBJECT (w), "clicked",
+		    G_CALLBACK(button_clicked),
+		    (gpointer) CONFIRM_OK);
 
   gtk_window_set_position (GTK_WINDOW (win), GTK_WIN_POS_CENTER);
   gtk_window_set_keep_above (GTK_WINDOW (win), TRUE);
@@ -690,7 +683,8 @@ gtk_cmd_handler (pinentry_t pe)
   pinentry = pe;
   confirm_value = CONFIRM_CANCEL;
   passphrase_ok = 0;
-  w = create_window (pe, want_pass ? 0 : 1);
+  confirm_mode = want_pass ? 0 : 1;
+  w = create_window (pe);
   gtk_main ();
   gtk_widget_destroy (w);
   while (gtk_events_pending ())
