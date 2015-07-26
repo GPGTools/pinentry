@@ -139,7 +139,7 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
   /* Make window transient for the root window.  */
   screen = gdk_screen_get_default ();
   root = gdk_screen_get_root_window (screen);
-  gdk_window_set_transient_for (win->window, root);
+  gdk_window_set_transient_for (gtk_widget_get_window (win), root);
 }
 
 
@@ -152,7 +152,8 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
   if (! pinentry->grab)
     return FALSE;
 
-  if (gdk_keyboard_grab (win->window, FALSE, gdk_event_get_time (event)))
+  if (gdk_keyboard_grab (gtk_widget_get_window (win),
+			 FALSE, gdk_event_get_time (event)))
     {
       g_critical ("could not grab keyboard");
       grab_failed = 1;
@@ -173,7 +174,7 @@ ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
   /* gdk_window_set_transient_for cannot be used with parent = NULL to
      unset transient hint (unlike gtk_ version which can).  Replacement
      code is taken from gtk_window_transient_parent_unrealized.  */
-  gdk_property_delete (win->window,
+  gdk_property_delete (gtk_widget_get_window (win),
                        gdk_atom_intern_static_string ("WM_TRANSIENT_FOR"));
   return FALSE;
 }
