@@ -369,7 +369,7 @@ dnl Check for emacs pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-emacs,
             AC_HELP_STRING([--enable-pinentry-emacs], [build emacs pinentry]),
-            pinentry_emacs=$enableval, pinentry_emacs=maybe)
+            pinentry_emacs=$enableval, pinentry_emacs=no)
 AC_ARG_ENABLE(inside-emacs,
             AC_HELP_STRING([--enable-inside-emacs], [include emacs hack]),
             inside_emacs=$enableval, inside_emacs=maybe)
