@@ -498,7 +498,6 @@ create_window (pinentry_t ctx)
                         G_CALLBACK (changed_text_handler), entry);
       gtk_table_attach (GTK_TABLE (table), entry, 1, 2, nrow, nrow+1,
                         GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
-      gtk_widget_grab_focus (entry);
       gtk_widget_show (entry);
       nrow++;
 
@@ -511,8 +510,6 @@ create_window (pinentry_t ctx)
 	  gtk_table_attach (GTK_TABLE (table), w, 0, 1, nrow, nrow+1,
 			    GTK_FILL, GTK_FILL, 4, 0);
 	  qualitybar = gtk_progress_bar_new();
-	  gtk_widget_add_events (qualitybar,
-				 GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
 	  gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar),
 				     QUALITYBAR_EMPTY_TEXT);
 	  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
@@ -538,8 +535,7 @@ create_window (pinentry_t ctx)
           gtk_widget_set_size_request (repeat_entry, 200, -1);
           gtk_table_attach (GTK_TABLE (table), repeat_entry, 1, 2, nrow, nrow+1,
                             GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
-          gtk_widget_grab_focus (entry);
-          gtk_widget_show (entry);
+          gtk_widget_show (repeat_entry);
           nrow++;
 
 	  g_signal_connect (G_OBJECT (repeat_entry), "activate",
@@ -611,8 +607,6 @@ create_window (pinentry_t ctx)
                         G_CALLBACK (button_clicked),
 			(gpointer) CONFIRM_CANCEL);
 
-
-      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
       gtk_accel_group_connect (acc, GDK_KEY_Escape, 0, 0,
 			       g_cclosure_new (G_CALLBACK (cancel_callback),
 					       NULL, NULL));
@@ -628,7 +622,6 @@ create_window (pinentry_t ctx)
       g_signal_connect (G_OBJECT (w), "clicked",
                         G_CALLBACK (button_clicked),
 			(gpointer) CONFIRM_NOTOK);
-      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
 
   if (pinentry->ok)
@@ -656,13 +649,6 @@ create_window (pinentry_t ctx)
     {
       GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
       gtk_widget_grab_default (w);
-      g_signal_connect_object (G_OBJECT (entry), "focus_in_event",
-				G_CALLBACK (gtk_widget_grab_default),
-			       G_OBJECT (w), 0);
-    }
-  else
-    {
-      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
     }
 
   g_signal_connect (G_OBJECT (w), "clicked",
