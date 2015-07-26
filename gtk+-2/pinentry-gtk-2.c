@@ -243,11 +243,12 @@ button_clicked (GtkWidget *widget, gpointer data)
 
 
 static void
-enter_callback (GtkWidget *widget, GtkWidget *anentry)
+enter_callback (GtkWidget *widget, GtkWidget *next_widget)
 {
-  (void)anentry;
-
-  button_clicked (widget, (gpointer) CONFIRM_OK);
+  if (next_widget)
+    gtk_widget_grab_focus (next_widget);
+  else
+    button_clicked (widget, (gpointer) CONFIRM_OK);
 }
 
 
@@ -375,6 +376,8 @@ create_window (pinentry_t ctx)
   GtkAccelGroup *acc;
   gchar *msg;
 
+  repeat_entry = NULL;
+
   tooltips = gtk_tooltips_new ();
 
   /* FIXME: check the grabbing code against the one we used with the
@@ -491,8 +494,6 @@ create_window (pinentry_t ctx)
 
       entry = gtk_secure_entry_new ();
       gtk_widget_set_size_request (entry, 200, -1);
-      g_signal_connect (G_OBJECT (entry), "activate",
-			G_CALLBACK (enter_callback), entry);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
       gtk_table_attach (GTK_TABLE (table), entry, 1, 2, nrow, nrow+1,
@@ -535,14 +536,21 @@ create_window (pinentry_t ctx)
 
           repeat_entry = gtk_secure_entry_new ();
           gtk_widget_set_size_request (repeat_entry, 200, -1);
-          g_signal_connect (G_OBJECT (entry), "activate",
-                            G_CALLBACK (enter_callback), repeat_entry);
           gtk_table_attach (GTK_TABLE (table), repeat_entry, 1, 2, nrow, nrow+1,
                             GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
           gtk_widget_grab_focus (entry);
           gtk_widget_show (entry);
           nrow++;
+
+	  g_signal_connect (G_OBJECT (repeat_entry), "activate",
+			    G_CALLBACK (enter_callback), NULL);
         }
+
+      /* When the user presses enter in the entry widget, the widget
+	 is activated.  If we have a repeat entry, send the focus to
+	 it.  Otherwise, activate the "Ok" button.  */
+      g_signal_connect (G_OBJECT (entry), "activate",
+			G_CALLBACK (enter_callback), repeat_entry);
     }
 
   bbox = gtk_hbutton_box_new ();
