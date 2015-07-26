@@ -34,5 +34,4 @@ AM_CPPFLAGS = $(COMMON_CFLAGS) $(GTK2CFLAGS) $(ncurses_include) \
 LDADD = ../pinentry/libpinentry.a ../secmem/libsecmem.a \
 	$(COMMON_LIBS) $(LIBCAP) $(GTK2LIBS) $(libcurses)
 
-pinentry_gtk_2_SOURCES = pinentry-gtk-2.c \
-	gtksecentry.c gtksecentry.h gseal-gtk-compat.h
+pinentry_gtk_2_SOURCES = pinentry-gtk-2.c

@@ -45,7 +45,6 @@
 #include "getopt.h"
 #endif				/* HAVE_GETOPT_H */
 
-#include "gtksecentry.h"
 #include "pinentry.h"
 
 #ifdef FALLBACK_CURSES
@@ -212,13 +211,13 @@ button_clicked (GtkWidget *widget, gpointer data)
       const char *s, *s2;
 
       /* Okay button or enter used in text field.  */
-      s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (entry));
+      s = gtk_entry_get_text (GTK_ENTRY (entry));
       if (!s)
 	s = "";
 
       if (pinentry->repeat_passphrase && repeat_entry)
         {
-          s2 = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (repeat_entry));
+          s2 = gtk_entry_get_text (GTK_ENTRY (repeat_entry));
           if (!s2)
             s2 = "";
           if (strcmp (s, s2))
@@ -307,14 +306,14 @@ changed_text_handler (GtkWidget *widget)
 
   if (pinentry->repeat_passphrase && repeat_entry)
     {
-      gtk_secure_entry_set_text (GTK_SECURE_ENTRY (repeat_entry), "");
+      gtk_entry_set_text (GTK_ENTRY (repeat_entry), "");
       gtk_label_set_text (GTK_LABEL (error_label), "");
     }
 
   if (!qualitybar || !pinentry->quality_bar)
     return;
 
-  s = gtk_secure_entry_get_text (GTK_SECURE_ENTRY (widget));
+  s = gtk_entry_get_text (GTK_ENTRY (widget));
   if (!s)
     s = "";
   length = strlen (s);
@@ -492,7 +491,8 @@ create_window (pinentry_t ctx)
 			    GTK_FILL, GTK_FILL, 4, 0);
 	}
 
-      entry = gtk_secure_entry_new ();
+      entry = gtk_entry_new ();
+      gtk_entry_set_visibility (GTK_ENTRY (entry), FALSE);
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
@@ -531,7 +531,8 @@ create_window (pinentry_t ctx)
 	  gtk_table_attach (GTK_TABLE (table), w, 0, 1, nrow, nrow+1,
 			    GTK_FILL, GTK_FILL, 4, 0);
 
-          repeat_entry = gtk_secure_entry_new ();
+          repeat_entry = gtk_entry_new ();
+	  gtk_entry_set_visibility (GTK_ENTRY (repeat_entry), FALSE);
           gtk_widget_set_size_request (repeat_entry, 200, -1);
           gtk_table_attach (GTK_TABLE (table), repeat_entry, 1, 2, nrow, nrow+1,
                             GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
@@ -713,18 +714,6 @@ pinentry_cmd_handler_t pinentry_cmd_handler = gtk_cmd_handler;
 int
 main (int argc, char *argv[])
 {
-  static GMemVTable secure_mem =
-    {
-      secentry_malloc,
-      secentry_realloc,
-      secentry_free,
-      NULL,
-      NULL,
-      NULL
-    };
-
-  g_mem_set_vtable (&secure_mem);
-
   pinentry_init (PGMNAME);
 
 #ifdef FALLBACK_CURSES
