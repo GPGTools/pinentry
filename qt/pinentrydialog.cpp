@@ -92,7 +92,7 @@ void raiseWindow( QWidget* w )
 QPixmap icon( QStyle::StandardPixmap which )
 {
     QPixmap pm = qApp->windowIcon().pixmap( 48, 48 );
-   
+
     if ( which != QStyle::SP_CustomBase ) {
         const QIcon ic = qApp->style()->standardIcon( which );
         QPainter painter( &pm );

@@ -1,5 +1,5 @@
 /*
-   main.cpp - A (not yet) secure Qt 4 dialog for PIN entry.
+   main.cpp - A Qt dialog for PIN entry.
 
    Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
    Copyright (C) 2003 g10 Code GmbH
@@ -148,7 +148,7 @@ qt_cmd_handler (pinentry_t pe)
       /* else */           QLatin1String( "&Cancel" ) ;
   const QString title =
       pe->title ? from_utf8( pe->title ) :
-      /* else */  QLatin1String( "pinentry-qt4" ) ;
+      /* else */  QLatin1String( "pinentry-qt" ) ;
 
 
   if (want_pass)
@@ -258,7 +258,7 @@ pinentry_cmd_handler_t pinentry_cmd_handler = qt_cmd_handler_ex;
 int
 main (int argc, char *argv[])
 {
-  pinentry_init ("pinentry-qt4");
+  pinentry_init ("pinentry-qt");
 
   std::auto_ptr<QApplication> app;
 
@@ -283,7 +283,7 @@ main (int argc, char *argv[])
         *new_argv = (char*)malloc (n);
       if (!new_argv || !*new_argv)
         {
-          fprintf (stderr, "pinentry-qt4: can't fixup argument list: %s\n",
+          fprintf (stderr, "pinentry-qt: can't fixup argument list: %s\n",
                    strerror (errno));
           exit (EXIT_FAILURE);
 

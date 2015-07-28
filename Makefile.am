@@ -20,7 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 ACLOCAL_AMFLAGS = -I m4
-DISTCHECK_CONFIGURE_FLAGS = --disable-pinentry-qt4
+DISTCHECK_CONFIGURE_FLAGS = --disable-pinentry-qt
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
@@ -58,10 +58,10 @@ else
 pinentry_gnome_3 =
 endif
 
-if BUILD_PINENTRY_QT4
-pinentry_qt4 = qt4
+if BUILD_PINENTRY_QT
+pinentry_qt = qt
 else
-pinentry_qt4 =
+pinentry_qt =
 endif
 
 if BUILD_PINENTRY_W32
@@ -72,7 +72,7 @@ endif
 
 SUBDIRS = m4 secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_emacs} ${pinentry_gtk_2} ${pinentry_gnome_3} \
-	${pinentry_qt4} ${pinentry_w32} doc
+	${pinentry_qt} ${pinentry_w32} doc
 
 
 install-exec-local:

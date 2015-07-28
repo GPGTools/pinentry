@@ -4,7 +4,7 @@
 
 case "$myhost:$myhostsub" in
   w32:ce)
-    extraoptions="--disable-pinentry-gtk2 --disable-pinentry-qt4"
+    extraoptions="--disable-pinentry-gtk2 --disable-pinentry-qt"
     ;;
   w32:)
     extraoptions=""

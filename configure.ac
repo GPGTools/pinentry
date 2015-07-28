@@ -503,11 +503,19 @@ AC_ARG_ENABLE(libsecret,
             libsecret=$enableval, libsecret=maybe)
 
 dnl check for pkg-config
-if test "$libsecret" != "no"; then
+if test "$libsecret" != "no" -o "$pinentry-qt" != "no"; then
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-	if test x"${PKG_CONFIG}" = xno ; then
-		libsecret=no
-	fi
+  if test x"${PKG_CONFIG}" = xno ; then
+    if test "$pinentry_qt" = "yes"; then
+      AC_MSG_ERROR([[
+                    ***
+                    *** pkg-config is required to find the Qt libraries for pinentry-qt
+                    ***]])
+    else
+      pinentry_qt=no
+    fi
+    libsecret=no
+  fi
 fi
 
 dnl check if the module libsecret exists
@@ -535,67 +543,48 @@ if test "$libsecret" = "yes"; then
 fi
 
 dnl
-dnl Check for Qt4 pinentry program.
+dnl Check for Qt pinentry program.
 dnl
-AC_ARG_ENABLE(pinentry-qt4,
-            AC_HELP_STRING([--enable-pinentry-qt4], [build Qt4 pinentry]),
-            pinentry_qt4=$enableval, pinentry_qt4=maybe)
+AC_ARG_ENABLE(pinentry-qt,
+            AC_HELP_STRING([--enable-pinentry-qt], [build qt pinentry]),
+            pinentry_qt=$enableval, pinentry_qt=maybe)
 
 
 dnl
-dnl Checks for Qt4 libraries.  Deal correctly with $pinentry_qt4 = maybe.
+dnl Checks for qt libraries.  Deal correctly with $pinentry_qt = maybe.
+dnl Tries to find Qt5, falls back on Qt4
 dnl
-if test "$pinentry_qt4" != "no"; then
-PKG_CHECK_MODULES(QT4_CORE, QtCore,,
-if test "$pinentry_qt4" = "yes"; then
-    AC_MSG_ERROR([[
-***
-*** Qt4 Core is required.
-***]])
-else
-    pinentry_qt4=no
-fi)
-fi
-
-if test "$pinentry_qt4" != "no"; then
-
-QT_PATH_MOC
-if test "$have_moc" != "yes"; then
-    if test "$pinentry_qt4" = "yes"; then
+if test "$pinentry_qt" != "no"; then
+  FIND_QT
+  if test "$have_qt4_libs" != "yes" -a "$have_qt5_libs" != "yes"; then
+    if test "$pinentry_qt" = "yes"; then
         AC_MSG_ERROR([[
     ***
-    *** Qt moc is required.
+    *** Qt4 (QtCore, QtGui) or Qt5 (Qt5Core, Qt5Gui, Qt5Widgets) is required.
     ***]])
     else
-        pinentry_qt4=no
+        pinentry_qt=no
     fi
+  fi
 fi
 
-PKG_CHECK_MODULES(QT4_GUI, QtGui,,
-if test "$pinentry_qt4" = "yes"; then
-    AC_MSG_ERROR([[
-***
-*** Qt4 Gui is required.
-***]])
-else
-    pinentry_qt4=no
-fi)
-fi
+AC_SUBST(PINENTRY_QT_CFLAGS)
+AC_SUBST(PINENTRY_QT_LIBS)
+AC_SUBST(MOC)
 
-dnl If we have come so far, Qt4 pinentry can be build.
-if test "$pinentry_qt4" != "no"; then
-    pinentry_qt4=yes
+dnl If we have come so far, qt pinentry can be build.
+if test "$pinentry_qt" != "no"; then
+    pinentry_qt=yes
 fi
-AM_CONDITIONAL(BUILD_PINENTRY_QT4, test "$pinentry_qt4" = "yes")
-if test "$pinentry_qt4" = "yes"; then
-  AC_DEFINE(PINENTRY_QT4, 1, [The Qt4 version of Pinentry is to be build])
+AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
+if test "$pinentry_qt" = "yes"; then
+  AC_DEFINE(PINENTRY_QT, 1, [The qt version of Pinentry is to be build])
+  if test "$have_qt4_libs" = "yes"; then
+    pinentry_qt_lib_version="(Qt4)"
+  else
+    pinentry_qt_lib_version="(Qt5)"
+  fi
 fi
-
-dnl if test "$pinentry_qt4" = "yes"; then
-dnl Additional checks for Qt4 pinentry.
-dnl End of additional checks for Qt4 pinentry.
-dnl fi
-
 
 #
 # Check whether we should build the W32 pinentry.  This is actually
@@ -613,8 +602,8 @@ AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
 if test "$pinentry_gtk_2" = "yes"; then
   PINENTRY_DEFAULT=pinentry-gtk-2
 else
-  if test "$pinentry_qt4" = "yes"; then
-    PINENTRY_DEFAULT=pinentry-qt4
+  if test "$pinentry_qt" = "yes"; then
+    PINENTRY_DEFAULT=pinentry-qt
   else
     if test "$pinentry_gnome_3" = "yes"; then
       PINENTRY_DEFAULT=pinentry-gnome3
@@ -705,7 +694,7 @@ tty/Makefile
 emacs/Makefile
 gtk+-2/Makefile
 gnome3/Makefile
-qt4/Makefile
+qt/Makefile
 w32/Makefile
 doc/Makefile
 Makefile
@@ -725,7 +714,7 @@ AC_MSG_NOTICE([
 	Emacs Pinentry ...: $pinentry_emacs
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
-	Qt4 Pinentry .....: $pinentry_qt4
+	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version
 	W32 Pinentry .....: $pinentry_w32
 
 	Fallback to Curses: $fallback_curses
