@@ -115,6 +115,7 @@ set.
 
 @menu
 * Using pinentry::      How to use the beast.
+* Front ends::          Description and comparison of the front ends
 
 Developer information
 
@@ -208,6 +209,72 @@ by some background process which does not have any information about
 the locale and terminal to use.  It is also possible to pass these
 options using Assuan protocol options.
 @end table
+
+@node Front ends
+@chapter Front Ends
+
+There are several different flavors of @pinentry{}.  Concretely, there
+are Gtk+2, Qt@tie{}4, Gnome@tie{}3, Emacs, curses and tty variants.
+These different implementations provide higher levels of integration
+with a specific environment.  For instance, the Gnome@tie{}3
+@pinentry{} uses Gnome@tie{}3 widgets to display the prompts.  For
+Gnome@tie{}3 users, this higher level of integration provides a more
+consistent aesthetic.  However, this comes at a cost.  Because this
+@pinentry{} uses so many components, there is a larger chance of a
+failure.  In particular, there is a larger chance that the passphrase
+is saved in memory and that memory is exposed to an attacker (consider
+the OpenSSL Heartbeat vulnerability).
+
+To understand how many components touch the passphrase, consider again
+the Gnome@tie{}3 implementation.  When a user presses a button on the
+keyboard, the key is passed from the kernel to the X@tie{}server to
+the toolkit (Gtk+) and to the actual text entry widget.  Along the
+way, the key is saved in memory and processed.  In fact, the key
+presses are probably read using standard C library functions, which
+buffer the input.  None of this code is careful to make sure the
+contents of the memory are not leaked by keeping the data in unpagable
+memory and wiping it when the buffer is freed.  However, even if they
+did, there is still the problem that when a computer hibernates, the
+system writes unpagable memory to disk anyway.  Further, many
+installations are virtualized (e.g., running on Xen) and have little
+control over their actual environment.
+
+The curses variant uses a significant smaller software stack and the
+tty variant uses an even smaller one.  However, if they are run in an
+X@tie{}terminal, then a similar number of components are handling the
+passphrase as in the Gnome@tie{}3 case!  Thus, to be most secure, you
+need to direct GPG@tie{}Agent to use a fixed virtual console.  Since
+you need to remain logged in for GPG@tie{}Agent to use that console,
+you should run there and have @code{screen} or @code{tmux} lock the
+tty.
+
+The Emacs pinentry implementation interacts with a running Emacs
+session and directs the Emacs instance to display the passphrase
+prompt.  Since this doesn't work very well if there is no Emacs
+running, the generic @pinentry{} backend checks if a
+@pinentry{}-enabled Emacs should be used.  Specifically, it looks to
+see if the @code{INSIDE_EMACS} variable is set and then attempts to
+establish a connection to the specified address.  If this is the case,
+then instead of, e.g., @code{pinentry-gtk2} displaying a Gtk+2
+pinentry, it interacts with the Emacs session.  This functionality can
+be explicitly disabled by passing @code{--disable-inside-emacs} to
+@code{configure} when building @pinentry{}.
+
+Having Emacs get the passphrase is convenient, however, it is a
+significant security risk.  Emacs keeps all key presses buffered.
+(You can see the recent key presses by typing @code{C-h l}
+(@code{view-lossage}) in emacs.)  Further, Emacs is a huge program,
+which doesn't provide any process isolation to speak of.  As such,
+having it handle the passphrase adds a huge chunk of code to the
+user's trusted computing base.  Because of this concern, Emacs doesn't
+enable this by default (the user has to run @code{(pinentry-start)},
+e.g., from his or her @code{.emacs} file, explicitly).
+
+Similar to the inside-emacs check, the @pinentry{} frontends check
+whether the @code{DISPLAY} variable is set and a working X server is
+available.  If this is not the case, then they fallback to the curses
+front end.  This can also be disabled by passing
+@code{--disable-fallback-curses} to @code{configure} at build time.
 
 @c 
 @c  Assuan Protocol
