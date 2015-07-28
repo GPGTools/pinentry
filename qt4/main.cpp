@@ -162,7 +162,7 @@ qt_cmd_handler (pinentry_t pe)
           pinentry.setWindowTitle( from_utf8( pe->title ) );
 
       /* If we reuse the same dialog window.  */
-      pinentry.setPin (secqstring());
+      pinentry.setPin (QString());
 
       pinentry.setOkText (ok);
       pinentry.setCancelText (cancel);
@@ -177,8 +177,7 @@ qt_cmd_handler (pinentry_t pe)
       if (!ret)
 	return -1;
 
-      const secstring pinUtf8 = toUtf8( pinentry.pin() );
-      const char *pin = pinUtf8.data();
+      const char *pin = pinentry.pin().toUtf8().constData();
 
       int len = strlen (pin);
       if (len >= 0)

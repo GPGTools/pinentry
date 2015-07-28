@@ -591,18 +591,6 @@ if test "$pinentry_qt4" = "yes"; then
   AC_DEFINE(PINENTRY_QT4, 1, [The Qt4 version of Pinentry is to be build])
 fi
 
-dnl
-dnl Option to add insecure clipboard support to pinentry-qt4
-dnl
-AC_ARG_ENABLE(pinentry-qt4-clipboard,
-              AC_HELP_STRING([--enable-pinentry-qt4-clipboard], [Enable clipboard support in
-                              pinentry-qt4]), pinentry_qt4_clipboard=$enableval)
-
-if test "$pinentry_qt4_clipboard" = "yes" -a "$pinentry_qt4" = "yes"; then
-  AC_DEFINE(PINENTRY_QT4_CLIPBOARD, 1, [Pinentry-qt4 should have clipboard support])
-  pinentry_qt4_clip_msg="(with clipboard support)"
-fi
-
 dnl if test "$pinentry_qt4" = "yes"; then
 dnl Additional checks for Qt4 pinentry.
 dnl End of additional checks for Qt4 pinentry.
@@ -737,7 +725,7 @@ AC_MSG_NOTICE([
 	Emacs Pinentry ...: $pinentry_emacs
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
-	Qt4 Pinentry .....: $pinentry_qt4 $pinentry_qt4_clip_msg
+	Qt4 Pinentry .....: $pinentry_qt4
 	W32 Pinentry .....: $pinentry_w32
 
 	Fallback to Curses: $fallback_curses

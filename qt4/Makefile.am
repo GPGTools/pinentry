@@ -43,18 +43,16 @@ pinentry_qt4_LDADD = \
 	$(COMMON_LIBS) $(QT4_CORE_LIBS) $(QT4_GUI_LIBS) $(libcurses) $(LIBCAP)
 
 BUILT_SOURCES = \
-	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc
 
 CLEANFILES = \
-	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc
 
 pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
-	main.cpp secstring.h secstring.cpp qsecurelineedit.h \
-	qsecurelineedit.cpp qrc_pinentry.cpp \
-	qsecurelineedit_p.h pinentryconfirm.cpp pinentryconfirm.h
+	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h
 
 nodist_pinentry_qt4_SOURCES = \
-	pinentryconfirm.moc qsecurelineedit.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@

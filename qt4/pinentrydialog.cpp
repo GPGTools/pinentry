@@ -24,8 +24,6 @@
 #include "pinentrydialog.h"
 #include <QGridLayout>
 
-#include "qsecurelineedit.h"
-
 #include <QProgressBar>
 #include <QApplication>
 #include <QStyle>
@@ -35,6 +33,7 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QPalette>
+#include <QLineEdit>
 
 #ifdef Q_WS_WIN
 #include <windows.h>
@@ -137,8 +136,9 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
   _prompt = new QLabel( this );
   _prompt->hide();
 
-  _edit = new QSecureLineEdit( this );
+  _edit = new QLineEdit( this );
   _edit->setMaxLength( 256 );
+  _edit->setEchoMode( QLineEdit::Password );
 
   _prompt->setBuddy( _edit );
 
@@ -176,8 +176,8 @@ PinEntryDialog::PinEntryDialog( QWidget* parent, const char* name,
 
   connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
   connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
-  connect( _edit, SIGNAL( textChanged(secqstring) ),
-	   this, SLOT( updateQuality(secqstring) ) );
+  connect( _edit, SIGNAL( textChanged(QString) ),
+	   this, SLOT( updateQuality(QString) ) );
 
   _edit->setFocus();
 
@@ -243,12 +243,12 @@ QString PinEntryDialog::error() const
   return _error->text();
 }
 
-void PinEntryDialog::setPin( const secqstring & txt )
+void PinEntryDialog::setPin( const QString & txt )
 {
     _edit->setText( txt );
 }
 
-secqstring PinEntryDialog::pin() const
+QString PinEntryDialog::pin() const
 {
     return _edit->text();
 }
@@ -298,7 +298,7 @@ void PinEntryDialog::setQualityBarTT( const QString& txt )
     _quality_bar->setToolTip( txt );
 }
 
-void PinEntryDialog::updateQuality(const secqstring & txt )
+void PinEntryDialog::updateQuality(const QString & txt )
 {
   int length;
   int percent;
@@ -309,10 +309,7 @@ void PinEntryDialog::updateQuality(const secqstring & txt )
 
   if (!_have_quality_bar || !_pinentry_info)
     return;
-  secstring pinStr = toUtf8(txt);
-  const char* pin = pinStr.c_str();
-  // The Qt3 version called ::secmem_free (pin) here, but from other usage of secstring,
-  // it seems like this is not needed anymore - 16 Mar. 2009 13:15 -- Jesper K. Pedersen
+  const char* pin = txt.toUtf8().constData();
   length = strlen (pin);
   percent = length? pinentry_inq_quality (_pinentry_info, pin, length) : 0;
   if (!length)

@@ -28,12 +28,11 @@
 #include <QStyle>
 #include <QTimer>
 
-#include "secstring.h"
 #include "pinentry.h"
 
 class QLabel;
 class QPushButton;
-class QSecureLineEdit;
+class QLineEdit;
 class QString;
 class QProgressBar;
 
@@ -46,7 +45,7 @@ class PinEntryDialog : public QDialog {
 
   Q_PROPERTY( QString description READ description WRITE setDescription )
   Q_PROPERTY( QString error READ error WRITE setError )
-  Q_PROPERTY( secqstring pin READ pin WRITE setPin )
+  Q_PROPERTY( QString pin READ pin WRITE setPin )
   Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
 public:
   friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
@@ -58,8 +57,8 @@ public:
   void setError( const QString& );
   QString error() const;
 
-  void setPin( const secqstring & );
-  secqstring pin() const;
+  void setPin( const QString & );
+  QString pin() const;
 
   void setPrompt( const QString& );
   QString prompt() const;
@@ -73,7 +72,7 @@ public:
   void setPinentryInfo (pinentry_t);
 
 public slots:
-  void updateQuality(const secqstring&);
+  void updateQuality(const QString&);
   void slotTimeout();
 
 protected:
@@ -88,7 +87,7 @@ private:
   QLabel*    _prompt;
   QLabel*    _quality_bar_label;
   QProgressBar* _quality_bar;
-  QSecureLineEdit* _edit;
+  QLineEdit* _edit;
   QPushButton* _ok;
   QPushButton* _cancel;
   bool       _grabbed;
