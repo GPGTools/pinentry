@@ -377,7 +377,10 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	    }
 
 	  if (strcmp (passphrase, passphrase2) == 0)
-	    done = 1;
+	    {
+	      pinentry->repeat_okay = 1;
+	      done = 1;
+	    }
 	  else
 	    fprintf (ttyfo, "*** %s%s%s ***\n",
 		     ALERT_START,
