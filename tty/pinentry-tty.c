@@ -246,6 +246,8 @@ read_password (FILE *ttyfi, FILE *ttyfo)
   int count = 0;
   char *buffer;
 
+  (void) ttyfo;
+
   if (cbreak (fileno (ttyfi)) == -1)
     {
       int err = errno;
@@ -267,13 +269,15 @@ read_password (FILE *ttyfi, FILE *ttyfo)
 	   1 and not len so that we always have space for the NUL
 	   character.  */
 	{
-	  char *tmp = secmem_realloc (buffer, 2 * len);
+	  int new_len = 2 * len;
+	  char *tmp = secmem_realloc (buffer, new_len);
 	  if (! tmp)
 	    {
 	      secmem_free (tmp);
 	      return NULL;
 	    }
 	  buffer = tmp;
+	  len = new_len;
 	}
 
       c = fgetc (ttyfi);
