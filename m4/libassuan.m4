@@ -24,6 +24,19 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
     if test x${LIBASSUAN_CONFIG+set} != xset ; then
       LIBASSUAN_CONFIG=$libassuan_config_prefix/bin/libassuan-config
     fi
+  else
+    case "${SYSROOT}" in
+       /*)
+         if test -x "${SYSROOT}/bin/libassuan-config" ; then
+           LIBASSUAN_CONFIG="${SYSROOT}/bin/libassuan-config"
+         fi
+         ;;
+       '')
+         ;;
+        *)
+         AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
+         ;;
+     esac
   fi
 
   AC_PATH_TOOL(LIBASSUAN_CONFIG, libassuan-config, no)
@@ -105,7 +118,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 *** built for $libassuan_config_host and thus may not match the
 *** used host $host.
 *** You may want to use the configure option --with-libassuan-prefix
-*** to specify a matching config script.
+*** to specify a matching config script or use \$SYSROOT.
 ***]])
         fi
       fi
