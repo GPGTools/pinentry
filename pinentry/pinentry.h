@@ -212,7 +212,8 @@ typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
 int pinentry_loop (void);
 
 /* The same as above but allows to specify the i/o descriptors.
- * assuan_fdopen will be called on infd and outfd.
+ * infd and outfd will be duplicated in this function so the caller
+ * still has to close them if necessary.
  */
 int pinentry_loop2 (int infd, int outfd);
 
