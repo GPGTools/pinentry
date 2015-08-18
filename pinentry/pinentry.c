@@ -1436,7 +1436,7 @@ int
 pinentry_loop2 (int infd, int outfd)
 {
   gpg_error_t rc;
-  int filedes[2];
+  assuan_fd_t filedes[2];
   assuan_context_t ctx;
 
   /* Extra check to make sure we have dropped privs. */
@@ -1456,8 +1456,8 @@ pinentry_loop2 (int infd, int outfd)
   /* For now we use a simple pipe based server so that we can work
      from scripts.  We will later add options to run as a daemon and
      wait for requests on a Unix domain socket.  */
-  filedes[0] = infd;
-  filedes[1] = outfd;
+  filedes[0] = assuan_fdopen (infd);
+  filedes[1] = assuan_fdopen (outfd);
   rc = assuan_init_pipe_server (ctx, filedes);
   if (rc)
     {
