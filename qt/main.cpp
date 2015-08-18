@@ -50,6 +50,19 @@
 #include <pinentry-curses.h>
 #endif
 
+#if QT_VERSION >= 0x050000 && defined(QT_STATIC)
+  #include <QtPlugin>
+  #ifdef Q_OS_WIN
+    #include <windows.h>
+    #include <shlobj.h>
+    Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+  #elif defined(Q_OS_MAC)
+    Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin)
+  #else
+    Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+  #endif
+#endif
+
 static QString escape_accel( const QString & s ) {
 
   QString result;
