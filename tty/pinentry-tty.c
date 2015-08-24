@@ -362,6 +362,8 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
   if (! msg)
     msg = "Enter your passphrase.";
 
+  dump_error_text (ttyfo, pinentry->error);
+
   fprintf (ttyfo, "%s\n ", msg);
 
   while (! done)
