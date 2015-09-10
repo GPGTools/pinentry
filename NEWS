@@ -1,5 +1,16 @@
-Noteworthy changes in version 0.9.6 (unreleased)
+Noteworthy changes in version 0.9.6 (2015-09-10)
 ------------------------------------------------
+
+ * Many improvements for the dump tty pinentry.
+
+ * Use the standard GTK+-2 text entry widget instead of our outdated
+   and back-then-it-was-more-secure text widget.
+
+ * Use the standard Qt text widget.
+
+ * Allow for building a static Qt variant.
+
+ * Fix regression in w32 pinentry.
 
 
 Noteworthy changes in version 0.9.5 (2015-07-01)
