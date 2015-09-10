@@ -26,7 +26,7 @@ min_automake_version="1.14"
 # (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
 # bump the version number immediately after the release, do another
 # commit, and a push so that the git magic is able to work.
-m4_define(mym4_version, [0.9.6])
+m4_define(mym4_version, [0.9.7])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
