@@ -1,7 +1,7 @@
 /* pinentry-gtk-2.c
    Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
    Copyright (C) 2001, 2002, 2007, 2015 g10 Code GmbH
-   Copyright (C) 2004 by Albrecht Dre� <albrecht.dress@arcor.de>
+   Copyright (C) 2004 by Albrecht Dreß <albrecht.dress@arcor.de>
 
    pinentry-gtk-2 is a pinentry application for the Gtk+-2 widget set.
    It tries to follow the Gnome Human Interface Guide as close as
@@ -498,6 +498,20 @@ create_window (pinentry_t ctx)
 
       entry = gtk_entry_new ();
       gtk_entry_set_visibility (GTK_ENTRY (entry), FALSE);
+      /* Allow the user to set a narrower invisible character than the
+         large dot currently used by GTK.  Examples are "•★Ⓐ" */
+      if (pinentry->invisible_char)
+        {
+          gunichar *uch;
+          /*""*/
+          uch = g_utf8_to_ucs4 (pinentry->invisible_char, -1, NULL, NULL, NULL);
+          if (uch)
+            {
+              gtk_entry_set_invisible_char (GTK_ENTRY (entry), *uch);
+              g_free (uch);
+            }
+        }
+
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);

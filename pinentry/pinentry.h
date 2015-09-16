@@ -193,6 +193,11 @@ struct pinentry
      to save the assuan ctx.  */
   void *ctx_assuan;
 
+  /* An UTF-8 string with an invisible character used to override the
+     default in some pinentries.  Only the first character is
+     used.  */
+  char *invisible_char;
+
 };
 typedef struct pinentry *pinentry_t;
 

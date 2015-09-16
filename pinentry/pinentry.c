@@ -95,6 +95,9 @@ pinentry_reset (int use_defaults)
 
   int timout = pinentry.timeout;
 
+  char *invisible_char = pinentry.invisible_char;
+
+
   /* Free any allocated memory.  */
   if (use_defaults)
     {
@@ -126,6 +129,11 @@ pinentry_reset (int use_defaults)
 
   /* Reset the pinentry structure.  */
   memset (&pinentry, 0, sizeof (pinentry));
+
+  /* Restore options without a default we want to preserve.  */
+  pinentry.invisible_char = invisible_char;
+
+  /* Restore other options or set defaults.  */
 
   if (use_defaults)
     {
@@ -877,6 +885,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 #else
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
+    }
+  else if (!strcmp (key, "invisible-char"))
+    {
+      if (pinentry.invisible_char)
+        free (pinentry.invisible_char);
+      pinentry.invisible_char = strdup (value);
+      if (!pinentry.invisible_char)
+	return gpg_error_from_syserror ();
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
