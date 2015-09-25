@@ -28,15 +28,24 @@ dnl The moc lookup code is based on libpoppler (rev. d821207)
 
 AC_DEFUN([FIND_QT],
 [
-  PKG_CHECK_MODULES(PINENTRY_QT,
-                    Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0,
-                    [have_qt5_libs="yes"],
-                    [have_qt5_libs="no"])
+  AC_ARG_ENABLE(pinentry-qt5,
+                AC_HELP_STRING([--disable-pinentry-qt5],
+                           [Don't use qt5 even if it is available.]),
+                enable_pinentry_qt5=$enableval,
+                enable_pinentry_qt5="try")
 
-  if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
-    PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -fpic"
+  have_qt5_libs = no;
+
+  if test "$enable_pinentry_qt5" != "no"; then
+    PKG_CHECK_MODULES(PINENTRY_QT,
+                      Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0,
+                      [have_qt5_libs="yes"],
+                      [have_qt5_libs="no"])
+
+    if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
+      PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -fpic"
+    fi
   fi
-
   if test "$have_qt5_libs" = "yes"; then
     AC_CHECK_TOOL(MOC, moc)
     AC_MSG_CHECKING([moc version])
