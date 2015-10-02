@@ -34,7 +34,7 @@ AC_DEFUN([FIND_QT],
                 enable_pinentry_qt5=$enableval,
                 enable_pinentry_qt5="try")
 
-  have_qt5_libs = no;
+  have_qt5_libs = "no";
 
   if test "$enable_pinentry_qt5" != "no"; then
     PKG_CHECK_MODULES(PINENTRY_QT,
