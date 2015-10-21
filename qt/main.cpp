@@ -190,15 +190,15 @@ qt_cmd_handler (pinentry_t pe)
       if (!ret)
 	return -1;
 
-      const char *pin = pinentry.pin().toUtf8().constData();
+      QByteArray pin = pinentry.pin().toUtf8 ();
 
-      int len = strlen (pin);
+      int len = strlen (pin.constData ());
       if (len >= 0)
 	{
 	  pinentry_setbufferlen (pe, len + 1);
 	  if (pe->pin)
 	    {
-	      strcpy (pe->pin, pin);
+	      strcpy (pe->pin, pin.constData ());
 	      return len;
 	    }
 	}
