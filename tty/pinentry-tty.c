@@ -213,23 +213,28 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       return -1;
     }
 
-  if (pinentry->one_button)
-    fprintf (ttyfo, "Press any key to continue.");
-  else
-    {
-      fputc ('[', ttyfo);
-      if (ok)
-	fputc (tolower (ok), ttyfo);
-      if (cancel)
-	fputc (tolower (cancel), ttyfo);
-      if (notok)
-	fputc (tolower (notok), ttyfo);
-      fputs("]? ", ttyfo);
-    }
-
   while (1)
     {
-      int input = fgetc (ttyfi);
+      int input;
+
+      if (pinentry->one_button)
+        fprintf (ttyfo, "Press any key to continue.");
+      else
+        {
+          fputc ('[', ttyfo);
+          if (ok)
+            fputc (tolower (ok), ttyfo);
+          if (cancel)
+            fputc (tolower (cancel), ttyfo);
+          if (notok)
+            fputc (tolower (notok), ttyfo);
+          fputs("]? ", ttyfo);
+        }
+      fflush (ttyfo);
+
+      input = fgetc (ttyfi);
+      fprintf (ttyfo, "%c\n", input);
+
       if (input == EOF || input == 0x4)
 	/* End of file or control-d (= end of file).  */
 	{
@@ -262,9 +267,11 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	  ret = 1;
 	  break;
 	}
+      else
+        {
+          fprintf (ttyfo, "Invalid selection.\n");
+        }
     }
-
-  fputc('\n', ttyfo);
 
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
 
