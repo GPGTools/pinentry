@@ -371,7 +371,7 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 
   dump_error_text (ttyfo, pinentry->error);
 
-  fprintf (ttyfo, "%s\n ", msg);
+  fprintf (ttyfo, "%s\n", msg);
 
   while (! done)
     {
