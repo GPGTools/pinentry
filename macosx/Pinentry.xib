@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment version="1070" identifier="macosx"/>
+        <development version="5000" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="PinentryMac">
+            <connections>
+                <outlet property="cancelButton" destination="817" id="909"/>
+                <outlet property="errorLabel" destination="838" id="Q4B-YV-ILp"/>
+                <outlet property="noButton" destination="sJO-G1-Jyo" id="VeP-lh-PWY"/>
+                <outlet property="notokButton" destination="sJO-G1-Jyo" id="4oK-4m-na4"/>
+                <outlet property="okButton" destination="818" id="897"/>
+                <outlet property="passphraseField" destination="814" id="gb2-Wc-Avb"/>
+                <outlet property="saveInKeychainButton" destination="932" id="mB3-hm-iCf"/>
+                <outlet property="securePassphraseField" destination="819" id="1110"/>
+                <outlet property="showTypingButton" destination="813" id="939"/>
+                <outlet property="window" destination="811" id="896"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Pinentry Mac" allowsToolTipsWhenApplicationIsInactive="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="811" userLabel="Window">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowCollectionBehavior key="collectionBehavior" canJoinAllSpaces="YES" transient="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="877" y="782" width="545" height="206"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <view key="contentView" id="812">
+                <rect key="frame" x="0.0" y="0.0" width="545" height="206"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="819" userLabel="Passphrase" customClass="ShortcutHandlingSecureTextField">
+                        <rect key="frame" x="182" y="80" width="343" height="22"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="Passphrase" drawsBackground="YES" id="822">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <accessibility description="Passphrase"/>
+                        <connections>
+                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="htZ-f4-SXW" id="kdR-ER-qkM">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="stz-qL-mVJ" id="lQo-7T-pzP">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="value" keyPath="pin" id="1u4-9I-PZ8">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="lQo-7T-pzP" id="htZ-f4-SXW"/>
+                            <binding destination="-2" name="enabled" keyPath="showTyping" id="stz-qL-mVJ">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <outlet property="formatter" destination="BRc-lA-8W3" id="PId-8o-G54"/>
+                            <outlet property="nextKeyView" destination="813" id="1102"/>
+                        </connections>
+                    </textField>
+                    <textField hidden="YES" focusRingType="exterior" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="814" userLabel="Passphrase Plain" customClass="ShortcutHandlingTextField">
+                        <rect key="frame" x="182" y="80" width="343" height="22"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" focusRingType="exterior" title="Passphrase Plain" drawsBackground="YES" id="827">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <accessibility description="Passphrase"/>
+                        <connections>
+                            <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="o06-XS-gAW" id="JWD-DM-1Wt">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="Sw1-gc-1Sh" id="wtv-zp-P69">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="value" keyPath="pin" id="GkE-iB-na5">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="JWD-DM-1Wt" id="Sw1-gc-1Sh">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="enabled" keyPath="showTyping" id="o06-XS-gAW"/>
+                            <outlet property="formatter" destination="BRc-lA-8W3" id="7Ng-PT-q2C"/>
+                            <outlet property="nextKeyView" destination="819" id="1107"/>
+                        </connections>
+                    </textField>
+                    <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="450" tag="1" translatesAutoresizingMaskIntoConstraints="NO" id="818" userLabel="OK">
+                        <rect key="frame" x="441" y="13" width="90" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="X2b-qk-N2G"/>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="78" id="jOI-yD-zg1"/>
+                        </constraints>
+                        <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="823">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="buttonClicked:" target="-2" id="UCe-0k-KuE"/>
+                            <binding destination="-2" name="title" keyPath="okText" id="5bj-32-4RP">
+                                <dictionary key="options">
+                                    <string key="NSNullPlaceholder">OK</string>
+                                </dictionary>
+                            </binding>
+                            <outlet property="nextKeyView" destination="814" id="fIm-Ap-Ggy"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="450" translatesAutoresizingMaskIntoConstraints="NO" id="817" userLabel="Cancel">
+                        <rect key="frame" x="351" y="13" width="90" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="78" id="644-6I-7Fr"/>
+                        </constraints>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="824">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="buttonClicked:" target="-2" id="9AB-R3-yhW"/>
+                            <binding destination="-2" name="title" keyPath="cancelText" id="EUb-ni-Gh6">
+                                <dictionary key="options">
+                                    <string key="NSNullPlaceholder">Cancel</string>
+                                </dictionary>
+                            </binding>
+                            <outlet property="nextKeyView" destination="818" id="1105"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="450" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="sJO-G1-Jyo" userLabel="Cancel">
+                        <rect key="frame" x="216" y="13" width="90" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="78" id="Qo6-Ha-lro"/>
+                        </constraints>
+                        <buttonCell key="cell" type="push" title="No" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="xlY-i7-zwC">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="buttonClicked:" target="-2" id="KKP-Tl-Kq6"/>
+                            <binding destination="-2" name="title" keyPath="notokText" id="qu1-tm-cxa">
+                                <dictionary key="options">
+                                    <string key="NSNullPlaceholder">No</string>
+                                </dictionary>
+                            </binding>
+                            <outlet property="nextKeyView" destination="818" id="ifd-ru-n4p"/>
+                        </connections>
+                    </button>
+                    <button horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="813" userLabel="Show typing">
+                        <rect key="frame" x="179" y="57" width="88" height="18"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="12" id="gWm-Kf-Pnw"/>
+                        </constraints>
+                        <buttonCell key="cell" type="check" title="Show typing" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="828">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="-2" name="hidden" keyPath="confirmMode" id="GZ9-ya-nGE"/>
+                            <binding destination="-2" name="value" keyPath="showTyping" id="J9w-FI-ywG"/>
+                            <binding destination="-2" name="title" keyPath="showTypingText" id="8S8-Mm-GLF"/>
+                            <outlet property="nextKeyView" destination="932" id="1103"/>
+                        </connections>
+                    </button>
+                    <imageView translatesAutoresizingMaskIntoConstraints="NO" id="816">
+                        <rect key="frame" x="19" y="117" width="73" height="75"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="73" id="1Zk-4i-ddV"/>
+                            <constraint firstAttribute="height" constant="75" id="Bm6-4H-pFL"/>
+                        </constraints>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="Icon" id="825"/>
+                        <connections>
+                            <binding destination="-2" name="value" keyPath="icon" id="lGg-q1-kwk"/>
+                        </connections>
+                    </imageView>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="838" userLabel="Error Text">
+                        <rect key="frame" x="103" y="118" width="424" height="17"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="17" id="mhR-uu-Izt"/>
+                        </constraints>
+                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="errorText" id="839">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="-2" name="value" keyPath="errorText" id="899"/>
+                        </connections>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="867" userLabel="Prompt Text">
+                        <rect key="frame" x="103" y="83" width="73" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Passphrase" id="868">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="-2" name="hidden" keyPath="confirmMode" id="z11-1x-ech"/>
+                            <binding destination="-2" name="value" keyPath="promptText" id="903"/>
+                        </connections>
+                    </textField>
+                    <button horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="932" userLabel="Save in Keychain">
+                        <rect key="frame" x="270" y="57" width="111" height="18"/>
+                        <buttonCell key="cell" type="check" title="Save in Keychain" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="933">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="-2" name="enabled" keyPath="canUseKeychain" id="Do9-Dn-OB9"/>
+                            <binding destination="-2" name="hidden" keyPath="canUseKeychain" previousBinding="Do9-Dn-OB9" id="Zax-bY-BVa">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="value" keyPath="saveInKeychain" id="936"/>
+                            <binding destination="-2" name="title" keyPath="saveInKeychainText" id="GVC-Ie-KKc"/>
+                            <outlet property="nextKeyView" destination="817" id="O3H-pN-v0F"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="800" translatesAutoresizingMaskIntoConstraints="NO" id="820" userLabel="Description">
+                        <rect key="frame" x="103" y="149" width="424" height="43"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="999" constant="43" id="4jV-KX-a5e"/>
+                            <constraint firstAttribute="width" constant="420" id="Vea-hQ-vIw"/>
+                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="500" id="pdc-Yh-14W"/>
+                        </constraints>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="descriptionText" id="821">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="-2" name="value" keyPath="descriptionText" id="900"/>
+                        </connections>
+                    </textField>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="820" firstAttribute="leading" secondItem="816" secondAttribute="trailing" constant="13" id="3qC-E5-r2c"/>
+                    <constraint firstItem="817" firstAttribute="baseline" secondItem="818" secondAttribute="baseline" id="47E-dY-XCZ"/>
+                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="867" secondAttribute="trailing" constant="250" id="6Qb-0p-gRH"/>
+                    <constraint firstItem="813" firstAttribute="baseline" secondItem="932" secondAttribute="baseline" id="COX-KY-UaR"/>
+                    <constraint firstItem="820" firstAttribute="top" secondItem="816" secondAttribute="top" id="E3h-Pc-971"/>
+                    <constraint firstAttribute="bottom" secondItem="818" secondAttribute="bottom" constant="20" id="FXQ-IY-H5A"/>
+                    <constraint firstItem="838" firstAttribute="top" secondItem="820" secondAttribute="bottom" constant="14" id="GKy-bO-Asn"/>
+                    <constraint firstItem="867" firstAttribute="leading" secondItem="820" secondAttribute="leading" priority="250" id="GdX-BD-Nxf"/>
+                    <constraint firstItem="932" firstAttribute="leading" secondItem="813" secondAttribute="trailing" constant="8" id="HEa-la-hBd"/>
+                    <constraint firstItem="820" firstAttribute="trailing" secondItem="838" secondAttribute="trailing" id="Icm-Co-3TE"/>
+                    <constraint firstItem="817" firstAttribute="leading" secondItem="sJO-G1-Jyo" secondAttribute="trailing" priority="250" constant="57" id="JiU-OF-JWB"/>
+                    <constraint firstItem="818" firstAttribute="leading" secondItem="817" secondAttribute="trailing" constant="12" id="Lgq-7f-HdQ"/>
+                    <constraint firstAttribute="bottom" secondItem="814" secondAttribute="bottom" constant="80" id="Meh-El-6iz"/>
+                    <constraint firstItem="867" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="QRw-01-ykQ"/>
+                    <constraint firstItem="817" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="sJO-G1-Jyo" secondAttribute="trailing" constant="12" id="RH7-xC-Pex"/>
+                    <constraint firstItem="816" firstAttribute="top" secondItem="812" secondAttribute="top" constant="14" id="ReH-hw-fJR"/>
+                    <constraint firstItem="819" firstAttribute="trailing" secondItem="814" secondAttribute="trailing" id="STt-6J-OiQ"/>
+                    <constraint firstItem="818" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="TjI-py-2er"/>
+                    <constraint firstAttribute="trailing" secondItem="818" secondAttribute="trailing" constant="20" id="WIv-RU-nZb"/>
+                    <constraint firstItem="814" firstAttribute="top" relation="greaterThanOrEqual" secondItem="816" secondAttribute="bottom" constant="11" id="WZf-uG-ef6"/>
+                    <constraint firstItem="sJO-G1-Jyo" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="cTO-ea-Jfy"/>
+                    <constraint firstItem="816" firstAttribute="leading" secondItem="812" secondAttribute="leading" constant="19" id="eDc-5H-iTW"/>
+                    <constraint firstItem="820" firstAttribute="leading" secondItem="838" secondAttribute="leading" id="fUr-wx-cEx"/>
+                    <constraint firstItem="814" firstAttribute="top" secondItem="838" secondAttribute="bottom" constant="16" id="fWy-IA-LhR"/>
+                    <constraint firstItem="819" firstAttribute="bottom" secondItem="814" secondAttribute="bottom" id="gON-q0-Aik"/>
+                    <constraint firstItem="814" firstAttribute="trailing" secondItem="820" secondAttribute="trailing" id="hNf-nj-Xnz"/>
+                    <constraint firstItem="819" firstAttribute="leading" secondItem="814" secondAttribute="leading" id="hsR-z4-geH"/>
+                    <constraint firstItem="817" firstAttribute="baseline" secondItem="sJO-G1-Jyo" secondAttribute="baseline" id="iRu-QH-t4z"/>
+                    <constraint firstItem="817" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="ngD-kf-4Qe"/>
+                    <constraint firstItem="814" firstAttribute="leading" secondItem="813" secondAttribute="leading" id="qdf-YT-kIo"/>
+                    <constraint firstItem="814" firstAttribute="top" relation="greaterThanOrEqual" secondItem="820" secondAttribute="bottom" constant="16" id="ql9-Hr-ehj"/>
+                    <constraint firstItem="813" firstAttribute="top" secondItem="814" secondAttribute="bottom" constant="8" id="qzc-Mj-6Nv"/>
+                    <constraint firstItem="867" firstAttribute="baseline" secondItem="814" secondAttribute="baseline" constant="-1" id="twF-7S-2bX"/>
+                    <constraint firstItem="819" firstAttribute="top" secondItem="814" secondAttribute="top" id="udc-CH-AcE"/>
+                    <constraint firstItem="818" firstAttribute="top" secondItem="820" secondAttribute="bottom" priority="750" constant="28" id="vgM-Zj-Hc8"/>
+                    <constraint firstItem="814" firstAttribute="leading" secondItem="867" secondAttribute="trailing" constant="8" id="wmg-eV-IPV"/>
+                    <constraint firstItem="818" firstAttribute="top" relation="greaterThanOrEqual" secondItem="816" secondAttribute="bottom" constant="10" id="zIx-Pt-XeP"/>
+                </constraints>
+            </view>
+            <connections>
+                <binding destination="-2" name="title" keyPath="titleText" id="lRb-Rs-T1s">
+                    <dictionary key="options">
+                        <string key="NSNullPlaceholder" base64-UTF8="YES">
+IA
+</string>
+                    </dictionary>
+                </binding>
+                <outlet property="delegate" destination="-2" id="893"/>
+                <outlet property="initialFirstResponder" destination="819" id="830"/>
+            </connections>
+            <point key="canvasLocation" x="-0.5" y="227"/>
+        </window>
+        <customFormatter id="BRc-lA-8W3" customClass="PassphraseLengthFormatter"/>
+    </objects>
+    <resources>
+        <image name="Icon" width="512" height="512"/>
+    </resources>
+</document>
