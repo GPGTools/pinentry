@@ -79,6 +79,7 @@ AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_OBJC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 # We need to check for cplusplus here because we may not do the test
@@ -94,6 +95,7 @@ AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog,
 have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
+have_macosx_system=no
 case "${host}" in
     *-mingw32*)
         AC_DEFINE(USE_ONLY_8DOT3,1,
@@ -120,6 +122,13 @@ case "${host}" in
         # DOS with the DJGPP environment
         AC_DEFINE(HAVE_DRIVE_LETTERS)
         have_dosish_system=yes
+        ;;
+    *-apple-darwin*)
+		darwin_version=${host##*darwin}
+		if [[ "${darwin_version%%.*}" -ge 11 ]]; then
+			# Mac OS X => 10.7
+			have_macosx_system=yes
+		fi
         ;;
 esac
 
@@ -617,6 +626,15 @@ if test "$pinentry_fltk" != "no"; then
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_FLTK, test "$pinentry_fltk" = "yes")
 
+#
+# Check whether we should build the Mac OS X pinentry.
+# This is a simple check as we do this only for that platform.
+#
+pinentry_macosx=no
+test $have_macosx_system = yes && pinentry_macosx=yes
+AM_CONDITIONAL(BUILD_PINENTRY_MACOSX, test "$pinentry_macosx" = "yes")
+
+
 # Figure out the default pinentry.  We are very conservative here.
 # Please change the order only after verifying that the preferred
 # pinentry really is better (more feature-complete and more secure).
@@ -630,6 +648,9 @@ else
     if test "$pinentry_gnome_3" = "yes"; then
       PINENTRY_DEFAULT=pinentry-gnome3
     else
+     if test "$pinentry_macosx" = "yes"; then
+       PINENTRY_DEFAULT=pinentry-macosx
+     else
       if test "$pinentry_curses" = "yes"; then
         PINENTRY_DEFAULT=pinentry-curses
       else
@@ -651,6 +672,7 @@ else
           fi
         fi
       fi
+	 fi
     fi
   fi
 fi
@@ -728,6 +750,7 @@ qt/Makefile
 tqt/Makefile
 w32/Makefile
 fltk/Makefile
+macosx/Makefile
 doc/Makefile
 Makefile
 ])
@@ -750,6 +773,7 @@ AC_MSG_NOTICE([
 	TQt Pinentry .....: $pinentry_tqt
 	W32 Pinentry .....: $pinentry_w32
 	FLTK Pinentry ....: $pinentry_fltk
+	Mac OS X Pinentry : $pinentry_macosx
 
 	Fallback to Curses: $fallback_curses
 	Emacs integration : $inside_emacs

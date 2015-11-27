@@ -43,3 +43,5 @@ tty/Makefile
 /qt/qsecurelineedit.moc
 /m4/Makefile.in
 /emacs/Makefile.in
+macosx/Makefile.in
+macosx/Makefile
