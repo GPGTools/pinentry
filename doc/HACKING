@@ -21,3 +21,18 @@
   in a "real" ChangeLog file, but keep the maximum line length at 72
   or smaller, so that the generated ChangeLog lines, each with its
   leading TAB, will not exceed 80 columns.
+
+  For more infomration please check the HACHING file from the GnuPG
+  project.
+
+* String translation
+
+  Pinentry does not not require any translation files because it
+  expects that all strings are provided localized by the caller.  This
+  is due to the design constraint to keep the tool simple and also to
+  make sure that translations match those of GnuPG.
+
+  The available translated strings can be found in GnuPG, file
+  agent/call-pinentry, function start_pinentry.  If a string is not
+  available the Pinentry code uses a default as a fallback.  However,
+  it is highly suggested to provide Pinentry with translated strings.
