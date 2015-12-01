@@ -41,7 +41,7 @@ static uid_t real_uid, file_uid;
 
 /* Write DATA of size BYTES to FD, until all is written or an error
    occurs.  */
-ssize_t 
+ssize_t
 xwrite(int fd, const void *data, size_t bytes)
 {
   char *ptr;
@@ -68,7 +68,7 @@ xwrite(int fd, const void *data, size_t bytes)
 #if 0
 extern int debug;
 
-int 
+int
 debugmsg(const char *fmt, ...)
 {
   va_list va;
@@ -88,7 +88,7 @@ debugmsg(const char *fmt, ...)
 
 /* initialize uid variables */
 #ifndef HAVE_DOSISH_SYSTEM
-static void 
+static void
 init_uids(void)
 {
   real_uid = getuid();
@@ -98,42 +98,8 @@ init_uids(void)
 #endif
 
 
-#if 0 /* Not used. */
-/* lower privileges to the real user's */
-void 
-lower_privs()
-{
-  if (!uid_set)
-    init_uids();
-  if (real_uid != file_uid) {
-#ifdef HAVE_SETEUID
-    if (seteuid(real_uid) < 0) {
-      perror("lowering privileges failed");
-      exit(EXIT_FAILURE);
-    }
-#else
-    fprintf(stderr, _("Warning: running q-agent setuid on this system is dangerous\n"));
-#endif /* HAVE_SETEUID */
-  }
-}
-#endif /* if 0 */
-
-#if 0 /* Not used. */
-/* raise privileges to the effective user's */
-void 
-raise_privs()
-{
-  assert(real_uid >= 0);	/* lower_privs() must be called before this */
-#ifdef HAVE_SETEUID
-  if (real_uid != file_uid && seteuid(file_uid) < 0) {
-   perror("Warning: raising privileges failed");
-  }
-#endif /* HAVE_SETEUID */
-}
-#endif /* if 0 */
-
 /* drop all additional privileges */
-void 
+void
 drop_privs()
 {
 #ifndef HAVE_DOSISH_SYSTEM
