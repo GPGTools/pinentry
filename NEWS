@@ -1,5 +1,11 @@
-Noteworthy changes in version 0.9.7 (unreleased)
+Noteworthy changes in version 0.9.7 (2015-12-07)
 ------------------------------------------------
+
+ * Fix regressions in the Qt pinentry.
+
+ * Fix minor problems pinnetyr-tty.
+
+ * New option --invisible-char.
 
 
 Noteworthy changes in version 0.9.6 (2015-09-10)
