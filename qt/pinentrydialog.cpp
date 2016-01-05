@@ -309,7 +309,8 @@ void PinEntryDialog::updateQuality(const QString & txt )
 
   if (!_have_quality_bar || !_pinentry_info)
     return;
-  const char* pin = txt.toUtf8().constData();
+  const QByteArray utf8_pin = txt.toUtf8 ();
+  const char* pin = utf8_pin.constData ();
   length = strlen (pin);
   percent = length? pinentry_inq_quality (_pinentry_info, pin, length) : 0;
   if (!length)
