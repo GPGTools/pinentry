@@ -83,7 +83,7 @@ password_cache_save (const char *keygrip, const char *password)
 				    "stored-by", "GnuPG Pinentry",
 				    "keygrip", keygrip, NULL))
     {
-      printf("Failed to cache password for key %s with secret service: %s\n",
+      fprintf (stderr, "Failed to cache password for key %s with secret service: %s\n",
 	     keygrip, error->message);
 
       g_error_free (error);
@@ -112,7 +112,7 @@ password_cache_lookup (const char *keygrip)
 
   if (error != NULL)
     {
-      printf("Failed to lookup password for key %s with secret service: %s\n",
+      fprintf (stderr, "Failed to lookup password for key %s with secret service: %s\n",
 	     keygrip, error->message);
       g_error_free (error);
       return NULL;
@@ -126,7 +126,7 @@ password_cache_lookup (const char *keygrip)
   if (password2)
     strcpy(password2, password);
   else
-    printf("secmem_malloc failed: can't copy password!\n");
+    fprintf (stderr, "secmem_malloc failed: can't copy password!\n");
 
   secret_password_free (password);
 
@@ -148,7 +148,7 @@ password_cache_clear (const char *keygrip)
 					    "keygrip", keygrip, NULL);
   if (error != NULL)
     {
-      printf("Failed to clear password for key %s with secret service: %s\n",
+      fprintf (stderr, "Failed to clear password for key %s with secret service: %s\n",
 	     keygrip, error->message);
       g_debug("%s", error->message);
       g_error_free (error);
