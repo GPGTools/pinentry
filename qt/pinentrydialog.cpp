@@ -35,7 +35,7 @@
 #include <QPalette>
 #include <QLineEdit>
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <windows.h>
 #endif
 
@@ -51,7 +51,7 @@
    does not always work (e.g. when the ForegroundWindow timeout
    has not expired.
    */
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 WINBOOL SetForegroundWindowEx( HWND hWnd )
 {
    //Attach foreground window thread to our thread
@@ -75,14 +75,14 @@ void raiseWindow( QWidget* w )
     /* Maybe Qt will become agressive enough one day that
      * this is enough on windows too*/
     w->raise();
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     /* In the meantime we do our own attention grabbing */
-    if (!SetForegroundWindow (w->winId()) &&
-            !SetForegroundWindowEx (w->winId()))  {
+    if (!SetForegroundWindow ((HWND)w->winId()) &&
+            !SetForegroundWindowEx ((HWND)w->winId()))  {
         OutputDebugString("SetForegroundWindow (ex) failed");
         /* Yet another fallback which will not work on some
          * versions and is not recommended by msdn */
-        if (!ShowWindow (w->winId(), SW_SHOWNORMAL)) {
+        if (!ShowWindow ((HWND)w->winId(), SW_SHOWNORMAL)) {
             OutputDebugString ("ShowWindow failed.");
         }
     }
