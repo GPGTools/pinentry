@@ -84,10 +84,15 @@ button (char *text, char *default_text, FILE *ttyfo)
     {
       highlight = highlight + 1;
       if (*highlight == '_')
-	/* Escaped underscore.  */
-	continue;
-      else
-	break;
+        {
+          /* Escaped underscore.  Skip both characters.  */
+          highlight++;
+          continue;
+        }
+      if (!isalnum (*highlight))
+        /* Unusable accelerator.  */
+        continue;
+      break;
     }
 
   if (! highlight)
@@ -98,8 +103,8 @@ button (char *text, char *default_text, FILE *ttyfo)
 	highlight ++;
     }
 
-  if (! highlight)
-    /* Hmm, no alpha-num characters.  */
+  if (! *highlight)
+    /* Hmm, no alpha-numeric characters.  */
     {
       if (! default_text)
 	return 0;
@@ -111,7 +116,11 @@ button (char *text, char *default_text, FILE *ttyfo)
     {
       /* Skip accelerator prefix.  */
       if (*text == '_')
-	continue;
+        {
+          text ++;
+          if (! *text)
+            break;
+        }
 
       if (text == highlight)
 	fputs (UNDERLINE_START, ttyfo);
