@@ -211,7 +211,7 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	cancel = button (pinentry->default_cancel, "Cancel", ttyfo);
 
       if (pinentry->notok)
-	notok = button (pinentry->notok, NULL, ttyfo);
+	notok = button (pinentry->notok, "No", ttyfo);
     }
 
   if (cbreak (fileno (ttyfi)) == -1)
