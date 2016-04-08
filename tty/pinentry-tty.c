@@ -121,7 +121,7 @@ button (char *text, char *default_text, FILE *ttyfo)
     }
   fputc ('\n', ttyfo);
 
-  return *highlight;
+  return tolower (*highlight);
 }
 
 static void
@@ -223,17 +223,18 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
         {
           fputc ('[', ttyfo);
           if (ok)
-            fputc (tolower (ok), ttyfo);
+            fputc (ok, ttyfo);
           if (cancel)
-            fputc (tolower (cancel), ttyfo);
+            fputc (cancel, ttyfo);
           if (notok)
-            fputc (tolower (notok), ttyfo);
+            fputc (notok, ttyfo);
           fputs("]? ", ttyfo);
         }
       fflush (ttyfo);
 
       input = fgetc (ttyfi);
       fprintf (ttyfo, "%c\n", input);
+      input = tolower (input);
 
       if (input == EOF || input == 0x4)
 	/* End of file or control-d (= end of file).  */
@@ -251,18 +252,18 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	  break;
 	}
 
-      if (cancel && (input == toupper (cancel) || input == tolower (cancel)))
+      if (cancel && input == cancel)
 	{
 	  pinentry->canceled = 1;
 	  ret = 0;
 	  break;
 	}
-      else if (notok && (input == toupper (notok) || input == tolower (notok)))
+      else if (notok && input == notok)
 	{
 	  ret = 0;
 	  break;
 	}
-      else if (ok && (input == toupper (ok) || input == tolower (ok)))
+      else if (ok && input == ok)
 	{
 	  ret = 1;
 	  break;
