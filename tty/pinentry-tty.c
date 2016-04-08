@@ -69,10 +69,32 @@ cbreak (int fd)
 #define ALERT_START "\033[1;31m"
 #define NORMAL_RESTORE "\033[0m"
 
+static void
+fputs_highlighted (char *text, char *highlight, FILE *ttyfo)
+{
+  for (; *text; text ++)
+    {
+      /* Skip accelerator prefix.  */
+      if (*text == '_')
+        {
+          text ++;
+          if (! *text)
+            break;
+        }
+
+      if (text == highlight)
+        fputs (UNDERLINE_START, ttyfo);
+      fputc (*text, ttyfo);
+      if (text == highlight)
+        fputs (NORMAL_RESTORE, ttyfo);
+    }
+}
+
 static char
 button (char *text, char *default_text, FILE *ttyfo)
 {
   char *highlight;
+  int use_default = 0;
 
   if (! text)
     return 0;
@@ -110,25 +132,17 @@ button (char *text, char *default_text, FILE *ttyfo)
     {
       if (! default_text)
 	return 0;
-      text = highlight = default_text;
+      highlight = default_text;
+      use_default = 1;
     }
 
   fputs ("  ", ttyfo);
-  for (; *text; text ++)
+  fputs_highlighted (text, highlight, ttyfo);
+  if (use_default)
     {
-      /* Skip accelerator prefix.  */
-      if (*text == '_')
-        {
-          text ++;
-          if (! *text)
-            break;
-        }
-
-      if (text == highlight)
-	fputs (UNDERLINE_START, ttyfo);
-      fputc (*text, ttyfo);
-      if (text == highlight)
-	fputs (NORMAL_RESTORE, ttyfo);
+      fputs (" (", ttyfo);
+      fputs_highlighted (default_text, highlight, ttyfo);
+      fputc (')', ttyfo);
     }
   fputc ('\n', ttyfo);
 
