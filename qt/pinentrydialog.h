@@ -2,8 +2,10 @@
 
    Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Klöcker
+   Copyright 2016 Intevation GmbH
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
+   Modified by Andre Heinecke <aheinecke@intevation.de>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -48,8 +50,10 @@ class PinEntryDialog : public QDialog
     Q_PROPERTY(QString pin READ pin WRITE setPin)
     Q_PROPERTY(QString prompt READ prompt WRITE setPrompt)
 public:
-    friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-    explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0, int timeout = 0, bool modal = false, bool enable_quality_bar = false);
+    explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0,
+                            int timeout = 0, bool modal = false,
+                            bool enable_quality_bar = false,
+                            const QString &repeatString = QString());
 
     void setDescription(const QString &);
     QString description() const;
@@ -59,6 +63,9 @@ public:
 
     void setPin(const QString &);
     QString pin() const;
+
+    QString repeatedPin() const;
+    void setRepeatErrorText(const QString &);
 
     void setPrompt(const QString &);
     QString prompt() const;
@@ -71,14 +78,14 @@ public:
 
     void setPinentryInfo(pinentry_t);
 
-public slots:
+protected slots:
     void updateQuality(const QString &);
     void slotTimeout();
+    void checkRepeat(const QString &);
+    void focusChanged(QWidget *old, QWidget *now);
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);
-    /* reimp */ void hideEvent(QHideEvent *);
-    /* reimp */ void paintEvent(QPaintEvent *event);
 
 private:
     QLabel    *_icon;
@@ -88,12 +95,14 @@ private:
     QLabel    *_quality_bar_label;
     QProgressBar *_quality_bar;
     QLineEdit *_edit;
+    QLineEdit *mRepeat;
     QPushButton *_ok;
     QPushButton *_cancel;
     bool       _grabbed;
     bool       _have_quality_bar;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
+    QString    mRepeatError;
 };
 
 #endif // __PINENTRYDIALOG_H__

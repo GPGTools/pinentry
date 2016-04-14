@@ -163,13 +163,21 @@ qt_cmd_handler(pinentry_t pe)
     const QString title =
         pe->title ? from_utf8(pe->title) :
         /* else */  QLatin1String("pinentry-qt") ;
+    const QString repeatError =
+        pe->repeat_error_string ? from_utf8(pe->repeat_error_string) :
+                                  QLatin1String("Passphrases do not match");
+    const QString repeatString =
+        pe->repeat_passphrase ? from_utf8(pe->repeat_passphrase) :
+                                QString();
 
     if (want_pass) {
-        PinEntryDialog pinentry(parent, 0, pe->timeout, true, !!pe->quality_bar);
+        PinEntryDialog pinentry(parent, 0, pe->timeout, true, !!pe->quality_bar,
+                                repeatString);
 
         pinentry.setPinentryInfo(pe);
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
         pinentry.setDescription(from_utf8(pe->description));
+        pinentry.setRepeatErrorText(repeatError);
         if (pe->title) {
             pinentry.setWindowTitle(from_utf8(pe->title));
         }
@@ -194,7 +202,15 @@ qt_cmd_handler(pinentry_t pe)
             return -1;
         }
 
-        QByteArray pin = pinentry.pin().toUtf8();
+        const QString pinStr = pinentry.pin();
+        QByteArray pin = pinStr.toUtf8();
+
+        if (!!pe->repeat_passphrase) {
+            /* Should not have been possible to accept
+               the dialog in that case but we do a safety
+               check here */
+            pe->repeat_okay = (pinStr == pinentry.repeatedPin());
+        }
 
         int len = strlen(pin.constData());
         if (len >= 0) {

@@ -2,8 +2,10 @@
 
    Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Klöcker
+   Copyright 2016 Intevation GmbH
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
+   Modified by Andre Heinecke <aheinecke@intevation.de>
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -109,8 +111,9 @@ void PinEntryDialog::slotTimeout()
 }
 
 PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
-                               int timeout, bool modal, bool enable_quality_bar)
-    : QDialog(parent, Qt::WindowStaysOnTopHint), _grabbed(false)
+                               int timeout, bool modal, bool enable_quality_bar,
+                               const QString &repeatString)
+    : QDialog(parent, Qt::WindowStaysOnTopHint), mRepeat(NULL), _grabbed(false)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -179,28 +182,40 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _edit->setFocus();
 
     QGridLayout *const grid = new QGridLayout(this);
-    grid->addWidget(_icon, 0, 0, 5, 1, Qt::AlignTop | Qt::AlignLeft);
-    grid->addWidget(_error, 1, 1, 1, 2);
-    grid->addWidget(_desc,  2, 1, 1, 2);
+    int row = 1;
+    grid->addWidget(_error, row++, 1, 1, 2);
+    grid->addWidget(_desc,  row++, 1, 1, 2);
     //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
-    grid->addWidget(_prompt, 3, 1);
-    grid->addWidget(_edit, 3, 2);
     if (enable_quality_bar) {
-        grid->addWidget(_quality_bar_label, 4, 1);
-        grid->addWidget(_quality_bar, 4, 2);
+        grid->addWidget(_quality_bar_label, row, 1);
+        grid->addWidget(_quality_bar, row++, 2);
     }
-    grid->addWidget(buttons, 5, 0, 1, 3);
+    grid->addWidget(_prompt, row, 1);
+    grid->addWidget(_edit, row++, 2);
+    if (!repeatString.isNull()) {
+        mRepeat = new QLineEdit;
+        mRepeat->setMaxLength(256);
+        mRepeat->setEchoMode(QLineEdit::Password);
+        connect(mRepeat, SIGNAL(textChanged(QString)),
+                this, SLOT(checkRepeat(QString)));
+        connect(_edit, SIGNAL(textChanged(QString)),
+                this, SLOT(checkRepeat(QString)));
+        QLabel *repeatLabel = new QLabel(repeatString);
+        repeatLabel->setBuddy(mRepeat);
+        grid->addWidget(repeatLabel, row, 1);
+        grid->addWidget(mRepeat, row++, 2);
+        setTabOrder(_edit, mRepeat);
+        setTabOrder(mRepeat, _ok);
+    }
+    row += 2;
+    grid->addWidget(buttons, row, 0, 1, 3);
+
+    grid->addWidget(_icon, 0, 0, row - 1, 1, Qt::AlignVCenter | Qt::AlignLeft);
 
     grid->setSizeConstraint(QLayout::SetFixedSize);
-}
 
-void PinEntryDialog::hideEvent(QHideEvent *ev)
-{
-    if (!_pinentry_info || _pinentry_info->grab) {
-        _edit->releaseKeyboard();
-    }
-    _grabbed = false;
-    QDialog::hideEvent(ev);
+    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
+            this, SLOT(focusChanged(QWidget *, QWidget *)));
 }
 
 void PinEntryDialog::showEvent(QShowEvent *event)
@@ -335,16 +350,44 @@ void PinEntryDialog::setPinentryInfo(pinentry_t peinfo)
     _pinentry_info = peinfo;
 }
 
-void PinEntryDialog::paintEvent(QPaintEvent *event)
+void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
 {
     // Grab keyboard. It might be a little weird to do it here, but it works!
     // Previously this code was in showEvent, but that did not work in Qt4.
-    QDialog::paintEvent(event);
-    if (!_grabbed && (!_pinentry_info || _pinentry_info->grab)) {
-        _edit->grabKeyboard();
-        _grabbed = true;
+    if (!_pinentry_info || _pinentry_info->grab) {
+        if (_grabbed && old && (old == _edit || old == mRepeat)) {
+            old->releaseKeyboard();
+            _grabbed = false;
+        }
+        if (!_grabbed && now && (now == _edit || now == mRepeat)) {
+            now->grabKeyboard();
+            _grabbed = true;
+        }
     }
 
 }
 
+void PinEntryDialog::checkRepeat(const QString &repPin)
+{
+    if (mRepeat->text() == _edit->text()) {
+        _ok->setEnabled(true);
+        _ok->setToolTip(QString());
+    } else {
+        _ok->setEnabled(false);
+        _ok->setToolTip(mRepeatError);
+    }
+}
+
+QString PinEntryDialog::repeatedPin() const
+{
+    if (mRepeat) {
+        return mRepeat->text();
+    }
+    return QString();
+}
+
+void PinEntryDialog::setRepeatErrorText(const QString &err)
+{
+    mRepeatError = err;
+}
 #include "pinentrydialog.moc"
