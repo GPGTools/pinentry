@@ -1,7 +1,6 @@
-/*
-   pinentrydialog.h - A (not yet) secure Qt 4 dialog for PIN entry.
+/* pinentrydialog.h - A (not yet) secure Qt 4 dialog for PIN entry.
 
-   Copyright (C) 2002, 2008 Klar�lvdalens Datakonsult AB (KDAB)
+   Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
    Copyright 2007 Ingo Klöcker
 
    Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
@@ -36,64 +35,65 @@ class QLineEdit;
 class QString;
 class QProgressBar;
 
-QPixmap icon( QStyle::StandardPixmap which = QStyle::SP_CustomBase );
+QPixmap icon(QStyle::StandardPixmap which = QStyle::SP_CustomBase);
 
-void raiseWindow( QWidget* w );
+void raiseWindow(QWidget *w);
 
-class PinEntryDialog : public QDialog {
-  Q_OBJECT
+class PinEntryDialog : public QDialog
+{
+    Q_OBJECT
 
-  Q_PROPERTY( QString description READ description WRITE setDescription )
-  Q_PROPERTY( QString error READ error WRITE setError )
-  Q_PROPERTY( QString pin READ pin WRITE setPin )
-  Q_PROPERTY( QString prompt READ prompt WRITE setPrompt )
+    Q_PROPERTY(QString description READ description WRITE setDescription)
+    Q_PROPERTY(QString error READ error WRITE setError)
+    Q_PROPERTY(QString pin READ pin WRITE setPin)
+    Q_PROPERTY(QString prompt READ prompt WRITE setPrompt)
 public:
-  friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
-  explicit PinEntryDialog( QWidget* parent = 0, const char* name = 0, int timeout = 0, bool modal = false, bool enable_quality_bar = false );
+    friend class PinEntryController; // TODO: remove when assuan lets me use Qt eventloop.
+    explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0, int timeout = 0, bool modal = false, bool enable_quality_bar = false);
 
-  void setDescription( const QString& );
-  QString description() const;
+    void setDescription(const QString &);
+    QString description() const;
 
-  void setError( const QString& );
-  QString error() const;
+    void setError(const QString &);
+    QString error() const;
 
-  void setPin( const QString & );
-  QString pin() const;
+    void setPin(const QString &);
+    QString pin() const;
 
-  void setPrompt( const QString& );
-  QString prompt() const;
+    void setPrompt(const QString &);
+    QString prompt() const;
 
-  void setOkText( const QString& );
-  void setCancelText( const QString& );
+    void setOkText(const QString &);
+    void setCancelText(const QString &);
 
-  void setQualityBar( const QString& );
-  void setQualityBarTT( const QString& );
+    void setQualityBar(const QString &);
+    void setQualityBarTT(const QString &);
 
-  void setPinentryInfo (pinentry_t);
+    void setPinentryInfo(pinentry_t);
 
 public slots:
-  void updateQuality(const QString&);
-  void slotTimeout();
+    void updateQuality(const QString &);
+    void slotTimeout();
 
 protected:
-  /* reimp */ void showEvent( QShowEvent* event );
-  /* reimp */ void hideEvent( QHideEvent* );
-  /* reimp */ void paintEvent( QPaintEvent* event );
+    /* reimp */ void showEvent(QShowEvent *event);
+    /* reimp */ void hideEvent(QHideEvent *);
+    /* reimp */ void paintEvent(QPaintEvent *event);
 
 private:
-  QLabel*    _icon;
-  QLabel*    _desc;
-  QLabel*    _error;
-  QLabel*    _prompt;
-  QLabel*    _quality_bar_label;
-  QProgressBar* _quality_bar;
-  QLineEdit* _edit;
-  QPushButton* _ok;
-  QPushButton* _cancel;
-  bool       _grabbed;
-  bool       _have_quality_bar;
-  pinentry_t _pinentry_info;
-  QTimer*    _timer;
+    QLabel    *_icon;
+    QLabel    *_desc;
+    QLabel    *_error;
+    QLabel    *_prompt;
+    QLabel    *_quality_bar_label;
+    QProgressBar *_quality_bar;
+    QLineEdit *_edit;
+    QPushButton *_ok;
+    QPushButton *_cancel;
+    bool       _grabbed;
+    bool       _have_quality_bar;
+    pinentry_t _pinentry_info;
+    QTimer    *_timer;
 };
 
 #endif // __PINENTRYDIALOG_H__

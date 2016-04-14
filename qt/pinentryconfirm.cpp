@@ -1,5 +1,4 @@
-/*
-   pinentryconfirm.cpp - A QMessageBox with a timeout
+/* pinentryconfirm.cpp - A QMessageBox with a timeout
 
    Copyright (C) 2011 Ben Kibbey <bjk@luxsci.net>
 
@@ -22,33 +21,34 @@
 #include <QAbstractButton>
 
 PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
-	const QString &desc, StandardButtons buttons, QWidget *parent) :
+                                 const QString &desc, StandardButtons buttons, QWidget *parent) :
     QMessageBox(icon, title, desc, buttons, parent)
 {
     if (timeout > 0) {
-	_timer = new QTimer(this);
-	connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
-	_timer->start(timeout*1000);
+        _timer = new QTimer(this);
+        connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+        _timer->start(timeout * 1000);
     }
 #ifndef QT_NO_ACCESSIBILITY
-    setAccessibleDescription (desc);
-    setAccessibleName (title);
+    setAccessibleDescription(desc);
+    setAccessibleName(title);
 #endif
-    raiseWindow (this);
+    raiseWindow(this);
 }
 
-void PinentryConfirm::showEvent( QShowEvent* event )
+void PinentryConfirm::showEvent(QShowEvent *event)
 {
-    QDialog::showEvent( event );
-    raiseWindow( this );
+    QDialog::showEvent(event);
+    raiseWindow(this);
 }
 
 void PinentryConfirm::slotTimeout()
 {
     QAbstractButton *b = button(QMessageBox::Cancel);
 
-    if (b)
-	b->animateClick(0);
+    if (b) {
+        b->animateClick(0);
+    }
 }
 
 #include "pinentryconfirm.moc"

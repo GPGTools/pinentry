@@ -1,5 +1,4 @@
-/*
-   pinentryconfirm.h - A QMessageBox with a timeout
+/* pinentryconfirm.h - A QMessageBox with a timeout
 
    Copyright (C) 2011 Ben Kibbey <bjk@luxsci.net>
 
@@ -26,19 +25,19 @@
 class PinentryConfirm : public QMessageBox
 {
     Q_OBJECT
-    public:
-	PinentryConfirm(Icon, int timeout, const QString &title,
-		const QString &desc, StandardButtons buttons,
-		QWidget *parent);
+public:
+    PinentryConfirm(Icon, int timeout, const QString &title,
+                    const QString &desc, StandardButtons buttons,
+                    QWidget *parent);
 
-    private slots:
-	void slotTimeout();
+private slots:
+    void slotTimeout();
 
-    private:
-	QTimer *_timer;
+private:
+    QTimer *_timer;
 
-    protected:
-    /* reimp */ void showEvent( QShowEvent* event );
+protected:
+    /* reimp */ void showEvent(QShowEvent *event);
 };
 
 #endif
