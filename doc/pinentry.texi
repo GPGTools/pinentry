@@ -690,6 +690,17 @@ above condition is true and @code{tried_password_cache} is false, then
 a check box with the specified string should be displayed.  The check
 box must default to off.
 
+@item @code{default-cf-visi}
+The string to show with a question if you want to confirm that
+the user wants to change the visibility of the password.
+
+@item @code{default-tt-visi}
+Tooltip for an action that would reveal the entered password.
+
+@item @code{default-tt-hide}
+Tooltip for an action that would hide the password revealed
+by the action labeld with @code{default-tt-visi}
+
 @end table
 
 When the handler is done, it should store the passphrase in

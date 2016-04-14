@@ -79,6 +79,9 @@ pinentry_reset (int use_defaults)
   char *default_cancel = pinentry.default_cancel;
   char *default_prompt = pinentry.default_prompt;
   char *default_pwmngr = pinentry.default_pwmngr;
+  char *default_cf_visi = pinentry.default_cf_visi;
+  char *default_tt_visi = pinentry.default_tt_visi;
+  char *default_tt_hide = pinentry.default_tt_hide;
   char *touch_file = pinentry.touch_file;
 
   /* These options are set from the command line.  Don't reset
@@ -109,6 +112,9 @@ pinentry_reset (int use_defaults)
       free (pinentry.default_cancel);
       free (pinentry.default_prompt);
       free (pinentry.default_pwmngr);
+      free (pinentry.default_cf_visi);
+      free (pinentry.default_tt_visi);
+      free (pinentry.default_tt_hide);
       free (pinentry.touch_file);
       free (pinentry.display);
     }
@@ -162,6 +168,9 @@ pinentry_reset (int use_defaults)
       pinentry.default_cancel = default_cancel;
       pinentry.default_prompt = default_prompt;
       pinentry.default_pwmngr = default_pwmngr;
+      pinentry.default_cf_visi = default_cf_visi;
+      pinentry.default_tt_visi = default_tt_visi;
+      pinentry.default_tt_hide = default_tt_hide;
       pinentry.touch_file = touch_file;
 
       pinentry.debug = debug;
@@ -871,6 +880,24 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       pinentry.default_pwmngr = strdup (value);
       if (!pinentry.default_pwmngr)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "default-cf-visi"))
+    {
+      pinentry.default_cf_visi = strdup (value);
+      if (!pinentry.default_cf_visi)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "default-tt-visi"))
+    {
+      pinentry.default_tt_visi = strdup (value);
+      if (!pinentry.default_tt_visi)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "default-tt-hide"))
+    {
+      pinentry.default_tt_hide = strdup (value);
+      if (!pinentry.default_tt_hide)
 	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "allow-external-password-cache") && !*value)

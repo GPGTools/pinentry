@@ -171,6 +171,15 @@ struct pinentry
   /* (Assuan: "OPTION default-pwmngr
      SAVE_PASSWORD_WITH_PASSWORD_MANAGER?").  */
   char *default_pwmngr;
+  /* (Assuan: "OPTION default-cf-visi
+     Do you really want to make your passphrase visible?").  */
+  char *default_cf_visi;
+  /* (Assuan: "OPTION default-tt-visi
+     Make passphrase visible?").  */
+  char *default_tt_visi;
+  /* (Assuan: "OPTION default-tt-hide
+     Hide passphrase").  */
+  char *default_tt_hide;
 
   /* Whether we are allowed to read the password from an external
      cache.  (Assuan: "OPTION allow-external-password-cache")  */
