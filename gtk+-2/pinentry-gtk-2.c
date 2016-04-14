@@ -356,6 +356,20 @@ may_save_passphrase_toggled (GtkWidget *widget, gpointer data)
 #endif
 
 
+static void
+show_passphrase_toggled (GtkWidget *widget, gpointer data)
+{
+  GtkToggleButton *button = GTK_TOGGLE_BUTTON (widget);
+  gtk_entry_set_visibility (GTK_ENTRY (entry),
+                            gtk_toggle_button_get_active (button));
+  if (repeat_entry)
+    {
+      gtk_entry_set_visibility (GTK_ENTRY (repeat_entry),
+                                gtk_toggle_button_get_active (button));
+    }
+}
+
+
 static gboolean
 timeout_cb (gpointer data)
 {
@@ -606,6 +620,25 @@ create_window (pinentry_t ctx)
 			(gpointer) ctx);
     }
 #endif
+  /* Add the show visibile toggle button */
+  if (pinentry->default_tt_visi)
+    {
+      msg = pinentry_utf8_validate (pinentry->default_tt_visi);
+      w = gtk_check_button_new_with_mnemonic (msg);
+      g_free (msg);
+    }
+  else
+    w = gtk_check_button_new_with_label ("Show passphrase");
+
+  /* Make sure it is off by default.  */
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), FALSE);
+
+  gtk_box_pack_start (GTK_BOX (box), w, TRUE, FALSE, 0);
+  gtk_widget_show (w);
+
+  g_signal_connect (G_OBJECT (w), "toggled",
+                    G_CALLBACK (show_passphrase_toggled),
+                    NULL);
 
   if (!pinentry->one_button)
     {
