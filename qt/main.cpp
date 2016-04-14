@@ -169,10 +169,17 @@ qt_cmd_handler(pinentry_t pe)
     const QString repeatString =
         pe->repeat_passphrase ? from_utf8(pe->repeat_passphrase) :
                                 QString();
+    const QString visibilityTT =
+        pe->default_tt_visi ? from_utf8(pe->default_tt_visi) :
+                              QLatin1String("Show passphrase");
+    const QString hideTT =
+        pe->default_tt_hide ? from_utf8(pe->default_tt_hide) :
+                              QLatin1String("Hide passphrase");
+
 
     if (want_pass) {
         PinEntryDialog pinentry(parent, 0, pe->timeout, true, !!pe->quality_bar,
-                                repeatString);
+                                repeatString, visibilityTT, hideTT);
 
         pinentry.setPinentryInfo(pe);
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
@@ -196,7 +203,6 @@ qt_cmd_handler(pinentry_t pe)
         if (pe->quality_bar_tt) {
             pinentry.setQualityBarTT(from_utf8(pe->quality_bar_tt));
         }
-
         bool ret = pinentry.exec();
         if (!ret) {
             return -1;

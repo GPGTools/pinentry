@@ -36,6 +36,8 @@ class QPushButton;
 class QLineEdit;
 class QString;
 class QProgressBar;
+class QCheckBox;
+class QAction;
 
 QPixmap icon(QStyle::StandardPixmap which = QStyle::SP_CustomBase);
 
@@ -53,7 +55,9 @@ public:
     explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0,
                             int timeout = 0, bool modal = false,
                             bool enable_quality_bar = false,
-                            const QString &repeatString = QString());
+                            const QString &repeatString = QString(),
+                            const QString &visibiltyTT = QString(),
+                            const QString &hideTT = QString());
 
     void setDescription(const QString &);
     QString description() const;
@@ -81,8 +85,9 @@ public:
 protected slots:
     void updateQuality(const QString &);
     void slotTimeout();
-    void checkRepeat(const QString &);
+    void textChanged(const QString &);
     void focusChanged(QWidget *old, QWidget *now);
+    void toggleVisibility();
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);
@@ -102,7 +107,12 @@ private:
     bool       _have_quality_bar;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
-    QString    mRepeatError;
+    QString    mRepeatError,
+               mVisibilityTT,
+               mHideTT;
+    QAction   *mVisiActionEdit,
+              *mVisiActionRepeat;
+    QCheckBox *mVisiCB;
 };
 
 #endif // __PINENTRYDIALOG_H__

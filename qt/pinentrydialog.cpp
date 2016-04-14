@@ -35,6 +35,8 @@
 #include <QLabel>
 #include <QPalette>
 #include <QLineEdit>
+#include <QAction>
+#include <QCheckBox>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -112,8 +114,17 @@ void PinEntryDialog::slotTimeout()
 
 PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                                int timeout, bool modal, bool enable_quality_bar,
-                               const QString &repeatString)
-    : QDialog(parent, Qt::WindowStaysOnTopHint), mRepeat(NULL), _grabbed(false)
+                               const QString &repeatString,
+                               const QString &visibilityTT,
+                               const QString &hideTT)
+    : QDialog(parent, Qt::WindowStaysOnTopHint),
+      mRepeat(NULL),
+      _grabbed(false),
+      mVisibilityTT(visibilityTT),
+      mHideTT(hideTT),
+      mVisiActionEdit(NULL),
+      mVisiActionRepeat(NULL),
+      mVisiCB(NULL)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -178,6 +189,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     connect(buttons, SIGNAL(rejected()), this, SLOT(reject()));
     connect(_edit, SIGNAL(textChanged(QString)),
             this, SLOT(updateQuality(QString)));
+    connect(_edit, SIGNAL(textChanged(QString)),
+            this, SLOT(textChanged(QString)));
 
     _edit->setFocus();
 
@@ -197,9 +210,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         mRepeat->setMaxLength(256);
         mRepeat->setEchoMode(QLineEdit::Password);
         connect(mRepeat, SIGNAL(textChanged(QString)),
-                this, SLOT(checkRepeat(QString)));
-        connect(_edit, SIGNAL(textChanged(QString)),
-                this, SLOT(checkRepeat(QString)));
+                this, SLOT(textChanged(QString)));
         QLabel *repeatLabel = new QLabel(repeatString);
         repeatLabel->setBuddy(mRepeat);
         grid->addWidget(repeatLabel, row, 1);
@@ -207,12 +218,36 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         setTabOrder(_edit, mRepeat);
         setTabOrder(mRepeat, _ok);
     }
-    row += 2;
-    grid->addWidget(buttons, row, 0, 1, 3);
+    /* Set up the show password action */
+    const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
+    const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
+#if QT_VERSION >= 0x050200
+    if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
+        mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
+        mVisiActionEdit->setVisible(false);
+        mVisiActionEdit->setToolTip(mVisibilityTT);
+        if (mRepeat) {
+            mVisiActionRepeat = mRepeat->addAction(visibilityIcon, QLineEdit::TrailingPosition);
+            mVisiActionRepeat->setVisible(false);
+            mVisiActionRepeat->setToolTip(mVisibilityTT);
+            connect(mVisiActionRepeat, SIGNAL(triggered()), this, SLOT(toggleVisibility()));
+        }
+        connect(mVisiActionEdit, SIGNAL(triggered()), this, SLOT(toggleVisibility()));
+    } else
+#endif
+    {
+        if (!mVisibilityTT.isNull()) {
+            mVisiCB = new QCheckBox(mVisibilityTT);
+            connect(mVisiCB, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility()));
+            grid->addWidget(mVisiCB, row++, 1, 1, 2, Qt::AlignLeft);
+        }
+    }
+    grid->addWidget(buttons, ++row, 0, 1, 3);
 
     grid->addWidget(_icon, 0, 0, row - 1, 1, Qt::AlignVCenter | Qt::AlignLeft);
 
     grid->setSizeConstraint(QLayout::SetFixedSize);
+
 
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));
@@ -367,14 +402,61 @@ void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
 
 }
 
-void PinEntryDialog::checkRepeat(const QString &repPin)
+void PinEntryDialog::textChanged(const QString &text)
 {
-    if (mRepeat->text() == _edit->text()) {
+    Q_UNUSED(text);
+    if (mRepeat && mRepeat->text() == _edit->text()) {
         _ok->setEnabled(true);
         _ok->setToolTip(QString());
-    } else {
+    } else if (mRepeat) {
         _ok->setEnabled(false);
         _ok->setToolTip(mRepeatError);
+    }
+
+    if (mVisiActionEdit && sender() == _edit) {
+        mVisiActionEdit->setVisible(!_edit->text().isEmpty());
+    }
+    if (mVisiActionRepeat && sender() == mRepeat) {
+        mVisiActionRepeat->setVisible(!mRepeat->text().isEmpty());
+    }
+}
+
+void PinEntryDialog::toggleVisibility()
+{
+    if (sender() == mVisiActionEdit) {
+        if (_edit->echoMode() == QLineEdit::Password) {
+            mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
+            mVisiActionEdit->setToolTip(mHideTT);
+            _edit->setEchoMode(QLineEdit::Normal);
+        } else {
+            mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
+            mVisiActionEdit->setToolTip(mVisibilityTT);
+            _edit->setEchoMode(QLineEdit::Password);
+        }
+    }
+    if (sender() == mVisiActionRepeat) {
+        if (mRepeat->echoMode() == QLineEdit::Password) {
+            mVisiActionRepeat->setIcon(QIcon::fromTheme(QLatin1String("hint")));
+            mVisiActionRepeat->setToolTip(mHideTT);
+            mRepeat->setEchoMode(QLineEdit::Normal);
+        } else {
+            mVisiActionRepeat->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
+            mVisiActionRepeat->setToolTip(mVisibilityTT);
+            mRepeat->setEchoMode(QLineEdit::Password);
+        }
+    }
+    if (sender() == mVisiCB) {
+        if (mVisiCB->isChecked()) {
+            if (mRepeat) {
+                mRepeat->setEchoMode(QLineEdit::Normal);
+            }
+            _edit->setEchoMode(QLineEdit::Normal);
+        } else {
+            if (mRepeat) {
+                mRepeat->setEchoMode(QLineEdit::Password);
+            }
+            _edit->setEchoMode(QLineEdit::Password);
+        }
     }
 }
 
