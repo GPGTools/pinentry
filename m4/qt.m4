@@ -75,7 +75,7 @@ AC_DEFUN([FIND_QT],
   fi
   if test "$have_qt5_libs" != "yes"; then
     PKG_CHECK_MODULES(PINENTRY_QT,
-                      QtCore >= 4.4.0 QtGui >= 4.4.0,
+                      QtCore >= 4.6.0 QtGui >= 4.6.0,
                       [have_qt4_libs="yes"],
                       [have_qt4_libs="no"])
     if test "$have_qt4_libs" = "yes"; then

@@ -318,7 +318,9 @@ main(int argc, char *argv[])
            window anymore.  */
         i = argc;
         app.reset(new QApplication(i, new_argv));
-        const QIcon icon(QLatin1String(":/document-encrypt.png"));
+        const QIcon fallback = QIcon(QLatin1String(":/document-encrypt.png"));
+        const QIcon icon = QIcon::fromTheme(QLatin1String("document-encrypt"),
+                                            fallback);
         app->setWindowIcon(icon);
     }
 
