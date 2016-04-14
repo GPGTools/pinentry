@@ -341,9 +341,19 @@ main(int argc, char *argv[])
         i = argc;
         app.reset(new QApplication(i, new_argv));
         const QIcon fallback = QIcon(QLatin1String(":/document-encrypt.png"));
-        const QIcon icon = QIcon::fromTheme(QLatin1String("document-encrypt"),
-                                            fallback);
-        app->setWindowIcon(icon);
+        const QString themeName = QIcon::themeName().toLower();
+        /* Some themes dont have an lock representation for document-encrypt
+           we need to filter out these. */
+        const QStringList okThemes = QStringList() << QLatin1String("breeze")
+                                                   << QLatin1String("breeze-dark")
+                                                   << QLatin1String("oxygen")
+                                                   << QLatin1String("mono");
+        if (okThemes.contains(themeName)) {
+            app->setWindowIcon(QIcon::fromTheme(QLatin1String("document-encrypt"),
+                                                fallback));
+        } else {
+            app->setWindowIcon(fallback);
+        }
     }
 
     pinentry_parse_opts(argc, argv);
