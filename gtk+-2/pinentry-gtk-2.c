@@ -64,6 +64,7 @@ static int passphrase_ok;
 typedef enum { CONFIRM_CANCEL, CONFIRM_OK, CONFIRM_NOTOK } confirm_value_t;
 static confirm_value_t confirm_value;
 
+static GtkWindow *mainwindow;
 static GtkWidget *entry;
 static GtkWidget *repeat_entry;
 static GtkWidget *error_label;
@@ -76,6 +77,7 @@ static guint timeout_source;
 static int confirm_mode;
 
 /* Gnome hig small and large space in pixels.  */
+#define HIG_TINY       2
 #define HIG_SMALL      6
 #define HIG_LARGE     12
 
@@ -356,6 +358,94 @@ may_save_passphrase_toggled (GtkWidget *widget, gpointer data)
 #endif
 
 
+/* Return TRUE if it is okay to unhide the entry.  */
+static int
+confirm_unhiding (void)
+{
+  const char *s;
+  GtkWidget *dialog;
+  int result;
+  char *message, *show_btn_label;
+
+  s = gtk_entry_get_text (GTK_ENTRY (entry));
+  if (!s || !*s)
+    return TRUE;  /* Nothing entered - go ahead an unhide.  */
+
+  message = pinentry_utf8_validate (pinentry->default_cf_visi);
+  if (!message)
+    {
+      message = g_strdup ("Do you really want to make "
+                          "your passphrase visible on the screen?");
+    }
+
+  show_btn_label = pinentry_utf8_validate (pinentry->default_tt_visi);
+  if (!show_btn_label)
+    {
+      show_btn_label = g_strdup ("Make passphrase visible");
+    }
+
+  dialog = gtk_message_dialog_new
+    (GTK_WINDOW (mainwindow),
+     GTK_DIALOG_MODAL,
+     GTK_MESSAGE_WARNING,
+     GTK_BUTTONS_NONE,
+     message);
+  gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                          GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                          show_btn_label, GTK_RESPONSE_OK,
+                          NULL);
+  result = (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK);
+  gtk_widget_destroy (dialog);
+  g_free (message);
+  g_free (show_btn_label);
+
+  return result;
+}
+
+
+static void
+show_hide_button_toggled (GtkWidget *widget, gpointer data)
+{
+  GtkToggleButton *button = GTK_TOGGLE_BUTTON (widget);
+  GtkWidget *label = data;
+  const char *text;
+  char *tooltip;
+  gboolean reveal;
+
+  if (!gtk_toggle_button_get_active (button) || !confirm_unhiding ())
+    {
+      text = "<span font=\"Monospace\" size=\"xx-small\">abc</span>";
+      tooltip = pinentry_utf8_validate (pinentry->default_tt_visi);
+      if (!tooltip)
+        {
+          tooltip = g_strdup ("Make the passphrase visible");
+        }
+      gtk_toggle_button_set_active (button, FALSE);
+      reveal = FALSE;
+    }
+  else
+    {
+      text = "<span font=\"Monospace\" size=\"xx-small\">***</span>";
+      tooltip = pinentry_utf8_validate (pinentry->default_tt_hide);
+      if (!tooltip)
+        {
+          tooltip = g_strdup ("Hide the passphrase");
+        }
+      reveal = TRUE;
+    }
+
+  gtk_entry_set_visibility (GTK_ENTRY (entry), reveal);
+  if (repeat_entry)
+    {
+      gtk_entry_set_visibility (GTK_ENTRY (repeat_entry), reveal);
+    }
+
+  gtk_label_set_markup (GTK_LABEL(label), text);
+  gtk_widget_set_tooltip_text (GTK_WIDGET(button), tooltip);
+  g_free (tooltip);
+}
+
+
 static gboolean
 timeout_cb (gpointer data)
 {
@@ -366,6 +456,23 @@ timeout_cb (gpointer data)
   /* Don't run again.  */
   timeout_source = 0;
   return FALSE;
+}
+
+
+static GtkWidget *
+create_show_hide_button (void)
+{
+  GtkWidget *button, *label;
+
+  label = gtk_label_new (NULL);
+  button = gtk_toggle_button_new ();
+  show_hide_button_toggled (button, label);
+  gtk_container_add (GTK_CONTAINER (button), label);
+  g_signal_connect (G_OBJECT (button), "toggled",
+                    G_CALLBACK (show_hide_button_toggled),
+                    label);
+
+  return button;
 }
 
 
@@ -387,6 +494,7 @@ create_window (pinentry_t ctx)
   /* FIXME: check the grabbing code against the one we used with the
      old gpg-agent */
   win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  mainwindow = GTK_WINDOW (win);
   acc = gtk_accel_group_new ();
 
   g_signal_connect (G_OBJECT (win), "delete_event",
@@ -474,7 +582,7 @@ create_window (pinentry_t ctx)
   if (!confirm_mode)
     {
       int nrow;
-      GtkWidget* table;
+      GtkWidget *table, *hbox;
 
       nrow = 1;
       if (pinentry->quality_bar)
@@ -515,7 +623,14 @@ create_window (pinentry_t ctx)
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
-      gtk_table_attach (GTK_TABLE (table), entry, 1, 2, nrow, nrow+1,
+      hbox = gtk_hbox_new (FALSE, HIG_TINY);
+      gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
+      /* There was a wish in issue #2139 that this button should not
+         be part of the tab order (focus_order).
+         This should still be added. */
+      w = create_show_hide_button ();
+      gtk_box_pack_end (GTK_BOX (hbox), w, FALSE, FALSE, 0);
+      gtk_table_attach (GTK_TABLE (table), hbox, 1, 2, nrow, nrow+1,
                         GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
       gtk_widget_show (entry);
       nrow++;
