@@ -157,7 +157,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     if (enable_quality_bar) {
         _quality_bar_label = new QLabel(this);
-        _quality_bar_label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        _quality_bar_label->setAlignment(Qt::AlignVCenter);
         _quality_bar = new QProgressBar(this);
         _quality_bar->setAlignment(Qt::AlignCenter);
         _have_quality_bar = true;
@@ -199,12 +199,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     grid->addWidget(_error, row++, 1, 1, 2);
     grid->addWidget(_desc,  row++, 1, 1, 2);
     //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
+    grid->addWidget(_prompt, row, 1);
+    grid->addWidget(_edit, row++, 2);
     if (enable_quality_bar) {
         grid->addWidget(_quality_bar_label, row, 1);
         grid->addWidget(_quality_bar, row++, 2);
     }
-    grid->addWidget(_prompt, row, 1);
-    grid->addWidget(_edit, row++, 2);
     if (!repeatString.isNull()) {
         mRepeat = new QLineEdit;
         mRepeat->setMaxLength(256);
