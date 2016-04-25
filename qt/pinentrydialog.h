@@ -110,8 +110,7 @@ private:
     QString    mRepeatError,
                mVisibilityTT,
                mHideTT;
-    QAction   *mVisiActionEdit,
-              *mVisiActionRepeat;
+    QAction   *mVisiActionEdit;
     QCheckBox *mVisiCB;
 };
 

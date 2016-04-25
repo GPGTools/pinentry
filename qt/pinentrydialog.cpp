@@ -123,7 +123,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
-      mVisiActionRepeat(NULL),
       mVisiCB(NULL)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -226,12 +225,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
         mVisiActionEdit->setVisible(false);
         mVisiActionEdit->setToolTip(mVisibilityTT);
-        if (mRepeat) {
-            mVisiActionRepeat = mRepeat->addAction(visibilityIcon, QLineEdit::TrailingPosition);
-            mVisiActionRepeat->setVisible(false);
-            mVisiActionRepeat->setToolTip(mVisibilityTT);
-            connect(mVisiActionRepeat, SIGNAL(triggered()), this, SLOT(toggleVisibility()));
-        }
         connect(mVisiActionEdit, SIGNAL(triggered()), this, SLOT(toggleVisibility()));
     } else
 #endif
@@ -416,9 +409,6 @@ void PinEntryDialog::textChanged(const QString &text)
     if (mVisiActionEdit && sender() == _edit) {
         mVisiActionEdit->setVisible(!_edit->text().isEmpty());
     }
-    if (mVisiActionRepeat && sender() == mRepeat) {
-        mVisiActionRepeat->setVisible(!mRepeat->text().isEmpty());
-    }
 }
 
 void PinEntryDialog::toggleVisibility()
@@ -428,21 +418,16 @@ void PinEntryDialog::toggleVisibility()
             mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
             mVisiActionEdit->setToolTip(mHideTT);
             _edit->setEchoMode(QLineEdit::Normal);
+            if (mRepeat) {
+                mRepeat->setEchoMode(QLineEdit::Normal);
+            }
         } else {
             mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
             mVisiActionEdit->setToolTip(mVisibilityTT);
             _edit->setEchoMode(QLineEdit::Password);
-        }
-    }
-    if (sender() == mVisiActionRepeat) {
-        if (mRepeat->echoMode() == QLineEdit::Password) {
-            mVisiActionRepeat->setIcon(QIcon::fromTheme(QLatin1String("hint")));
-            mVisiActionRepeat->setToolTip(mHideTT);
-            mRepeat->setEchoMode(QLineEdit::Normal);
-        } else {
-            mVisiActionRepeat->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
-            mVisiActionRepeat->setToolTip(mVisibilityTT);
-            mRepeat->setEchoMode(QLineEdit::Password);
+            if (mRepeat) {
+                mRepeat->setEchoMode(QLineEdit::Password);
+            }
         }
     }
     if (sender() == mVisiCB) {
