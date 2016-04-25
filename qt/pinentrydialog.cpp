@@ -201,10 +201,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
     grid->addWidget(_prompt, row, 1);
     grid->addWidget(_edit, row++, 2);
-    if (enable_quality_bar) {
-        grid->addWidget(_quality_bar_label, row, 1);
-        grid->addWidget(_quality_bar, row++, 2);
-    }
     if (!repeatString.isNull()) {
         mRepeat = new QLineEdit;
         mRepeat->setMaxLength(256);
@@ -217,6 +213,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         grid->addWidget(mRepeat, row++, 2);
         setTabOrder(_edit, mRepeat);
         setTabOrder(mRepeat, _ok);
+    }
+    if (enable_quality_bar) {
+        grid->addWidget(_quality_bar_label, row, 1);
+        grid->addWidget(_quality_bar, row++, 2);
     }
     /* Set up the show password action */
     const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
