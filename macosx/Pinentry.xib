@@ -204,9 +204,6 @@ Gw
                             <constraint firstAttribute="height" constant="75" id="Bm6-4H-pFL"/>
                         </constraints>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="Icon" id="825"/>
-                        <connections>
-                            <binding destination="-2" name="value" keyPath="icon" id="lGg-q1-kwk"/>
-                        </connections>
                     </imageView>
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="838" userLabel="Error Text">
                         <rect key="frame" x="103" y="118" width="424" height="17"/>
@@ -268,10 +265,22 @@ Gw
                             <binding destination="-2" name="value" keyPath="descriptionText" id="900"/>
                         </connections>
                     </textField>
+                    <imageView translatesAutoresizingMaskIntoConstraints="NO" id="5Nr-P6-Fo2">
+                        <rect key="frame" x="60" y="117" width="32" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="32" id="ioa-of-G11"/>
+                            <constraint firstAttribute="height" constant="32" id="mMq-kk-aWK"/>
+                        </constraints>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="Icon" id="osV-DQ-cDR"/>
+                        <connections>
+                            <binding destination="-2" name="value" keyPath="icon" id="Umh-tu-SLL"/>
+                        </connections>
+                    </imageView>
                 </subviews>
                 <constraints>
                     <constraint firstItem="820" firstAttribute="leading" secondItem="816" secondAttribute="trailing" constant="13" id="3qC-E5-r2c"/>
                     <constraint firstItem="817" firstAttribute="baseline" secondItem="818" secondAttribute="baseline" id="47E-dY-XCZ"/>
+                    <constraint firstItem="5Nr-P6-Fo2" firstAttribute="leading" secondItem="816" secondAttribute="trailing" constant="-32" id="4zx-fL-fkj"/>
                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="867" secondAttribute="trailing" constant="250" id="6Qb-0p-gRH"/>
                     <constraint firstItem="813" firstAttribute="baseline" secondItem="932" secondAttribute="baseline" id="COX-KY-UaR"/>
                     <constraint firstItem="820" firstAttribute="top" secondItem="816" secondAttribute="top" id="E3h-Pc-971"/>
@@ -288,6 +297,7 @@ Gw
                     <constraint firstItem="816" firstAttribute="top" secondItem="812" secondAttribute="top" constant="14" id="ReH-hw-fJR"/>
                     <constraint firstItem="819" firstAttribute="trailing" secondItem="814" secondAttribute="trailing" id="STt-6J-OiQ"/>
                     <constraint firstItem="818" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="TjI-py-2er"/>
+                    <constraint firstItem="5Nr-P6-Fo2" firstAttribute="top" secondItem="816" secondAttribute="bottom" constant="-32" id="VP3-7d-YBx"/>
                     <constraint firstAttribute="trailing" secondItem="818" secondAttribute="trailing" constant="20" id="WIv-RU-nZb"/>
                     <constraint firstItem="814" firstAttribute="top" relation="greaterThanOrEqual" secondItem="816" secondAttribute="bottom" constant="11" id="WZf-uG-ef6"/>
                     <constraint firstItem="sJO-G1-Jyo" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="812" secondAttribute="leading" constant="20" id="cTO-ea-Jfy"/>

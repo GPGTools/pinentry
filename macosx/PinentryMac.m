@@ -66,7 +66,6 @@ PinentryMac *_sharedInstance = nil;
 	self.showTypingText = localized(@"Show typing");
 	self.saveInKeychainText = localized(@"Save in Keychain");
 	self.titleText = @"Pinentry Mac";
-	self.icon = [NSImage imageNamed:@"Icon"];
 
 	if (NSAppKitVersionNumber < NSAppKitVersionNumber10_8) {
 #pragma GCC diagnostic push

@@ -137,7 +137,6 @@ NSDictionary *parseUserData(pinentry_t pe) {
 		NSImage *icon = [[NSImage alloc] initWithContentsOfFile:iconPath];
 		if (icon) {
 			dict[@"icon"] = icon;
-			[NSApp setApplicationIconImage:icon];
 		}
 	}
 
@@ -150,7 +149,7 @@ static int mac_cmd_handler (pinentry_t pe) {
 		if (pe->keyinfo) {
 			cacheId = [NSString gpgStringWithCString:pe->keyinfo];
 			if (cacheId.length > 2) {
-				// keyinfo has the form x/fingerprint. x is the cache mode it's one of u (user), s (ssh) or n (none).
+				// keyinfo has the form x/fingerprint. x is the cache mode it's one of u (user), s (ssh) or n (normal).
 				// Ignore cache_mode at the moment.
 				cacheId = [cacheId substringFromIndex:2];
 			} else {
