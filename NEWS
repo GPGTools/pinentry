@@ -1,6 +1,24 @@
 Noteworthy changes in version 0.9.8 (unreleased)
 ------------------------------------------------
 
+ * Qt pinentry now supports repeat mode in one dialog.
+
+ * Qt and GTK pinentries now make it possible to show the
+ entered value.
+
+ * Qt pinentry now only grabs the keyboard if an entry field
+ is focused.
+
+ * Fixed foreground handling in pinentry-qt if compiled
+ with Qt5 for Windows.
+
+ * Fixed error output for cached passwords.
+
+ * Fixed potential crash in Qt qualitybar calculation.
+
+ * GTK keyboard grabbing is now a bit more robust.
+
+
 Noteworthy changes in version 0.9.7 (2015-12-07)
 ------------------------------------------------
 
