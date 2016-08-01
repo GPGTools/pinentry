@@ -389,7 +389,7 @@ confirm_unhiding (void)
      GTK_DIALOG_MODAL,
      GTK_MESSAGE_WARNING,
      GTK_BUTTONS_NONE,
-     message);
+     "%s", message);
   gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                           show_btn_label, GTK_RESPONSE_OK,
