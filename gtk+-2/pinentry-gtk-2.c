@@ -145,22 +145,41 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
 }
 
 
+/* Convert GdkGrabStatus to string.  */
+static const char *
+grab_strerror (GdkGrabStatus status)
+{
+  switch (status) {
+  case GDK_GRAB_SUCCESS: return "success";
+  case GDK_GRAB_ALREADY_GRABBED: return "already grabbed";
+  case GDK_GRAB_INVALID_TIME: return "invalid time";
+  case GDK_GRAB_NOT_VIEWABLE: return "not viewable";
+  case GDK_GRAB_FROZEN: return "frozen";
+  }
+  return "unknown";
+}
+
+
 /* Grab the keyboard for maximum security */
 static int
 grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
+  GdkGrabStatus err;
   (void)data;
 
   if (! pinentry->grab)
     return FALSE;
 
-  if (gdk_keyboard_grab (gtk_widget_get_window (win),
-			 FALSE, gdk_event_get_time (event)))
+  err = gdk_keyboard_grab (gtk_widget_get_window (win),
+                           FALSE, gdk_event_get_time (event));
+  if (err)
     {
-      g_critical ("could not grab keyboard");
+      g_critical ("could not grab keyboard: %s (%d)",
+                  grab_strerror (err), err);
       grab_failed = 1;
       gtk_main_quit ();
     }
+
   return FALSE;
 }
 
