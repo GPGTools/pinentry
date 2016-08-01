@@ -165,13 +165,17 @@ static int
 grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 {
   GdkGrabStatus err;
+  int tries = 0, max_tries = 4096;
   (void)data;
 
   if (! pinentry->grab)
     return FALSE;
 
-  err = gdk_keyboard_grab (gtk_widget_get_window (win),
-                           FALSE, gdk_event_get_time (event));
+  do
+    err = gdk_keyboard_grab (gtk_widget_get_window (win),
+                             FALSE, gdk_event_get_time (event));
+  while (tries++ < max_tries && err == GDK_GRAB_NOT_VIEWABLE);
+
   if (err)
     {
       g_critical ("could not grab keyboard: %s (%d)",
@@ -179,6 +183,9 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
       grab_failed = 1;
       gtk_main_quit ();
     }
+
+  if (tries > 1)
+    g_warning ("it took %d tries to grab the keyboard", tries);
 
   return FALSE;
 }
