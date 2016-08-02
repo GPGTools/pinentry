@@ -41,3 +41,4 @@ AM_CPPFLAGS = $(COMMON_CFLAGS) -I$(top_srcdir)/secmem
 libpinentry_a_SOURCES = pinentry.h pinentry.c argparse.c argparse.h \
 	password-cache.h password-cache.c $(pinentry_emacs_sources)
 libpinentry_curses_a_SOURCES = pinentry-curses.h pinentry-curses.c
+libpinentry_curses_a_CFLAGS = @NCURSES_CFLAGS@
