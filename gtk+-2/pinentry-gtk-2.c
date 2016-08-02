@@ -191,13 +191,53 @@ grab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
 }
 
 
-/* Remove grab.  */
+/* Grab the pointer to prevent the user from accidentally locking
+   herself out of her graphical interface.  */
 static int
-ungrab_keyboard (GtkWidget *win, GdkEvent *event, gpointer data)
+grab_pointer (GtkWidget *win, GdkEvent *event, gpointer data)
 {
+  GdkGrabStatus err;
+  GdkCursor *cursor;
+  int tries = 0, max_tries = 4096;
   (void)data;
 
+  /* Change the cursor for the duration of the grab to indicate that
+     something is going on.  */
+  /* XXX: It would be nice to have a key cursor, unfortunately there
+     is none readily available.  */
+  cursor = gdk_cursor_new_for_display (gtk_widget_get_display (win),
+                                       GDK_DOT);
+
+  do
+    err = gdk_pointer_grab (gtk_widget_get_window (win),
+                            TRUE, 0 /* event mask */,
+                            NULL /* confine to */,
+                            cursor,
+                            gdk_event_get_time (event));
+  while (tries++ < max_tries && err == GDK_GRAB_NOT_VIEWABLE);
+
+  if (err)
+    {
+      g_critical ("could not grab pointer: %s (%d)",
+                  grab_strerror (err), err);
+      grab_failed = 1;
+      gtk_main_quit ();
+    }
+
+  if (tries > 1)
+    g_warning ("it took %d tries to grab the pointer", tries);
+
+  return FALSE;
+}
+
+
+/* Remove all grabs and restore the windows transient state.  */
+static int
+ungrab_inputs (GtkWidget *win, GdkEvent *event, gpointer data)
+{
+  (void)data;
   gdk_keyboard_ungrab (gdk_event_get_time (event));
+  gdk_pointer_ungrab (gdk_event_get_time (event));
   /* Unmake window transient for the root window.  */
   /* gdk_window_set_transient_for cannot be used with parent = NULL to
      unset transient hint (unlike gtk_ version which can).  Replacement
@@ -548,9 +588,13 @@ create_window (pinentry_t ctx)
                         ? "visibility-notify-event"
                         : "focus-in-event",
 			G_CALLBACK (grab_keyboard), NULL);
+      if (pinentry->grab)
+        g_signal_connect (G_OBJECT (win),
+                          "visibility-notify-event",
+                          G_CALLBACK (grab_pointer), NULL);
       g_signal_connect (G_OBJECT (win),
 			pinentry->grab ? "unmap-event" : "focus-out-event",
-			G_CALLBACK (ungrab_keyboard), NULL);
+			G_CALLBACK (ungrab_inputs), NULL);
     }
   gtk_window_add_accel_group (GTK_WINDOW (win), acc);
 
