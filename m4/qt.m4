@@ -35,6 +35,7 @@ AC_DEFUN([FIND_QT],
                 enable_pinentry_qt5="try")
 
   have_qt5_libs="no";
+  require_qt_cpp11="no";
 
   if test "$enable_pinentry_qt5" != "no"; then
     PKG_CHECK_MODULES(PINENTRY_QT,
@@ -47,6 +48,15 @@ AC_DEFUN([FIND_QT],
     fi
   fi
   if test "$have_qt5_libs" = "yes"; then
+    PKG_CHECK_MODULES(PINENTRY_QT_REQUIRE_CPP11,
+                      Qt5Core >= 5.7.0,
+                      [require_qt_cpp11="yes"],
+                      [require_qt_cpp11="no"])
+
+    if test "${require_qt_cpp11}" = "yes"; then
+      PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -std=c++11"
+    fi
+
     AC_CHECK_TOOL(MOC, moc)
     AC_MSG_CHECKING([moc version])
     mocversion=`$MOC -v 2>&1`
