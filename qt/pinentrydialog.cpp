@@ -135,14 +135,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _icon->setPixmap(icon());
 
     _error = new QLabel(this);
-    _error->setWordWrap(true);
     QPalette pal;
     pal.setColor(QPalette::WindowText, Qt::red);
     _error->setPalette(pal);
     _error->hide();
 
     _desc = new QLabel(this);
-    _desc->setWordWrap(true);
     _desc->hide();
 
     _prompt = new QLabel(this);
