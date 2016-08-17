@@ -150,6 +150,9 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
+  /* Whether this is a CONFIRM pinentry. */
+  int confirm;
+
   /* If true a second prompt for the passphrase is shown and the user
      is expected to enter the same passphrase again.  Pinentry checks
      that both match.  (Assuan: "SETREPEAT".)  */

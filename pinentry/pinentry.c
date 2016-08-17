@@ -1619,6 +1619,8 @@ cmd_getpin (assuan_context_t ctx, char *line)
   if (!pinentry.pin)
     return gpg_error (GPG_ERR_ENOMEM);
 
+  pinentry.confirm = 0;
+
   /* Try reading from the password cache.  */
   if (/* If repeat passphrase is set, then we don't want to read from
 	 the cache.  */
@@ -1770,6 +1772,7 @@ cmd_confirm (assuan_context_t ctx, char *line)
   free (pinentry.specific_err_info);
   pinentry.specific_err_info = NULL;
   pinentry.canceled = 0;
+  pinentry.confirm = 1;
   pinentry_setbuffer_clear (&pinentry);
   result = (*pinentry_cmd_handler) (&pinentry);
   if (pinentry.error)
