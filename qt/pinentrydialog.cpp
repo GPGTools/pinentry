@@ -79,15 +79,27 @@ void raiseWindow(QWidget *w)
      * this is enough on windows too*/
     w->raise();
 #ifdef Q_OS_WIN
+    HWND wid = (HWND)w->effectiveWinId();
     /* In the meantime we do our own attention grabbing */
-    if (!SetForegroundWindow((HWND)w->winId()) &&
-            !SetForegroundWindowEx((HWND)w->winId()))  {
+    if (!SetForegroundWindow(wid) && !SetForegroundWindowEx(wid)) {
         OutputDebugString("SetForegroundWindow (ex) failed");
         /* Yet another fallback which will not work on some
          * versions and is not recommended by msdn */
-        if (!ShowWindow((HWND)w->winId(), SW_SHOWNORMAL)) {
+        if (!ShowWindow(wid, SW_SHOWNORMAL)) {
             OutputDebugString("ShowWindow failed.");
         }
+    }
+    /* Even if SetForgeoundWindow / SetForegroundWinowEx don't fail
+     * we sometimes are still not in the foreground. So we try yet
+     * another hack by using SetWindowPos */
+    if (!SetWindowPos(wid, HWND_TOPMOST, 0, 0, 0, 0,
+                      SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)) {
+        OutputDebugString("SetWindowPos failed.");
+    } else {
+        /* Without moving back to NOTOPMOST we just stay on top.
+         * Even if the user changes focus. */
+        SetWindowPos(wid, HWND_NOTOPMOST, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
     }
 #endif
 }
