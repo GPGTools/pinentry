@@ -50,6 +50,12 @@
 
 #include "pinentry.h"
 
+#if GPG_ERROR_VERSION_NUMBER < 0x011900 /* 1.25 */
+# define GPG_ERR_WINDOW_TOO_SMALL 301
+# define GPG_ERR_MISSING_ENVVAR   303
+#endif
+
+
 /* FIXME: We should allow configuration of these button labels and in
    any case use the default_ok, default_cancel values if available.
    However, I have no clue about curses and localization.  */
@@ -370,7 +376,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   if (y > size_y)
     {
       err = 1;
-      pinentry->specific_err = gpg_error (GPG_ERR_ASS_LINE_TOO_LONG);
+      pinentry->specific_err = gpg_error (size_y < 0? GPG_ERR_MISSING_ENVVAR
+                                          /* */     : GPG_ERR_WINDOW_TOO_SMALL);
       goto out;
     }
 
@@ -425,7 +432,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   if (x > size_x)
     {
       err = 1;
-      pinentry->specific_err = gpg_error (GPG_ERR_ASS_LINE_TOO_LONG);
+      pinentry->specific_err = gpg_error (size_x < 0? GPG_ERR_MISSING_ENVVAR
+                                          /* */     : GPG_ERR_WINDOW_TOO_SMALL);
       goto out;
     }
 
