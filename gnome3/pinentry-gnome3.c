@@ -82,6 +82,9 @@ create_prompt (pinentry_t pe, int confirm)
     {
       g_warning ("couldn't create prompt for gnupg passphrase: %s",
 		 error->message);
+      pe->specific_err_loc = "gcr_prompt";
+      pe->specific_err_info = strdup (error->message);
+      pe->specific_err = gpg_error (GPG_ERR_CONFIGURATION);
       g_error_free (error);
       return NULL;
     }

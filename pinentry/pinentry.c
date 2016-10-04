@@ -132,6 +132,7 @@ pinentry_reset (int use_defaults)
   free (pinentry.quality_bar);
   free (pinentry.quality_bar_tt);
   free (pinentry.keyinfo);
+  free (pinentry.specific_err_info);
 
   /* Reset the pinentry structure.  */
   memset (&pinentry, 0, sizeof (pinentry));
@@ -947,6 +948,27 @@ strcpy_escaped (char *d, const char *s)
 }
 
 
+static void
+write_status_error (assuan_context_t ctx, pinentry_t pe)
+{
+  char buf[500];
+  const char *pgm;
+
+  pgm = strchr (this_pgmname, '-');
+  if (pgm && pgm[1])
+    pgm++;
+  else
+    pgm = this_pgmname;
+
+  snprintf (buf, sizeof buf, "%s.%s %d %s",
+            pgm,
+            pe->specific_err_loc? pe->specific_err_loc : "?",
+            pe->specific_err,
+            pe->specific_err_info? pe->specific_err_info : "");
+  assuan_write_status (ctx, "ERROR", buf);
+}
+
+
 static gpg_error_t
 cmd_setdesc (assuan_context_t ctx, char *line)
 {
@@ -1261,6 +1283,9 @@ cmd_getpin (assuan_context_t ctx, char *line)
     }
   pinentry.locale_err = 0;
   pinentry.specific_err = 0;
+  pinentry.specific_err_loc = NULL;
+  free (pinentry.specific_err_info);
+  pinentry.specific_err_info = NULL;
   pinentry.close_button = 0;
   pinentry.repeat_okay = 0;
   pinentry.one_button = 0;
@@ -1289,7 +1314,10 @@ cmd_getpin (assuan_context_t ctx, char *line)
     {
       pinentry_setbuffer_clear (&pinentry);
       if (pinentry.specific_err)
-        return pinentry.specific_err;
+        {
+          write_status_error (ctx, &pinentry);
+          return pinentry.specific_err;
+        }
       return (pinentry.locale_err
 	      ? gpg_error (GPG_ERR_LOCALE_PROBLEM)
 	      : gpg_error (GPG_ERR_CANCELED));
@@ -1337,6 +1365,9 @@ cmd_confirm (assuan_context_t ctx, char *line)
   pinentry.close_button = 0;
   pinentry.locale_err = 0;
   pinentry.specific_err = 0;
+  pinentry.specific_err_loc = NULL;
+  free (pinentry.specific_err_info);
+  pinentry.specific_err_info = NULL;
   pinentry.canceled = 0;
   pinentry_setbuffer_clear (&pinentry);
   result = (*pinentry_cmd_handler) (&pinentry);
@@ -1353,7 +1384,10 @@ cmd_confirm (assuan_context_t ctx, char *line)
     return 0;
 
   if (pinentry.specific_err)
-    return pinentry.specific_err;
+    {
+      write_status_error (ctx, &pinentry);
+      return pinentry.specific_err;
+    }
 
   if (pinentry.locale_err)
     return gpg_error (GPG_ERR_LOCALE_PROBLEM);

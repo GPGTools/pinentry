@@ -118,6 +118,13 @@ struct pinentry
      passphrase or a negative error code.  */
   int specific_err;
 
+  /* The frontend may store a string with the error location here.  */
+  const char *specific_err_loc;
+
+  /* The frontend may store a malloced string here to emit an ERROR
+   * status code with this extra info along with SPECIFIC_ERR.  */
+  char *specific_err_info;
+
   /* The frontend should set this to true if the window close button
      has been used.  This flag is used in addition to a regular return
      value.  */
