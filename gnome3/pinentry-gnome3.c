@@ -22,10 +22,10 @@
 # include "config.h"
 #endif
 
-#include <gtk/gtk.h>
 #include <gcr/gcr-base.h>
 
 #include <string.h>
+#include <stdlib.h>
 
 #include <assuan.h>
 
@@ -80,8 +80,8 @@ create_prompt (pinentry_t pe, int confirm)
   prompt = GCR_PROMPT (gcr_system_prompt_open (-1, NULL, &error));
   if (! prompt)
     {
-      g_warning ("couldn't create prompt for gnupg passphrase: %s",
-		 error->message);
+      fprintf (stderr, "couldn't create prompt for gnupg passphrase: %s\n",
+               error->message);
       pe->specific_err_loc = "gcr_prompt";
       pe->specific_err_info = strdup (error->message);
       pe->specific_err = gpg_error (GPG_ERR_CONFIGURATION);
@@ -188,7 +188,7 @@ gnome3_cmd_handler (pinentry_t pe)
 
       /* "The returned password is valid until the next time a method
 	 is called to display another prompt."  */
-      password = gcr_prompt_password_run (prompt, NULL, &error);
+      password = gcr_prompt_password (prompt, NULL, &error);
       if (error)
 	/* Error.  */
 	{
@@ -264,15 +264,12 @@ main (int argc, char *argv[])
   pinentry_init (PGMNAME);
 
 #ifdef FALLBACK_CURSES
-  if (pinentry_have_display (argc, argv))
+  if (!getenv ("DBUS_SESSION_BUS_ADDRESS"))
     {
-      if (! gtk_init_check (&argc, &argv))
-	pinentry_cmd_handler = curses_cmd_handler;
+      fprintf (stderr, "No $DBUS_SESSION_BUS_ADDRESS found,"
+               " falling back to curses\n");
+      pinentry_cmd_handler = curses_cmd_handler;
     }
-  else
-    pinentry_cmd_handler = curses_cmd_handler;
-#else
-  gtk_init (&argc, &argv);
 #endif
 
   pinentry_parse_opts (argc, argv);

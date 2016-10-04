@@ -476,15 +476,15 @@ AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
 
 if test "$pinentry_gnome_3" != "no"; then
 	AC_MSG_CHECKING([for gcr])
-	"${PKG_CONFIG}" --exists gcr-3,gcr-base-3
+	"${PKG_CONFIG}" --exists gcr-base-3
 	if test $? -ne 0 ; then
 		AC_MSG_RESULT([no])
-		AC_MSG_WARN([pkg-config could not find the module gcr-3,gcr-base-3])
+		AC_MSG_WARN([pkg-config could not find the module gcr-base-3])
 		pinentry_gnome_3=no
 	else
 		AC_MSG_RESULT([yes])
-		GNOME3CFLAGS=`"${PKG_CONFIG}" --cflags gcr-3,gcr-base-3`
-		GNOME3LIBS=`"${PKG_CONFIG}" --libs gcr-3,gcr-base-3`
+		GNOME3CFLAGS=`"${PKG_CONFIG}" --cflags gcr-base-3`
+		GNOME3LIBS=`"${PKG_CONFIG}" --libs gcr-base-3`
 		AC_SUBST(GNOME3CFLAGS)
 		AC_SUBST(GNOME3LIBS)
 		AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
