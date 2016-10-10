@@ -910,8 +910,6 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
 #ifdef INSIDE_EMACS
       pinentry_enable_emacs_cmd_handler ();
-#else
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
     }
   else if (!strcmp (key, "invisible-char"))
