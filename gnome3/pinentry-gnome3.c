@@ -104,7 +104,7 @@ create_prompt (pinentry_t pe, int confirm)
       g_free (msg);
     }
 
-  /* An error occured during the last prompt.  */
+  /* An error occurred during the last prompt.  */
   if (pe->error)
     {
       msg = pinentry_utf8_validate (pe->error);

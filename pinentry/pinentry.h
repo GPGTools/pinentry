@@ -109,7 +109,7 @@ struct pinentry
   int canceled;
 
   /* The frontend should set this to true if an error with the local
-     conversion occured. */
+     conversion occurred. */
   int locale_err;
 
   /* The frontend should set this to a gpg-error so that commands are
@@ -222,7 +222,7 @@ typedef struct pinentry *pinentry_t;
    PIN.  If PIN->pin is zero, request a confirmation, otherwise a PIN
    entry.  On confirmation, the function should return TRUE if
    confirmed, and FALSE otherwise.  On PIN entry, the function should
-   return -1 if an error occured or the user cancelled the operation
+   return -1 if an error occurred or the user cancelled the operation
    and 1 otherwise.  */
 typedef int (*pinentry_cmd_handler_t) (pinentry_t pin);
 

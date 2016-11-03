@@ -96,7 +96,7 @@ pinentry_reset (int use_defaults)
   pinentry_color_t color_so = pinentry.color_so;
   int color_so_bright = pinentry.color_so_bright;
 
-  int timout = pinentry.timeout;
+  int timeout = pinentry.timeout;
 
   char *invisible_char = pinentry.invisible_char;
 
@@ -184,7 +184,7 @@ pinentry_reset (int use_defaults)
       pinentry.color_so = color_so;
       pinentry.color_so_bright = color_so_bright;
 
-      pinentry.timeout = timout;
+      pinentry.timeout = timeout;
     }
 }
 

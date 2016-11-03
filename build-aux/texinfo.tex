@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2007-05-03.09}
+\def\texinfoversion{2016-11-03.12}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -415,7 +415,7 @@
 \def\argremovecomment#1\comment#2\ArgTerm{\argremovec #1\c\ArgTerm}
 \def\argremovec#1\c#2\ArgTerm{\argcheckspaces#1\^^M\ArgTerm}
 
-% Each occurence of `\^^M' or `<space>\^^M' is replaced by a single space.
+% Each occurrence of `\^^M' or `<space>\^^M' is replaced by a single space.
 %
 % \argremovec might leave us with trailing space, e.g.,
 %    @end itemize  @c foo
@@ -440,7 +440,7 @@
 % to get _exactly_ the rest of the line, we had to prevent such situation.
 % We prepended an \empty token at the very beginning and we expand it now,
 % just before passing the control to \argtorun.
-% (Similarily, we have to think about #3 of \argcheckspacesY above: it is
+% (Similarly, we have to think about #3 of \argcheckspacesY above: it is
 % either the null string, or it ends with \^^M---thus there is no danger
 % that a pair of braces would be stripped.
 %
@@ -497,7 +497,7 @@
 % used to check whether the current environment is the one expected.
 %
 % Non-false conditionals (@iftex, @ifset) don't fit into this, so they
-% are not treated as enviroments; they don't open a group.  (The
+% are not treated as environments; they don't open a group.  (The
 % implementation of @end takes care not to call \endgroup in this
 % special case.)
 
@@ -4598,7 +4598,7 @@ end
 \chardef\maxseclevel = 3
 %
 % A numbered section within an unnumbered changes to unnumbered too.
-% To achive this, remember the "biggest" unnum. sec. we are currently in:
+% To achieve this, remember the "biggest" unnum. sec. we are currently in:
 \chardef\unmlevel = \maxseclevel
 %
 % Trace whether the current chapter is an appendix or not:
@@ -7034,7 +7034,7 @@ end
 % In case a @footnote appears in a vbox, save the footnote text and create
 % the real \insert just after the vbox finished.  Otherwise, the insertion
 % would be lost.
-% Similarily, if a @footnote appears inside an alignment, save the footnote
+% Similarly, if a @footnote appears inside an alignment, save the footnote
 % text to a box and make the \insert when a row of the table is finished.
 % And the same can be done for other insert classes.  --kasal, 16nov03.
 

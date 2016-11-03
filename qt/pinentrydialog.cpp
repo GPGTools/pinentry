@@ -75,7 +75,7 @@ WINBOOL SetForegroundWindowEx(HWND hWnd)
 
 void raiseWindow(QWidget *w)
 {
-    /* Maybe Qt will become agressive enough one day that
+    /* Maybe Qt will become aggressive enough one day that
      * this is enough on windows too*/
     w->raise();
 #ifdef Q_OS_WIN

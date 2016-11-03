@@ -217,7 +217,7 @@ Noteworthy changes in version 0.7.3 (2007-07-06)
  * New option --colors=FG,BG,SO to set the colors for the curses
    pinentry.
 
- * Pinentry-w32 does now basicaly work.  It needs some finishing
+ * Pinentry-w32 does now basically work.  It needs some finishing
    though.  For example the buttons should resize themself according
    to the size of the text.
 

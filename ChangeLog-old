@@ -999,7 +999,7 @@
 
 	* configure.ac: Version 0.6.9
 	* qt/Makefile.am: Added moc files to DISTCLEANFILES
-	* qt/pinentrycontroller.cpp: Dont spew assuan debug stuff out on stderr.
+	* qt/pinentrycontroller.cpp: Don't spew assuan debug stuff out on stderr.
 
 2003-03-26  Steffen Hansen  <steffen@klaralvdalens-datakonsult.se>
 
@@ -1619,7 +1619,7 @@
 2000-04-23  Robert Bihlmeyer  <robbe@orcus.priv.at>
 
 	* secret-query.c (constrain_size): Lower window max_width to
-	accomodate bugs in GTK and Scwm.
+	accommodate bugs in GTK and Scwm.
 
 	* agent.c (main): Set x_enabled if X appears to be available.
 	Use it to selectively make FLAGS_INSURE supported.
@@ -1861,7 +1861,7 @@
 
 	* agent.c (main): Moved secmem_init() after the fork, since that
 	seemingly munlock's all pages.
-	Drop priviledges just in case somebody wants to install this
+	Drop privileges just in case somebody wants to install this
 	suid-root.
 	Flush stdout.
 
@@ -1953,7 +1953,7 @@
 	* Thoughts: Removed discussion of other names.
 	Added indication of which things already work.
 
-	* agent.c (make_tmpdir): Removed occurance of "gpg-agent."
+	* agent.c (make_tmpdir): Removed occurrence of "gpg-agent."
 
 	* README: First proper version.
 
