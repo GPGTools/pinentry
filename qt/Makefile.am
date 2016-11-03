@@ -1,5 +1,5 @@
 # Makefile.am
-# Copyright (C) 2002 g10 Code GmbH, Klar‰lvdalens Datakonsult AB
+# Copyright (C) 2002 g10 Code GmbH, Klar√§lvdalens Datakonsult AB
 # Copyright (C) 2008, 2015 g10 Code GmbH
 #
 # This file is part of PINENTRY.

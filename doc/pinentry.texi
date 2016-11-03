@@ -64,7 +64,7 @@ This is edition @value{EDITION}, last updated @value{UPDATED}, of
 @cite{The `PINEntry' Manual}, for version @value{VERSION}.
 @sp 1
 Published by g10 Code GmbH@*
-Hüttenstr. 61@*
+HÃ¼ttenstr. 61@*
 40699 Erkrath, Germany
 @sp 1
 @copyrightnotice{}
