@@ -390,6 +390,41 @@ pe_gcr_timeout_done (gpointer user_data)
 
 pinentry_cmd_handler_t pinentry_cmd_handler = gnome3_cmd_handler;
 
+
+/* Test whether we can create a system prompt or not.  This briefly
+ * does create a system prompt, which blocks other tools from making
+ * the same request concurrently, so we just create it to test if it is
+ * available, and quickly close it.  */
+static int
+pe_gcr_system_prompt_available (void)
+{
+  GcrSystemPrompt *prompt;
+  GError *error = NULL;
+  int ret = 0;
+
+  prompt = GCR_SYSTEM_PROMPT (gcr_system_prompt_open (0, NULL, &error));
+  if (prompt)
+    {
+      ret = 1;
+      if (!gcr_system_prompt_close (prompt, NULL, &error))
+          fprintf (stderr, "failed to close test Gcr System Prompt (%d): %s\n",
+                   error ? error->code : -1,
+                   error ? error->message : "<no GError>");
+      g_clear_object (&prompt);
+    }
+  else if (error && error->code == GCR_SYSTEM_PROMPT_IN_PROGRESS)
+    {
+      /* This one particular failure is OK; we're clearly capable of
+       * making a system prompt, even though someone else has the
+       * system prompter right now: */
+      ret = 1;
+    }
+
+  if (error)
+    g_error_free (error);
+  return ret;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -399,6 +434,12 @@ main (int argc, char *argv[])
   if (!getenv ("DBUS_SESSION_BUS_ADDRESS"))
     {
       fprintf (stderr, "No $DBUS_SESSION_BUS_ADDRESS found,"
+               " falling back to curses\n");
+      pinentry_cmd_handler = curses_cmd_handler;
+    }
+  else if (!pe_gcr_system_prompt_available ())
+    {
+      fprintf (stderr, "No Gcr System Prompter available,"
                " falling back to curses\n");
       pinentry_cmd_handler = curses_cmd_handler;
     }
