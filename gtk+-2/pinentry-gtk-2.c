@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gpg-error.h>
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -515,9 +516,13 @@ show_hide_button_toggled (GtkWidget *widget, gpointer data)
 static gboolean
 timeout_cb (gpointer data)
 {
-  (void)data;
+  pinentry_t pe = (pinentry_t)data;
   if (!got_input)
-    gtk_main_quit ();
+    {
+      gtk_main_quit ();
+      if (pe)
+        pe->specific_err = gpg_error (GPG_ERR_TIMEOUT);
+    }
 
   /* Don't run again.  */
   timeout_source = 0;
@@ -873,7 +878,7 @@ create_window (pinentry_t ctx)
   gtk_window_present (GTK_WINDOW (win));  /* Make sure it has the focus.  */
 
   if (pinentry->timeout > 0)
-    timeout_source = g_timeout_add (pinentry->timeout*1000, timeout_cb, NULL);
+    timeout_source = g_timeout_add (pinentry->timeout*1000, timeout_cb, pinentry);
 
   return win;
 }
