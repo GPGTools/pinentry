@@ -69,6 +69,20 @@ pinentry_utf8_validate (gchar *text)
   return result;
 }
 
+static void
+_propagate_g_error_to_pinentry (pinentry_t pe, GError *error,
+                                gpg_err_code_t code, const char *loc)
+{
+  size_t infolen = strlen(error->message) + 20;
+
+  pe->specific_err = gpg_error (code);
+  pe->specific_err_info = malloc (infolen);
+  if (pe->specific_err_info)
+    snprintf (pe->specific_err_info, infolen,
+              "%d: %s", error->code, error->message);
+  pe->specific_err_loc = loc;
+}
+
 static GcrPrompt *
 create_prompt (pinentry_t pe, int confirm)
 {
@@ -81,11 +95,8 @@ create_prompt (pinentry_t pe, int confirm)
   prompt = GCR_PROMPT (gcr_system_prompt_open (-1, NULL, &error));
   if (! prompt)
     {
-      fprintf (stderr, "couldn't create prompt for gnupg passphrase: %s\n",
-               error->message);
-      pe->specific_err_loc = "gcr_prompt";
-      pe->specific_err_info = strdup (error->message);
-      pe->specific_err = gpg_error (GPG_ERR_CONFIGURATION);
+      _propagate_g_error_to_pinentry (pe, error, GPG_ERR_CONFIGURATION,
+                                      "gcr_system_prompt_open");
       g_error_free (error);
       return NULL;
     }
@@ -148,7 +159,8 @@ create_prompt (pinentry_t pe, int confirm)
 
   /* gcr expects a string; we have a int.  see gcr's
      ui/frob-system-prompt.c for example conversion using %lu */
-  snprintf(window_id, sizeof (window_id), "%lu", (long unsigned int)pe->parent_wid);
+  snprintf (window_id, sizeof (window_id), "%lu",
+            (long unsigned int)pe->parent_wid);
   window_id[sizeof (window_id) - 1] = '\0';
   gcr_prompt_set_caller_window (prompt, window_id);
 
@@ -177,14 +189,12 @@ gnome3_cmd_handler (pinentry_t pe)
   GError *error = NULL;
   int ret = -1;
 
-  if (pe->pin)
-    /* Passphrase mode.  */
+  if (pe->pin) /* Passphrase mode.  */
     {
       const char *password;
 
       prompt = create_prompt (pe, 0);
-      if (! prompt)
-	/* Something went wrong.  */
+      if (! prompt) /* Something went wrong.  */
 	{
 	  pe->canceled = 1;
 	  return -1;
@@ -194,14 +204,14 @@ gnome3_cmd_handler (pinentry_t pe)
 	 is called to display another prompt."  */
       password = gcr_prompt_password (prompt, NULL, &error);
       if (error)
-	/* Error.  */
 	{
-	  pe->specific_err = gpg_error (GPG_ERR_ASS_GENERAL);
+          _propagate_g_error_to_pinentry (pe, error,
+                                          GPG_ERR_PIN_ENTRY,
+                                          "gcr_system_password_finish");
 	  g_error_free (error);
 	  ret = -1;
 	}
-      else if (! password && ! error)
-	/* User cancelled the operation.  */
+      else if (! password && ! error) /* User cancelled the operation.  */
 	ret = -1;
       else
 	{
@@ -220,14 +230,12 @@ gnome3_cmd_handler (pinentry_t pe)
 	  ret = 1;
 	}
     }
-  else
-    /* Message box mode.  */
+  else /* Message box mode.  */
     {
       GcrPromptReply reply;
 
       prompt = create_prompt (pe, 1);
-      if (! prompt)
-	/* Something went wrong.  */
+      if (! prompt) /* Something went wrong.  */
 	{
 	  pe->canceled = 1;
 	  return -1;
@@ -238,17 +246,19 @@ gnome3_cmd_handler (pinentry_t pe)
       reply = gcr_prompt_confirm_run (prompt, NULL, &error);
       if (error)
 	{
-	  pe->specific_err = gpg_error (GPG_ERR_ASS_GENERAL);
+          _propagate_g_error_to_pinentry (pe, error, GPG_ERR_PIN_ENTRY,
+                                          "gcr_system_confirm_finish");
 	  ret = 0;
 	}
       else if (reply == GCR_PROMPT_REPLY_CONTINUE
 	       /* XXX: Hack since gcr doesn't yet support one button
 		  message boxes treat cancel the same as okay.  */
 	       || pe->one_button)
-	/* Confirmation.  */
-	ret = 1;
-      else
-	/* GCR_PROMPT_REPLY_CANCEL */
+        {
+          /* Confirmation.  */
+          ret = 1;
+        }
+      else /* GCR_PROMPT_REPLY_CANCEL */
 	{
 	  pe->canceled = 1;
 	  ret = 0;
