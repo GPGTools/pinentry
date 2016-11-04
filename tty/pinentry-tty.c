@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
+#include <gpg-error.h>
 
 #include "pinentry.h"
 #include "memory.h"
@@ -283,6 +284,11 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
         }
     }
 
+#ifndef HAVE_DOSISH_SYSTEM
+  if (timed_out)
+    pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
+#endif
+
   tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
 
   return ret;
@@ -446,6 +452,11 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       else
 	secmem_free (passphrase);
     }
+
+#ifndef HAVE_DOSISH_SYSTEM
+  if (timed_out)
+    pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
+#endif
 
   return done;
 }
