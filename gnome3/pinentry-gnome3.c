@@ -75,6 +75,7 @@ create_prompt (pinentry_t pe, int confirm)
   GcrPrompt *prompt;
   GError *error = NULL;
   char *msg;
+  char window_id[32];
 
   /* Create the prompt.  */
   prompt = GCR_PROMPT (gcr_system_prompt_open (-1, NULL, &error));
@@ -145,8 +146,11 @@ create_prompt (pinentry_t pe, int confirm)
       /* XXX: Add support for the third option.  */
     }
 
-  /* XXX: gcr expects a string; we have a int.  */
-  // gcr_prompt_set_caller_window (prompt, pe->parent_wid);
+  /* gcr expects a string; we have a int.  see gcr's
+     ui/frob-system-prompt.c for example conversion using %lu */
+  snprintf(window_id, sizeof (window_id), "%lu", (long unsigned int)pe->parent_wid);
+  window_id[sizeof (window_id) - 1] = '\0';
+  gcr_prompt_set_caller_window (prompt, window_id);
 
 #ifdef HAVE_LIBSECRET
   if (! confirm && pe->allow_external_password_cache && pe->keyinfo)
