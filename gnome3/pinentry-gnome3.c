@@ -69,6 +69,19 @@ pinentry_utf8_validate (gchar *text)
   return result;
 }
 
+struct _gnome3_run {
+  pinentry_t pinentry;
+  GcrPrompt *prompt;
+  GMainLoop *main_loop;
+  int ret;
+};
+
+static void
+_gcr_prompt_password_done (GObject *source_object, GAsyncResult *res, gpointer user_data);
+
+static void
+_gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res, gpointer user_data);
+
 static void
 _propagate_g_error_to_pinentry (pinentry_t pe, GError *error,
                                 gpg_err_code_t code, const char *loc)
@@ -185,24 +198,57 @@ create_prompt (pinentry_t pe, int confirm)
 static int
 gnome3_cmd_handler (pinentry_t pe)
 {
-  GcrPrompt *prompt = NULL;
-  GError *error = NULL;
-  int ret = -1;
+  struct _gnome3_run state;
 
-  if (pe->pin) /* Passphrase mode.  */
+  state.main_loop = g_main_loop_new (NULL, FALSE);
+  if (!state.main_loop)
+    {
+      pe->specific_err_info = strdup ("Failed to create GMainLoop");
+      pe->specific_err = gpg_error (GPG_ERR_PIN_ENTRY);
+      pe->specific_err_loc = "g_main_loop_new";
+      pe->canceled = 1;
+      return -1;
+    }
+  state.pinentry = pe;
+  state.ret = 0;
+  state.prompt = create_prompt (pe, !!(pe->pin));
+  if (!state.prompt)
+    {
+      pe->canceled = 1;
+      return -1;
+    }
+  if (pe->pin)
+    gcr_prompt_password_async (state.prompt, NULL, _gcr_prompt_password_done,
+                               &state);
+  else
+    gcr_prompt_confirm_async (state.prompt, NULL, _gcr_prompt_confirm_done,
+                              &state);
+
+  g_main_loop_run (state.main_loop);
+
+  /* clean up state: */
+  g_clear_object (&state.prompt);
+  g_main_loop_unref (state.main_loop);
+  return state.ret;
+};
+
+
+static void
+_gcr_prompt_password_done (GObject *source_object, GAsyncResult *res, gpointer user_data)
+{
+  struct _gnome3_run *state = (struct _gnome3_run *) user_data;
+  GcrPrompt *prompt = GCR_PROMPT (source_object);
+
+  if (state && prompt && state->prompt == prompt)
     {
       const char *password;
-
-      prompt = create_prompt (pe, 0);
-      if (! prompt) /* Something went wrong.  */
-	{
-	  pe->canceled = 1;
-	  return -1;
-	}
+      GError *error = NULL;
+      pinentry_t pe = state->pinentry;
+      int ret = -1;
 
       /* "The returned password is valid until the next time a method
 	 is called to display another prompt."  */
-      password = gcr_prompt_password (prompt, NULL, &error);
+      password = gcr_prompt_password_finish (prompt, res, &error);
       if (error)
 	{
           _propagate_g_error_to_pinentry (pe, error,
@@ -229,21 +275,30 @@ gnome3_cmd_handler (pinentry_t pe)
 
 	  ret = 1;
 	}
+      state->ret = ret;
     }
-  else /* Message box mode.  */
+
+  if (state)
+    g_main_loop_quit (state->main_loop);
+}
+
+static void
+_gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res,
+                          gpointer user_data)
+{
+  struct _gnome3_run *state = (struct _gnome3_run *) user_data;
+  GcrPrompt *prompt = GCR_PROMPT (source_object);
+
+  if (state && prompt && state->prompt == prompt)
     {
       GcrPromptReply reply;
-
-      prompt = create_prompt (pe, 1);
-      if (! prompt) /* Something went wrong.  */
-	{
-	  pe->canceled = 1;
-	  return -1;
-	}
+      GError *error = NULL;
+      pinentry_t pe = state->pinentry;
+      int ret = -1;
 
       /* XXX: We don't support a third button!  */
 
-      reply = gcr_prompt_confirm_run (prompt, NULL, &error);
+      reply = gcr_prompt_confirm_finish (prompt, res, &error);
       if (error)
 	{
           _propagate_g_error_to_pinentry (pe, error, GPG_ERR_PIN_ENTRY,
@@ -263,11 +318,11 @@ gnome3_cmd_handler (pinentry_t pe)
 	  pe->canceled = 1;
 	  ret = 0;
 	}
+      state->ret = ret;
     }
 
-  if (prompt)
-    g_clear_object (&prompt);
-  return ret;
+  if (state)
+    g_main_loop_quit (state->main_loop);
 }
 
 pinentry_cmd_handler_t pinentry_cmd_handler = gnome3_cmd_handler;
