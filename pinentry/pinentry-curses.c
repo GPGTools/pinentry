@@ -941,6 +941,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
       if (timed_out && no_input)
 	{
 	  done = -2;
+          pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
 	  break;
 	}
 #endif
