@@ -24,6 +24,7 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
                                  const QString &desc, StandardButtons buttons, QWidget *parent) :
     QMessageBox(icon, title, desc, buttons, parent)
 {
+    _timed_out = false;
     if (timeout > 0) {
         _timer = new QTimer(this);
         connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
@@ -36,6 +37,11 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
     raiseWindow(this);
 }
 
+bool PinentryConfirm::timedOut() const
+{
+    return _timed_out;
+}
+
 void PinentryConfirm::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
@@ -45,6 +51,7 @@ void PinentryConfirm::showEvent(QShowEvent *event)
 void PinentryConfirm::slotTimeout()
 {
     QAbstractButton *b = button(QMessageBox::Cancel);
+    _timed_out = true;
 
     if (b) {
         b->animateClick(0);

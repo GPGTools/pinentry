@@ -29,12 +29,14 @@ public:
     PinentryConfirm(Icon, int timeout, const QString &title,
                     const QString &desc, StandardButtons buttons,
                     QWidget *parent);
+    bool timedOut() const;
 
 private slots:
     void slotTimeout();
 
 private:
     QTimer *_timer;
+    bool _timed_out;
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);

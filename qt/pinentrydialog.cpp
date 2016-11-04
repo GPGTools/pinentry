@@ -121,6 +121,7 @@ QPixmap icon(QStyle::StandardPixmap which)
 
 void PinEntryDialog::slotTimeout()
 {
+    _timed_out = true;
     reject();
 }
 
@@ -137,6 +138,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisiActionEdit(NULL),
       mVisiCB(NULL)
 {
+    _timed_out = false;
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (modal) {
@@ -461,6 +463,11 @@ QString PinEntryDialog::repeatedPin() const
         return mRepeat->text();
     }
     return QString();
+}
+
+bool PinEntryDialog::timedOut() const
+{
+    return _timed_out;
 }
 
 void PinEntryDialog::setRepeatErrorText(const QString &err)

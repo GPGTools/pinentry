@@ -82,6 +82,8 @@ public:
 
     void setPinentryInfo(pinentry_t);
 
+    bool timedOut() const;
+
 protected slots:
     void updateQuality(const QString &);
     void slotTimeout();
@@ -105,6 +107,7 @@ private:
     QPushButton *_cancel;
     bool       _grabbed;
     bool       _have_quality_bar;
+    bool       _timed_out;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mRepeatError,

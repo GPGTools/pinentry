@@ -44,6 +44,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <gpg-error.h>
 
 #ifdef FALLBACK_CURSES
 #include <pinentry-curses.h>
@@ -205,6 +206,8 @@ qt_cmd_handler(pinentry_t pe)
         }
         bool ret = pinentry.exec();
         if (!ret) {
+            if (pinentry.timedOut())
+                pe->specific_err = gpg_error (GPG_ERR_TIMEOUT);
             return -1;
         }
 
@@ -269,6 +272,9 @@ qt_cmd_handler(pinentry_t pe)
 
         if (rc == QMessageBox::Cancel) {
             pe->canceled = true;
+        }
+        if (box.timedOut()) {
+          pe->specific_err = gpg_error (GPG_ERR_TIMEOUT);
         }
 
         return rc == QMessageBox::Ok || rc == QMessageBox::Yes ;
