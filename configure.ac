@@ -438,14 +438,13 @@ if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
 fi
 
 dnl check if the module gtk+-2.0 exists
-if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
+if test "$pinentry_gtk_2" != "no"; then
 	AC_MSG_CHECKING([for gtk+-2])
 	"${PKG_CONFIG}" --exists gtk+-2.0
 	if test $? -ne 0 ; then
 		AC_MSG_RESULT([no])
 		AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
 		pinentry_gtk_2=no
-		pinentry_gnome_3=no
 	else
 		AC_MSG_RESULT([yes])
 		AC_MSG_CHECKING([gtk+-2 version >= 2.4.0])
@@ -455,7 +454,6 @@ if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
 		if test $? -ne 0 ; then
 			AC_MSG_WARN([building GTK+-2 pinentry disabled])
 			pinentry_gtk_2=no
-			pinentry_gnome_3=no
 		else
 			GTK2CFLAGS=`"${PKG_CONFIG}" --cflags gtk+-2.0`
 			GTK2LIBS=`"${PKG_CONFIG}" --libs gtk+-2.0`
@@ -464,10 +462,6 @@ if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
 			if test "$pinentry_gtk_2" != "no"
 			then
 			  pinentry_gtk_2=yes
-			fi
-			if test "$pinentry_gnome_3" != "no"
-			then
-			  pinentry_gnome_3=yes
 			fi
 		fi
 	fi
