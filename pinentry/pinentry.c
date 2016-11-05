@@ -52,7 +52,10 @@
 #include "password-cache.h"
 
 #ifdef INSIDE_EMACS
-#include "pinentry-emacs.h"
+# include "pinentry-emacs.h"
+#endif
+#ifdef FALLBACK_CURSES
+# include "pinentry-curses.h"
 #endif
 
 #ifdef HAVE_W32CE_SYSTEM
@@ -1414,23 +1417,50 @@ cmd_message (assuan_context_t ctx, char *line)
 
      version     - Return the version of the program.
      pid         - Return the process id of the server.
+     flavor      - Return information about the used pinentry flavor
  */
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc;
+  const char *s;
+  char buffer[100];
 
   if (!strcmp (line, "version"))
     {
-      const char *s = VERSION;
+      s = VERSION;
       rc = assuan_send_data (ctx, s, strlen (s));
     }
   else if (!strcmp (line, "pid"))
     {
-      char numbuf[50];
 
-      snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
-      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+      snprintf (buffer, sizeof buffer, "%lu", (unsigned long)getpid ());
+      rc = assuan_send_data (ctx, buffer, strlen (buffer));
+    }
+  else if (!strcmp (line, "flavor"))
+    {
+      const char *flags;
+
+      if (!strncmp (this_pgmname, "pinentry-", 9) && this_pgmname[9])
+        s = this_pgmname + 9;
+      else
+        s = this_pgmname;
+
+      if (0)
+        ;
+#ifdef INSIDE_EMACS
+      else if (pinentry_cmd_handler == emacs_cmd_handler)
+        flags = ":emacs";
+#endif
+#ifdef FALLBACK_CURSES
+      else if (pinentry_cmd_handler == curses_cmd_handler)
+        flags = ":curses";
+#endif
+      else
+        flags = "";
+
+      snprintf (buffer, sizeof buffer, "%s%s", s, flags);
+      rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
   else
     rc = gpg_error (GPG_ERR_ASS_PARAMETER);
