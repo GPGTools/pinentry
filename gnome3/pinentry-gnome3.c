@@ -44,6 +44,25 @@
 #  define VERSION
 #endif
 
+
+struct pe_gnome3_run_s {
+  pinentry_t pinentry;
+  GcrPrompt *prompt;
+  GMainLoop *main_loop;
+  int ret;
+  guint timeout_id;
+  int timed_out;
+};
+
+static void pe_gcr_prompt_password_done (GObject *source_object,
+                                         GAsyncResult *res, gpointer user_data);
+
+static void pe_gcr_prompt_confirm_done (GObject *source_object,
+                                        GAsyncResult *res, gpointer user_data);
+static gboolean pe_gcr_timeout_done (gpointer user_data);
+
+
+
 static gchar *
 pinentry_utf8_validate (gchar *text)
 {
@@ -69,23 +88,6 @@ pinentry_utf8_validate (gchar *text)
   return result;
 }
 
-struct _gnome3_run {
-  pinentry_t pinentry;
-  GcrPrompt *prompt;
-  GMainLoop *main_loop;
-  int ret;
-  guint timeout_id;
-  int timed_out;
-};
-
-static void
-_gcr_prompt_password_done (GObject *source_object, GAsyncResult *res, gpointer user_data);
-
-static void
-_gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res, gpointer user_data);
-
-static gboolean
-_gcr_timeout_done (gpointer user_data);
 
 static void
 _propagate_g_error_to_pinentry (pinentry_t pe, GError *error,
@@ -217,7 +219,7 @@ create_prompt (pinentry_t pe, int confirm)
 static int
 gnome3_cmd_handler (pinentry_t pe)
 {
-  struct _gnome3_run state;
+  struct pe_gnome3_run_s state;
 
   state.main_loop = g_main_loop_new (NULL, FALSE);
   if (!state.main_loop)
@@ -239,19 +241,22 @@ gnome3_cmd_handler (pinentry_t pe)
       return -1;
     }
   if (pe->pin)
-    gcr_prompt_password_async (state.prompt, NULL, _gcr_prompt_password_done,
+    gcr_prompt_password_async (state.prompt, NULL, pe_gcr_prompt_password_done,
                                &state);
   else
-    gcr_prompt_confirm_async (state.prompt, NULL, _gcr_prompt_confirm_done,
+    gcr_prompt_confirm_async (state.prompt, NULL, pe_gcr_prompt_confirm_done,
                               &state);
 
   if (pe->timeout)
-    state.timeout_id = g_timeout_add_seconds (pe->timeout, _gcr_timeout_done, &state);
+    state.timeout_id = g_timeout_add_seconds (pe->timeout,
+                                              pe_gcr_timeout_done, &state);
   g_main_loop_run (state.main_loop);
 
   /* clean up state: */
   if (state.timeout_id && !state.timed_out)
-    g_source_destroy (g_main_context_find_source_by_id (NULL, state.timeout_id));
+    g_source_destroy
+      (g_main_context_find_source_by_id (NULL, state.timeout_id));
+
   g_clear_object (&state.prompt);
   g_main_loop_unref (state.main_loop);
   return state.ret;
@@ -259,9 +264,10 @@ gnome3_cmd_handler (pinentry_t pe)
 
 
 static void
-_gcr_prompt_password_done (GObject *source_object, GAsyncResult *res, gpointer user_data)
+pe_gcr_prompt_password_done (GObject *source_object,
+                             GAsyncResult *res, gpointer user_data)
 {
-  struct _gnome3_run *state = (struct _gnome3_run *) user_data;
+  struct pe_gnome3_run_s *state = user_data;
   GcrPrompt *prompt = GCR_PROMPT (source_object);
 
   if (state && prompt && state->prompt == prompt)
@@ -316,10 +322,10 @@ _gcr_prompt_password_done (GObject *source_object, GAsyncResult *res, gpointer u
 }
 
 static void
-_gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res,
-                          gpointer user_data)
+pe_gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res,
+                            gpointer user_data)
 {
-  struct _gnome3_run *state = (struct _gnome3_run *) user_data;
+  struct pe_gnome3_run_s *state = user_data;
   GcrPrompt *prompt = GCR_PROMPT (source_object);
 
   if (state && prompt && state->prompt == prompt)
@@ -369,9 +375,9 @@ _gcr_prompt_confirm_done (GObject *source_object, GAsyncResult *res,
 }
 
 static gboolean
-_gcr_timeout_done (gpointer user_data)
+pe_gcr_timeout_done (gpointer user_data)
 {
-  struct _gnome3_run *state = (struct _gnome3_run *) user_data;
+  struct pe_gnome3_run_s *state = user_data;
 
   if (!state)
     return FALSE;
