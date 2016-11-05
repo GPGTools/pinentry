@@ -116,7 +116,7 @@ constrain_size (GtkWidget *win, GtkRequisition *req, gpointer data)
 /* Realize the window as transient if we grab the keyboard.  This
    makes the window a modal dialog to the root window, which helps the
    window manager.  See the following quote from:
-   http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2512420
+   https://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2512420
 
    Implementing enhanced support for application transient windows
 

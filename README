@@ -3,7 +3,7 @@ PIN Entry
 
 This is a collection of simple PIN or passphrase entry dialogs which
 utilize the Assuan protocol as described by the aegypten project; see
-http://www.gnupg.org/aegypten/ for details.
+https://www.gnupg.org/aegypten/ for details.
 
 There are programs for different toolkits available.  For all GUIs it
 is automatically detected which modules can be built, but it can also
