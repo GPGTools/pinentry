@@ -93,13 +93,26 @@ static void
 _propagate_g_error_to_pinentry (pinentry_t pe, GError *error,
                                 gpg_err_code_t code, const char *loc)
 {
-  size_t infolen = strlen(error->message) + 20;
+  char *t;
+
+  /* We can't return the result of g_strdup_printf directly, because
+   * this needs to be g_free'd, but the users of PE (e.g.,
+   * pinentry_reset in pinentry/pinentry.c) use free.  */
+  t = g_strdup_printf ("%d: %s", error->code, error->message);
+  if (t)
+    {
+      /* If strdup fails, then PE->SPECIFIC_ERR_INFO will be NULL,
+       * which is exactly what we want if strdup fails.  So, there is
+       * no need to check for failure.  */
+      pe->specific_err_info = strdup (t);
+      g_free (t);
+    }
+  else
+    {
+      pe->specific_err_info = NULL;
+    }
 
   pe->specific_err = gpg_error (code);
-  pe->specific_err_info = malloc (infolen);
-  if (pe->specific_err_info)
-    snprintf (pe->specific_err_info, infolen,
-              "%d: %s", error->code, error->message);
   pe->specific_err_loc = loc;
 }
 
