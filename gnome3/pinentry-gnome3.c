@@ -390,6 +390,71 @@ pe_gcr_timeout_done (gpointer user_data)
 
 pinentry_cmd_handler_t pinentry_cmd_handler = gnome3_cmd_handler;
 
+/* Test whether there is a GNOME screensaver running that happens to
+ * be locked.  Note that if there is no GNOME screensaver running at
+ * all the answer is still FALSE.  */
+static gboolean
+pe_gnome_screen_locked (void)
+{
+  GDBusConnection *dbus;
+  GError *error = NULL;
+  GVariant *reply, *reply_bool;
+  gboolean ret;
+
+  dbus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+
+  if (!dbus)
+    {
+      fprintf (stderr, "failed to connect to user session D-Bus (%d): %s",
+               error ? error->code : -1,
+               error ? error->message : "<no GError>");
+      if (error)
+        g_error_free (error);
+      return FALSE;
+    }
+
+  /* this is intended to be the equivalent of:
+   * dbus-send --print-reply=literal --session          \
+   *           --dest=org.gnome.ScreenSaver             \
+   *           /org/gnome/ScreenSaver                   \
+   *           org.gnome.ScreenSaver.GetActive
+   */
+  reply = g_dbus_connection_call_sync (dbus,
+                                       "org.gnome.ScreenSaver",
+                                       "/org/gnome/ScreenSaver",
+                                       "org.gnome.ScreenSaver",
+                                       "GetActive",
+                                       NULL,
+                                       ((const GVariantType *) "(b)"),
+                                       G_DBUS_CALL_FLAGS_NO_AUTO_START,
+                                       0,
+                                       NULL,
+                                       &error);
+  g_object_unref(dbus);
+  if (!reply)
+    {
+      fprintf (stderr, "failed to get reply (%d): %s",
+               error ? error->code : -1,
+               error ? error->message : "<no GError>");
+      if (error)
+        g_error_free (error);
+      return FALSE;
+    }
+  reply_bool = g_variant_get_child_value (reply, 0);
+  if (!reply_bool)
+    {
+      fprintf (stderr, "failed to get boolean from reply\n");
+      ret = FALSE;
+    }
+  else
+    {
+      ret = g_variant_get_boolean (reply_bool);
+      g_variant_unref (reply_bool);
+    }
+
+  g_variant_unref (reply);
+  return ret;
+}
 
 /* Test whether we can create a system prompt or not.  This briefly
  * does create a system prompt, which blocks other tools from making
@@ -440,6 +505,12 @@ main (int argc, char *argv[])
   else if (!pe_gcr_system_prompt_available ())
     {
       fprintf (stderr, "No Gcr System Prompter available,"
+               " falling back to curses\n");
+      pinentry_cmd_handler = curses_cmd_handler;
+    }
+  else if (pe_gnome_screen_locked ())
+    {
+      fprintf (stderr, "GNOME screensaver is locked,"
                " falling back to curses\n");
       pinentry_cmd_handler = curses_cmd_handler;
     }
