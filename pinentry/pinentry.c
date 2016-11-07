@@ -604,8 +604,11 @@ my_strusage( int level )
             size_t n = 50 + strlen (this_pgmname);
             str = malloc (n);
             if (str)
-              snprintf (str, n, "Usage: %s [options] (-h for help)",
-                        this_pgmname);
+              {
+                snprintf (str, n, "Usage: %s [options] (-h for help)",
+                          this_pgmname);
+                str[n-1] = 0;
+              }
           }
         p = str;
       }
@@ -966,6 +969,7 @@ write_status_error (assuan_context_t ctx, pinentry_t pe)
             pe->specific_err_loc? pe->specific_err_loc : "?",
             pe->specific_err,
             pe->specific_err_info? pe->specific_err_info : "");
+  buf[sizeof buf -1] = 0;
   assuan_write_status (ctx, "ERROR", buf);
 }
 
@@ -1435,6 +1439,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
 
       snprintf (buffer, sizeof buffer, "%lu", (unsigned long)getpid ());
+      buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
   else if (!strcmp (line, "flavor"))
@@ -1460,6 +1465,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         flags = "";
 
       snprintf (buffer, sizeof buffer, "%s%s", s, flags);
+      buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
   else
