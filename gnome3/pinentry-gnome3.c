@@ -446,9 +446,12 @@ pe_gnome_screen_locked (void)
   g_object_unref(dbus);
   if (!reply)
     {
-      fprintf (stderr, "failed to get reply (%d): %s",
-               error ? error->code : -1,
-               error ? error->message : "<no GError>");
+      /* G_IO_ERROR_TIMED_OUT is the expected response when there is
+       * no gnome screensaver at all, don't be noisy in that case: */
+      if (!(error && error->code == G_IO_ERROR_TIMED_OUT))
+        fprintf (stderr, "Failed to get d-bus reply for org.gnome.ScreenSaver.GetActive (%d): %s\n",
+                 error ? error->code : -1,
+                 error ? error->message : "<no GError>");
       if (error)
         g_error_free (error);
       return FALSE;
@@ -456,7 +459,7 @@ pe_gnome_screen_locked (void)
   reply_bool = g_variant_get_child_value (reply, 0);
   if (!reply_bool)
     {
-      fprintf (stderr, "failed to get boolean from reply\n");
+      fprintf (stderr, "Failed to get d-bus boolean from org.gnome.ScreenSaver.GetActive; assuming screensaver is not locked\n");
       ret = FALSE;
     }
   else
