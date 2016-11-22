@@ -1,6 +1,6 @@
 # configure.ac
 # Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
-# Copyright (C) 2001, 2002, 2003, 2004, 2007, 2015 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2003, 2004, 2007, 2015, 2016 g10 Code GmbH
 #
 # This file is part of PINENTRY.
 #
@@ -26,7 +26,7 @@ min_automake_version="1.14"
 # (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
 # bump the version number immediately after the release, do another
 # commit, and a push so that the git magic is able to work.
-m4_define(mym4_version, [0.9.8])
+m4_define(mym4_version, [1.0.0])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a

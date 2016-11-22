@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
-   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2015 g10 Code GmbH
+   Copyright (C) 2002, 2003, 2007, 2008, 2010, 2015, 2016 g10 Code GmbH
 
    This file is part of PINENTRY.
 
@@ -592,7 +592,7 @@ my_strusage( int level )
     case 11: p = this_pgmname; break;
     case 12: p = "pinentry"; break;
     case 13: p = PACKAGE_VERSION; break;
-    case 14: p = "Copyright (C) 2015 g10 Code GmbH"; break;
+    case 14: p = "Copyright (C) 2016 g10 Code GmbH"; break;
     case 19: p = "Please report bugs to <" PACKAGE_BUGREPORT ">.\n"; break;
     case 1:
     case 40:
