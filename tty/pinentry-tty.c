@@ -556,9 +556,6 @@ tty_cmd_handler(pinentry_t pinentry)
 
 pinentry_cmd_handler_t pinentry_cmd_handler = tty_cmd_handler;
 
-/* needed to link cleanly; should never be used except for comparison
- * in pinentry/pinentry.c's cmd_getinfo(): */
-pinentry_cmd_handler_t curses_cmd_handler = NULL;
 
 
 int

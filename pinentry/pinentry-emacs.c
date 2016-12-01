@@ -644,7 +644,10 @@ initial_emacs_cmd_handler (pinentry_t pe)
   if (emacs_socket < 0)
     pinentry_cmd_handler = fallback_cmd_handler;
   else
-    pinentry_cmd_handler = emacs_cmd_handler;
+    {
+      pinentry_cmd_handler = emacs_cmd_handler;
+      pinentry_set_flavor_flag ("emacs");
+    }
 
   return (* pinentry_cmd_handler) (pe);
 }

@@ -275,6 +275,10 @@ int pinentry_have_display (int argc, char **argv);
    or version output is requested.  */
 void pinentry_parse_opts (int argc, char *argv[]);
 
+/* Set the optional flag used with getinfo. */
+void pinentry_set_flavor_flag (const char *string);
+
+
 
 /* The caller must define this variable to process assuan commands.  */
 extern pinentry_cmd_handler_t pinentry_cmd_handler;

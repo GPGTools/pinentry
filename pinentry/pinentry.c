@@ -67,6 +67,10 @@ static char this_pgmname[50];
 
 struct pinentry pinentry;
 
+
+static const char *flavor_flag;
+
+
 static void
 pinentry_reset (int use_defaults)
 {
@@ -793,6 +797,16 @@ pinentry_parse_opts (int argc, char *argv[])
     }
 }
 
+
+/* Set the optional flag used with getinfo. */
+void
+pinentry_set_flavor_flag (const char *string)
+{
+  flavor_flag = string;
+}
+
+
+
 
 static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
@@ -1444,27 +1458,15 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "flavor"))
     {
-      const char *flags;
-
       if (!strncmp (this_pgmname, "pinentry-", 9) && this_pgmname[9])
         s = this_pgmname + 9;
       else
         s = this_pgmname;
 
-      if (0)
-        ;
-#ifdef INSIDE_EMACS
-      else if (pinentry_cmd_handler == emacs_cmd_handler)
-        flags = ":emacs";
-#endif
-#ifdef FALLBACK_CURSES
-      else if (pinentry_cmd_handler == curses_cmd_handler)
-        flags = ":curses";
-#endif
-      else
-        flags = "";
-
-      snprintf (buffer, sizeof buffer, "%s%s", s, flags);
+      snprintf (buffer, sizeof buffer, "%s%s%s",
+                s,
+                flavor_flag? ":":"",
+                flavor_flag? flavor_flag : "");
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }

@@ -938,10 +938,16 @@ main (int argc, char *argv[])
   if (pinentry_have_display (argc, argv))
     {
       if (! gtk_init_check (&argc, &argv))
-	pinentry_cmd_handler = curses_cmd_handler;
+        {
+          pinentry_cmd_handler = curses_cmd_handler;
+          pinentry_set_flavor_flag ("curses");
+        }
     }
   else
-    pinentry_cmd_handler = curses_cmd_handler;
+    {
+      pinentry_cmd_handler = curses_cmd_handler;
+      pinentry_set_flavor_flag ("curses");
+    }
 #else
   gtk_init (&argc, &argv);
 #endif

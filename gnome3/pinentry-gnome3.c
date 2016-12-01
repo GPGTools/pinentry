@@ -517,18 +517,21 @@ main (int argc, char *argv[])
       fprintf (stderr, "No $DBUS_SESSION_BUS_ADDRESS found,"
                " falling back to curses\n");
       pinentry_cmd_handler = curses_cmd_handler;
+      pinentry_set_flavor_flag ("curses");
     }
   else if (!pe_gcr_system_prompt_available ())
     {
       fprintf (stderr, "No Gcr System Prompter available,"
                " falling back to curses\n");
       pinentry_cmd_handler = curses_cmd_handler;
+      pinentry_set_flavor_flag ("curses");
     }
   else if (pe_gnome_screen_locked ())
     {
       fprintf (stderr, "GNOME screensaver is locked,"
                " falling back to curses\n");
       pinentry_cmd_handler = curses_cmd_handler;
+      pinentry_set_flavor_flag ("curses");
     }
 #endif
 
