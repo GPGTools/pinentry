@@ -60,18 +60,18 @@ AC_DEFUN([FIND_QT],
     AC_CHECK_TOOL(MOC, moc)
     AC_MSG_CHECKING([moc version])
     mocversion=`$MOC -v 2>&1`
-    mocversiongrep=`echo $mocversion | grep "Qt 5\|moc 5"`
+    mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc 5"`
     if test x"$mocversiongrep" != x"$mocversion"; then
       AC_MSG_RESULT([no])
       # moc was not the qt5 one, try with moc-qt5
       AC_CHECK_TOOL(MOC2, moc-qt5)
       mocversion=`$MOC2 -v 2>&1`
-      mocversiongrep=`echo $mocversion | grep "Qt 5\|moc-qt5 5\|moc 5"`
+      mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc-qt5 5|moc 5"`
       if test x"$mocversiongrep" != x"$mocversion"; then
         AC_CHECK_TOOL(QTCHOOSER, qtchooser)
         qt5tooldir=`QT_SELECT=qt5 qtchooser -print-env | grep QTTOOLDIR | cut -d '=' -f 2 | cut -d \" -f 2`
         mocversion=`$qt5tooldir/moc -v 2>&1`
-        mocversiongrep=`echo $mocversion | grep "Qt 5\|moc 5"`
+        mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc 5"`
         if test x"$mocversiongrep" != x"$mocversion"; then
           # no valid moc found
           have_qt5_libs="no";
