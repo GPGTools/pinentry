@@ -203,7 +203,12 @@ grab_pointer (GtkWidget *win, GdkEvent *event, gpointer data)
   (void)data;
 
   /* Change the cursor for the duration of the grab to indicate that
-     something is going on.  */
+   * something is going on.  The fvwm window manager grabs the pointer
+   * for a short time and thus we may end up with the already grabbed
+   * error code.  Actually this error code should be used to detect a
+   * malicious grabbing application but with fvwm this renders
+   * Pinentry only unusable.  Thus we try again several times also for
+   * that error code.  See Debian bug 850708 for details.  */
   /* XXX: It would be nice to have a key cursor, unfortunately there
      is none readily available.  */
   cursor = gdk_cursor_new_for_display (gtk_widget_get_display (win),
@@ -215,7 +220,8 @@ grab_pointer (GtkWidget *win, GdkEvent *event, gpointer data)
                             NULL /* confine to */,
                             cursor,
                             gdk_event_get_time (event));
-  while (tries++ < max_tries && err == GDK_GRAB_NOT_VIEWABLE);
+  while (tries++ < max_tries && (err == GDK_GRAB_NOT_VIEWABLE
+                                 || err == GDK_GRAB_ALREADY_GRABBED));
 
   if (err)
     {
