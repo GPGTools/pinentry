@@ -247,7 +247,7 @@ gnome3_cmd_handler (pinentry_t pe)
   state.ret = 0;
   state.timeout_id = 0;
   state.timed_out = 0;
-  state.prompt = create_prompt (pe, !!(pe->pin));
+  state.prompt = create_prompt (pe, !(pe->pin));
   if (!state.prompt)
     {
       pe->canceled = 1;
