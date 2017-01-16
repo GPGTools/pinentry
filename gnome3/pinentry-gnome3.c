@@ -149,12 +149,9 @@ create_prompt (pinentry_t pe, int confirm)
     }
 
   /* Set the messages for the various buttons, etc.  */
-  if (pe->title)
-    {
-      msg = pinentry_utf8_validate (pe->title);
-      gcr_prompt_set_title (prompt, msg);
-      g_free (msg);
-    }
+  msg = pinentry_utf8_validate (pe->title ? pe->title : PGMNAME);
+  gcr_prompt_set_title (prompt, msg);
+  g_free (msg);
 
   if (pe->description)
     {
