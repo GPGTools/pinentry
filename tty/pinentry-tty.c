@@ -173,6 +173,7 @@ static int
 confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   char *msg;
+  char *msgbuffer = NULL;
 
   char ok = 0;
   char notok = 0;
@@ -184,8 +185,10 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 
   msg = pinentry->description;
   if (! msg)
-    /* If there is no description, fallback to the title.  */
-    msg = pinentry->title;
+    {
+      /* If there is no description, fallback to the title.  */
+      msg = msgbuffer = pinentry_get_title (pinentry);
+    }
   if (! msg)
     msg = "Confirm:";
 
@@ -194,6 +197,7 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       fputs (msg, ttyfo);
       fputc ('\n', ttyfo);
     }
+  free (msgbuffer);
 
   fflush (ttyfo);
 
@@ -377,17 +381,19 @@ static int
 password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   char *msg;
+  char *msgbuffer = NULL;
   int done = 0;
 
   msg = pinentry->description;
   if (! msg)
-    msg = pinentry->title;
+    msg = msgbuffer = pinentry_get_title (pinentry);
   if (! msg)
     msg = "Enter your passphrase.";
 
   dump_error_text (ttyfo, pinentry->error);
 
   fprintf (ttyfo, "%s\n", msg);
+  free (msgbuffer);
 
   while (! done)
     {

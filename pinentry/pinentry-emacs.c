@@ -467,8 +467,14 @@ set_label (pinentry_t pe, const char *name, const char *value)
 static void
 set_labels (pinentry_t pe)
 {
-  if (pe->title)
-    set_label (pe, "SETTITLE", pe->title);
+  char *p;
+
+  p = pinentry_get_title (pe);
+  if (p)
+    {
+      set_label (pe, "SETTITLE", p);
+      free (p);
+    }
   if (pe->description)
     set_label (pe, "SETDESC", pe->description);
   if (pe->error)

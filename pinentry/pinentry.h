@@ -256,6 +256,7 @@ char *pinentry_utf8_to_local (const char *lc_ctype, const char *text);
    Return NULL on error. */
 char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
 
+char *pinentry_get_title (pinentry_t pe);
 
 /* Run a quality inquiry for PASSPHRASE of LENGTH. */
 int pinentry_inq_quality (pinentry_t pin,

@@ -121,7 +121,7 @@ create_prompt (pinentry_t pe, int confirm)
 {
   GcrPrompt *prompt;
   GError *error = NULL;
-  char *msg;
+  char *msg, *p;
   char window_id[32];
 
   /* Create the prompt.  */
@@ -149,9 +149,17 @@ create_prompt (pinentry_t pe, int confirm)
     }
 
   /* Set the messages for the various buttons, etc.  */
-  msg = pinentry_utf8_validate (pe->title ? pe->title : PGMNAME);
-  gcr_prompt_set_title (prompt, msg);
-  g_free (msg);
+  p = pinentry_get_title (pe);
+  if (p)
+    {
+      msg = pinentry_utf8_validate (p);
+      if (msg)
+        {
+          gcr_prompt_set_title (prompt, msg);
+          g_free (msg);
+        }
+      free (p);
+    }
 
   if (pe->description)
     {

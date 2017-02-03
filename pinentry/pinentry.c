@@ -390,6 +390,33 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
 }
 
 
+/* Return a malloced string with the title.  The caller mus free the
+ * string.  If no title is available or the title string has an error
+ * NULL is returned.  */
+char *
+pinentry_get_title (pinentry_t pe)
+{
+  char *title;
+
+  if (pe->title)
+    title = strdup (pe->title);
+  else if (pe->owner_pid)
+    {
+      char buf[100];
+      if (pe->owner_host)
+        snprintf (buf, sizeof buf, "[%lu]@%s", pe->owner_pid, pe->owner_host);
+      else
+        snprintf (buf, sizeof buf, "[%lu]",
+                  pe->owner_pid);
+      buf[sizeof buf - 1] = 0;
+      title = strdup (buf);
+    }
+  else
+    title = strdup (this_pgmname);
+
+  return title;
+}
+
 
 /* Run a quality inquiry for PASSPHRASE of LENGTH.  (We need LENGTH
    because not all backends might be able to return a proper

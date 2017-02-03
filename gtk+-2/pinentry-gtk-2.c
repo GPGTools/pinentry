@@ -563,6 +563,7 @@ create_window (pinentry_t ctx)
   GtkWidget *wvbox, *chbox, *bbox;
   GtkAccelGroup *acc;
   gchar *msg;
+  char *p;
 
   repeat_entry = NULL;
 
@@ -626,21 +627,15 @@ create_window (pinentry_t ctx)
   box = gtk_vbox_new (FALSE, HIG_SMALL);
   gtk_box_pack_start (GTK_BOX (chbox), box, TRUE, TRUE, 0);
 
-  if (pinentry->title)
+  p = pinentry_get_title (pinentry);
+  if (p)
     {
-      msg = pinentry_utf8_validate (pinentry->title);
-      gtk_window_set_title (GTK_WINDOW(win), msg);
+      msg = pinentry_utf8_validate (p);
+      if (msg)
+        gtk_window_set_title (GTK_WINDOW(win), msg);
+      g_free (msg);
+      free (p);
     }
-  else if (pinentry->owner_pid)
-    {
-      char buf[100];
-      snprintf (buf, sizeof buf, "%s [%lu]",
-                pinentry->owner_host? pinentry->owner_host:"",
-                pinentry->owner_pid);
-      buf[sizeof buf - 1] = 0;
-      gtk_window_set_title (GTK_WINDOW(win), buf);
-    }
-
 
   if (pinentry->description)
     {

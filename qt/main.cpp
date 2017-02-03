@@ -145,6 +145,7 @@ static int
 qt_cmd_handler(pinentry_t pe)
 {
     QWidget *parent = 0;
+    char *str;
 
     /* FIXME: Add parent window ID to pinentry and GTK.  */
     if (pe->parent_wid) {
@@ -161,9 +162,13 @@ qt_cmd_handler(pinentry_t pe)
         pe->cancel         ? escape_accel(from_utf8(pe->cancel)) :
         pe->default_cancel ? escape_accel(from_utf8(pe->default_cancel)) :
         /* else */           QLatin1String("&Cancel") ;
+
+    str = pinentry_get_title (pe);
     const QString title =
-        pe->title ? from_utf8(pe->title) :
+        str       ? from_utf8(str) :
         /* else */  QLatin1String("pinentry-qt") ;
+    free (str);
+
     const QString repeatError =
         pe->repeat_error_string ? from_utf8(pe->repeat_error_string) :
                                   QLatin1String("Passphrases do not match");
@@ -179,6 +184,8 @@ qt_cmd_handler(pinentry_t pe)
 
 
     if (want_pass) {
+        char *str;
+
         PinEntryDialog pinentry(parent, 0, pe->timeout, true, !!pe->quality_bar,
                                 repeatString, visibilityTT, hideTT);
 
@@ -186,8 +193,11 @@ qt_cmd_handler(pinentry_t pe)
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
         pinentry.setDescription(from_utf8(pe->description));
         pinentry.setRepeatErrorText(repeatError);
-        if (pe->title) {
-            pinentry.setWindowTitle(from_utf8(pe->title));
+
+        str = pinentry_get_title (pe);
+        if (str) {
+            pinentry.setWindowTitle(from_utf8(str));
+            free (str);
         }
 
         /* If we reuse the same dialog window.  */
