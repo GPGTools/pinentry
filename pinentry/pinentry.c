@@ -98,6 +98,8 @@ pinentry_reset (int use_defaults)
   char *default_tt_visi = pinentry.default_tt_visi;
   char *default_tt_hide = pinentry.default_tt_hide;
   char *touch_file = pinentry.touch_file;
+  unsigned long owner_pid = pinentry.owner_pid;
+  char *owner_host = pinentry.owner_host;
 
   /* These options are set from the command line.  Don't reset
      them.  */
@@ -131,6 +133,7 @@ pinentry_reset (int use_defaults)
       free (pinentry.default_tt_visi);
       free (pinentry.default_tt_hide);
       free (pinentry.touch_file);
+      free (pinentry.owner_host);
       free (pinentry.display);
     }
 
@@ -171,8 +174,7 @@ pinentry_reset (int use_defaults)
       pinentry.color_so = PINENTRY_COLOR_DEFAULT;
       pinentry.color_so_bright = 0;
     }
-  else
-    /* Restore the options.  */
+  else /* Restore the options.  */
     {
       pinentry.grab = grab;
       pinentry.ttyname = ttyname;
@@ -188,6 +190,8 @@ pinentry_reset (int use_defaults)
       pinentry.default_tt_visi = default_tt_visi;
       pinentry.default_tt_hide = default_tt_hide;
       pinentry.touch_file = touch_file;
+      pinentry.owner_pid = owner_pid;
+      pinentry.owner_host = owner_host;
 
       pinentry.debug = debug;
       pinentry.display = display;
@@ -916,6 +920,35 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       pinentry.lc_messages = strdup (value);
       if (!pinentry.lc_messages)
 	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "owner"))
+    {
+      long along;
+      char *endp;
+
+      free (pinentry.owner_host);
+      pinentry.owner_host = NULL;
+
+      errno = 0;
+      along = strtol (value, &endp, 10);
+      if (along < 0 || errno)
+        pinentry.owner_pid = 0;
+      else
+        {
+          pinentry.owner_pid = (unsigned long)along;
+          while (endp && *endp == ' ')
+            endp++;
+          if (*endp)
+            {
+              pinentry.owner_host = strdup (endp);
+              if (pinentry.owner_host)
+                {
+                  for (endp=pinentry.owner_host; *endp && *endp != ' '; endp++)
+                    ;
+                  *endp = 0;
+                }
+            }
+        }
     }
   else if (!strcmp (key, "parent-wid"))
     {

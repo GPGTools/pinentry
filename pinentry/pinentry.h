@@ -91,6 +91,14 @@ struct pinentry
   /* True if caller should grab the keyboard.  (Assuan: "OPTION grab"
      or "OPTION no-grab".)  */
   int grab;
+
+  /* The PID of the owner or 0 if not known.  The owner is the process
+   * which actually triggered the the pinentry.  For example gpg.  */
+  unsigned long owner_pid;
+
+  /* The malloced hostname of the owener or NULL.  */
+  char *owner_host;
+
   /* The window ID of the parent window over which the pinentry window
      should be displayed.  (Assuan: "OPTION parent-wid WID".)  */
   int parent_wid;
