@@ -70,6 +70,14 @@ struct pinentry pinentry;
 
 static const char *flavor_flag;
 
+/* Because gtk_init removes the --display arg from the command lines
+ * and our command line parser is called after gtk_init (so that it
+ * does not see gtk specific options) we don't have a way to get hold
+ * of the --display option.  Our solution is to remember --disable in
+ * the call to pinentry_have_display and set it then in our
+ * parser.  */
+static char *remember_display;
+
 
 static void
 pinentry_reset (int use_defaults)
@@ -570,17 +578,54 @@ pinentry_init (const char *pgmname)
 int
 pinentry_have_display (int argc, char **argv)
 {
-#ifndef HAVE_W32CE_SYSTEM
-  const char *s;
+  int found = 0;
 
-  s = getenv ("DISPLAY");
-  if (s && *s)
-    return 1;
-#endif
   for (; argc; argc--, argv++)
-    if (!strcmp (*argv, "--display") || !strncmp (*argv, "--display=", 10))
-      return 1;
-  return 0;
+    {
+      if (!strcmp (*argv, "--display"))
+        {
+          if (argv[1] && !remember_display)
+            {
+              remember_display = strdup (argv[1]);
+              if (!remember_display)
+                {
+#ifndef HAVE_W32CE_SYSTEM
+                  fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
+                  exit (EXIT_FAILURE);
+                }
+            }
+          found = 1;
+          break;
+        }
+      else if (!strncmp (*argv, "--display=", 10))
+        {
+          if (!remember_display)
+            {
+              remember_display = strdup (*argv+10);
+              if (!remember_display)
+                {
+#ifndef HAVE_W32CE_SYSTEM
+                  fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
+                  exit (EXIT_FAILURE);
+                }
+            }
+          found = 1;
+          break;
+        }
+    }
+
+#ifndef HAVE_W32CE_SYSTEM
+  {
+    const char *s;
+    s = getenv ("DISPLAY");
+    if (s && *s)
+      found = 1;
+  }
+#endif
+
+  return found;
 }
 
 
@@ -794,6 +839,12 @@ pinentry_parse_opts (int argc, char *argv[])
           pargs.err = ARGPARSE_PRINT_WARNING;
 	  break;
         }
+    }
+
+  if (!pinentry.display && remember_display)
+    {
+      pinentry.display = remember_display;
+      remember_display = NULL;
     }
 }
 
@@ -1436,6 +1487,7 @@ cmd_message (assuan_context_t ctx, char *line)
      version     - Return the version of the program.
      pid         - Return the process id of the server.
      flavor      - Return information about the used pinentry flavor
+     ttyinfo     - Return DISPLAY and ttyinfo.
  */
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -1467,6 +1519,15 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 s,
                 flavor_flag? ":":"",
                 flavor_flag? flavor_flag : "");
+      buffer[sizeof buffer -1] = 0;
+      rc = assuan_send_data (ctx, buffer, strlen (buffer));
+    }
+  else if (!strcmp (line, "ttyinfo"))
+    {
+      snprintf (buffer, sizeof buffer, "%s %s %s",
+                pinentry.ttyname? pinentry.ttyname : "-",
+                pinentry.ttytype? pinentry.ttytype : "-",
+                pinentry.display? pinentry.display : "-" );
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
