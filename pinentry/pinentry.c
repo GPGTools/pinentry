@@ -390,6 +390,39 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
 }
 
 
+static char *
+get_cmdline (unsigned long pid)
+{
+  char buffer[200];
+  FILE *fp;
+  size_t i, n;
+
+  snprintf (buffer, sizeof buffer, "/proc/%lu/cmdline", pid);
+  buffer[sizeof buffer - 1] = 0;
+
+  fp = fopen (buffer, "rb");
+  if (!fp)
+    return NULL;
+  n = fread (buffer, 1, sizeof buffer - 1, fp);
+  if (n < sizeof buffer -1 && ferror (fp))
+    {
+      /* Some error occurred.  */
+      fclose (fp);
+      return NULL;
+    }
+  /* Arguments are delimites by Nuls.  We should do proper quoting but
+   * that can be a bit complicated, thus we simply replace the Nuls by
+   * spaces.  */
+  for (i=0; i < n; i++)
+    if (!buffer[i])
+      buffer[i] = ' ';
+  buffer[i] = 0; /* Make sure the last byte is the string terminator.  */
+  fclose (fp);
+
+  return strdup (buffer);
+}
+
+
 /* Return a malloced string with the title.  The caller mus free the
  * string.  If no title is available or the title string has an error
  * NULL is returned.  */
@@ -402,13 +435,23 @@ pinentry_get_title (pinentry_t pe)
     title = strdup (pe->title);
   else if (pe->owner_pid)
     {
-      char buf[100];
-      if (pe->owner_host)
-        snprintf (buf, sizeof buf, "[%lu]@%s", pe->owner_pid, pe->owner_host);
+      char buf[200];
+      char *cmdline = get_cmdline (pe->owner_pid);
+
+      if (pe->owner_host && cmdline)
+        snprintf (buf, sizeof buf, "[%lu]@%s (%s)",
+                  pe->owner_pid, pe->owner_host, cmdline);
+      else if (cmdline)
+        snprintf (buf, sizeof buf, "[%lu] (%s)",
+                  pe->owner_pid, cmdline);
+      else if (pe->owner_host)
+        snprintf (buf, sizeof buf, "[%lu]@%s",
+                  pe->owner_pid, pe->owner_host);
       else
         snprintf (buf, sizeof buf, "[%lu]",
                   pe->owner_pid);
       buf[sizeof buf - 1] = 0;
+      free (cmdline);
       title = strdup (buf);
     }
   else
