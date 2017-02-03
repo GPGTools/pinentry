@@ -254,6 +254,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  {								\
 	    err = 1;							\
             pinentry->specific_err = gpg_error (GPG_ERR_LOCALE_PROBLEM); \
+            pinentry->specific_err_loc = "dialog_create_copy";          \
 	    goto out;							\
 	  }								\
       }									\
@@ -286,6 +287,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	    {								\
 	      err = 1;							\
               pinentry->specific_err = gpg_error_from_syserror ();	\
+              pinentry->specific_err_loc = "dialog_create_mk_button";   \
 	      goto out;							\
 	    }								\
 									\
@@ -311,6 +313,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
         {								\
 	  err = 1;							\
           pinentry->specific_err = gpg_error (GPG_ERR_LOCALE_PROBLEM);	\
+          pinentry->specific_err_loc = "dialog_create_utf8conv";        \
 	  goto out;							\
 	}								\
     }									\
@@ -378,6 +381,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       err = 1;
       pinentry->specific_err = gpg_error (size_y < 0? GPG_ERR_MISSING_ENVVAR
                                           /* */     : GPG_ERR_WINDOW_TOO_SMALL);
+      pinentry->specific_err_loc = "dialog_create";
       goto out;
     }
 
@@ -434,6 +438,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       err = 1;
       pinentry->specific_err = gpg_error (size_x < 0? GPG_ERR_MISSING_ENVVAR
                                           /* */     : GPG_ERR_WINDOW_TOO_SMALL);
+      pinentry->specific_err_loc = "dialog_create";
       goto out;
     }
 
@@ -814,6 +819,7 @@ dialog_input (dialog_t diag, int alt, int chr)
 static int
 dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 {
+  int confirm_mode = !pinentry->pin;
   struct dialog diag;
   FILE *ttyfi = NULL;
   FILE *ttyfo = NULL;
@@ -824,6 +830,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 #ifndef HAVE_DOSISH_SYSTEM
   int no_input = 1;
 #endif
+
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
 
@@ -843,7 +850,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
       if (!ttyfi)
         {
           pinentry->specific_err = gpg_error_from_syserror ();
-          return -1;
+          pinentry->specific_err_loc = "open_tty_for_read";
+          return confirm_mode? 0 : -1;
         }
       ttyfo = fopen (tty_name, "w");
       if (!ttyfo)
@@ -852,7 +860,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  fclose (ttyfi);
 	  errno = err;
           pinentry->specific_err = gpg_error_from_syserror ();
-	  return -1;
+          pinentry->specific_err_loc = "open_tty_for_write";
+	  return confirm_mode? 0 : -1;
 	}
       screen = newterm (tty_type, ttyfo, ttyfi);
       set_term (screen);
@@ -865,7 +874,8 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
             {
               errno = ENOTTY;
               pinentry->specific_err = gpg_error_from_syserror ();
-              return -1;
+              pinentry->specific_err_loc = "isatty";
+              return confirm_mode? 0 : -1;
             }
 	  init_screen = 1;
 	  initscr ();
@@ -925,8 +935,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
         fclose (ttyfo);
       return -2;
     }
-  dialog_switch_pos (&diag,
-		     diag.pinentry->pin ? DIALOG_POS_PIN : DIALOG_POS_OK);
+  dialog_switch_pos (&diag, confirm_mode? DIALOG_POS_OK : DIALOG_POS_PIN);
 
 #ifndef HAVE_DOSISH_SYSTEM
   wtimeout (stdscr, 70);
@@ -966,7 +975,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  switch (diag.pos)
 	    {
 	    case DIALOG_POS_OK:
-	      if (diag.pinentry->pin)
+	      if (!confirm_mode)
 		dialog_switch_pos (&diag, DIALOG_POS_PIN);
 	      break;
 	    case DIALOG_POS_NOTOK:
@@ -1020,10 +1029,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
 	      break;
 	    case DIALOG_POS_CANCEL:
-	      if (diag.pinentry->pin)
-		dialog_switch_pos (&diag, DIALOG_POS_PIN);
-	      else
+	      if (confirm_mode)
 		dialog_switch_pos (&diag, DIALOG_POS_OK);
+	      else
+		dialog_switch_pos (&diag, DIALOG_POS_PIN);
 	      break;
 	    default:
 	      break;
@@ -1064,10 +1073,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     }
   while (!done);
 
-  if (diag.pinentry->pin)
-    /* NUL terminate the passphrase.  dialog_run makes sure there is
-       enough space for the terminating NUL byte.  */
-    diag.pinentry->pin[diag.pin_len] = 0;
+  if (!confirm_mode)
+    {
+      /* NUL terminate the passphrase.  dialog_run makes sure there is
+         enough space for the terminating NUL byte.  */
+      diag.pinentry->pin[diag.pin_len] = 0;
+    }
 
   set_cursor_state (1);
   endwin ();
@@ -1092,7 +1103,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (diag.notok)
     free (diag.notok);
 
-  if (pinentry->pin)
+  if (!confirm_mode)
     {
       pinentry->locale_err = 1;
       pin_utf8 = pinentry_local_to_utf8 (pinentry->lc_ctype, pinentry->pin, 1);
@@ -1109,10 +1120,11 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (done == -2)
     pinentry->canceled = 1;
 
-  if (diag.pinentry->pin)
-    return done < 0 ? -1 : diag.pin_len;
-  else
+  /* In confirm mode return cancel instead of error.  */
+  if (confirm_mode)
     return done < 0 ? 0 : 1;
+
+  return done < 0 ? -1 : diag.pin_len;
 }
 
 

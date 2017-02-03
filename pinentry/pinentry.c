@@ -1450,8 +1450,8 @@ cmd_confirm (assuan_context_t ctx, char *line)
   if (pinentry.close_button)
     assuan_write_status (ctx, "BUTTON_INFO", "close");
 
-  if (result)
-    return 0;
+  if (result > 0)
+    return 0; /* OK */
 
   if (pinentry.specific_err)
     {
@@ -1463,7 +1463,7 @@ cmd_confirm (assuan_context_t ctx, char *line)
     return gpg_error (GPG_ERR_LOCALE_PROBLEM);
 
   if (pinentry.one_button)
-    return 0;
+    return 0; /* OK */
 
   if (pinentry.canceled)
     return gpg_error (GPG_ERR_CANCELED);
