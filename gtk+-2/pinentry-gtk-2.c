@@ -631,6 +631,17 @@ create_window (pinentry_t ctx)
       msg = pinentry_utf8_validate (pinentry->title);
       gtk_window_set_title (GTK_WINDOW(win), msg);
     }
+  else if (pinentry->owner_pid)
+    {
+      char buf[100];
+      snprintf (buf, sizeof buf, "%s [%lu]",
+                pinentry->owner_host? pinentry->owner_host:"",
+                pinentry->owner_pid);
+      buf[sizeof buf - 1] = 0;
+      gtk_window_set_title (GTK_WINDOW(win), buf);
+    }
+
+
   if (pinentry->description)
     {
       msg = pinentry_utf8_validate (pinentry->description);
