@@ -413,14 +413,16 @@ get_cmdline (unsigned long pid)
       fclose (fp);
       return NULL;
     }
-  /* Arguments are delimites by Nuls.  We should do proper quoting but
+  fclose (fp);
+  if (n == 0)
+    return NULL;
+  /* Arguments are delimited by Nuls.  We should do proper quoting but
    * that can be a bit complicated, thus we simply replace the Nuls by
    * spaces.  */
   for (i=0; i < n; i++)
-    if (!buffer[i])
+    if (!buffer[i] && i < n-1)
       buffer[i] = ' ';
   buffer[i] = 0; /* Make sure the last byte is the string terminator.  */
-  fclose (fp);
 
   return strdup (buffer);
 }
