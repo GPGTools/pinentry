@@ -101,6 +101,7 @@ pinentry_reset (int use_defaults)
   char *default_tt_hide = pinentry.default_tt_hide;
   char *touch_file = pinentry.touch_file;
   unsigned long owner_pid = pinentry.owner_pid;
+  int owner_uid = pinentry.owner_uid;
   char *owner_host = pinentry.owner_host;
 
   /* These options are set from the command line.  Don't reset
@@ -176,6 +177,8 @@ pinentry_reset (int use_defaults)
       pinentry.color_bg = PINENTRY_COLOR_DEFAULT;
       pinentry.color_so = PINENTRY_COLOR_DEFAULT;
       pinentry.color_so_bright = 0;
+
+      pinentry.owner_uid = -1;
     }
   else /* Restore the options.  */
     {
@@ -195,6 +198,7 @@ pinentry_reset (int use_defaults)
       pinentry.default_tt_hide = default_tt_hide;
       pinentry.touch_file = touch_file;
       pinentry.owner_pid = owner_pid;
+      pinentry.owner_uid = owner_uid;
       pinentry.owner_host = owner_host;
 
       pinentry.debug = debug;
@@ -429,6 +433,54 @@ get_cmdline (unsigned long pid)
 }
 
 
+/* Atomically ask the kernel for information about process PID.
+ * Return a malloc'ed copy of the process name as long as the process
+ * uid matches UID.  If it cannot determine that the process has uid
+ * UID, it returns NULL.
+
+ * This is not as informative as get_cmdline, but it verifies that the
+ * process does belong to the user in question.
+ */
+static char *
+get_pid_name_for_uid (unsigned long pid, int uid)
+{
+  char buffer[400];
+  FILE *fp;
+  size_t end, n;
+  char *uidstr;
+
+  snprintf (buffer, sizeof buffer, "/proc/%lu/status", pid);
+  buffer[sizeof buffer - 1] = 0;
+
+  fp = fopen (buffer, "rb");
+  if (!fp)
+    return NULL;
+  n = fread (buffer, 1, sizeof buffer - 1, fp);
+  if (n < sizeof buffer -1 && ferror (fp))
+    {
+      /* Some error occurred.  */
+      fclose (fp);
+      return NULL;
+    }
+  fclose (fp);
+  if (n == 0)
+    return NULL;
+  if (strncmp (buffer, "Name:\t", 6))
+    return NULL;
+  end = strcspn (buffer + 6, "\n") + 6;
+  buffer[end] = 0;
+
+  /* check that uid matches what we expect */
+  uidstr = strstr (buffer + end + 1, "\nUid:\t");
+  if (!uidstr)
+    return NULL;
+  if (atoi (uidstr + 6) != uid)
+    return NULL;
+
+  return strdup (buffer + 6);
+}
+
+
 /* Return a malloced string with the title.  The caller mus free the
  * string.  If no title is available or the title string has an error
  * NULL is returned.  */
@@ -443,16 +495,21 @@ pinentry_get_title (pinentry_t pe)
     {
       char buf[200];
       struct utsname utsbuf;
+      char *pidname = NULL;
       char *cmdline = NULL;
 
       if (pe->owner_host &&
           !uname (&utsbuf) && utsbuf.nodename &&
           !strcmp (utsbuf.nodename, pe->owner_host))
-        cmdline = get_cmdline (pe->owner_pid);
+        {
+          pidname = get_pid_name_for_uid (pe->owner_pid, pe->owner_uid);
+          if (pidname)
+            cmdline = get_cmdline (pe->owner_pid);
+        }
 
-      if (pe->owner_host && cmdline)
+      if (pe->owner_host && (cmdline || pidname))
         snprintf (buf, sizeof buf, "[%lu]@%s (%s)",
-                  pe->owner_pid, pe->owner_host, cmdline);
+                  pe->owner_pid, pe->owner_host, cmdline ? cmdline : pidname);
       else if (pe->owner_host)
         snprintf (buf, sizeof buf, "[%lu]@%s",
                   pe->owner_pid, pe->owner_host);
@@ -460,6 +517,7 @@ pinentry_get_title (pinentry_t pe)
         snprintf (buf, sizeof buf, "[%lu] <unknown host>",
                   pe->owner_pid);
       buf[sizeof buf - 1] = 0;
+      free (pidname);
       free (cmdline);
       title = strdup (buf);
     }
@@ -1027,24 +1085,35 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
       free (pinentry.owner_host);
       pinentry.owner_host = NULL;
+      pinentry.owner_uid = -1;
+      pinentry.owner_pid = 0;
 
       errno = 0;
       along = strtol (value, &endp, 10);
-      if (along < 0 || errno)
-        pinentry.owner_pid = 0;
-      else
+      if (along && !errno)
         {
           pinentry.owner_pid = (unsigned long)along;
-          while (endp && *endp == ' ')
-            endp++;
           if (*endp)
             {
-              pinentry.owner_host = strdup (endp);
-              if (pinentry.owner_host)
+              errno = 0;
+              if (*endp == '/') { /* we have a uid */
+                endp++;
+                along = strtol (endp, &endp, 10);
+                if (along >= 0 && !errno)
+                  pinentry.owner_uid = (int)along;
+              }
+              if (endp)
                 {
-                  for (endp=pinentry.owner_host; *endp && *endp != ' '; endp++)
-                    ;
-                  *endp = 0;
+                  while (*endp == ' ')
+                    endp++;
+                  if (*endp)
+                    {
+                      pinentry.owner_host = strdup (endp);
+                      for (endp=pinentry.owner_host;
+                           *endp && *endp != ' '; endp++)
+                        ;
+                      *endp = 0;
+                    }
                 }
             }
         }

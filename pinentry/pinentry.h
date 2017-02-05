@@ -98,7 +98,11 @@ struct pinentry
    * which actually triggered the the pinentry.  For example gpg.  */
   unsigned long owner_pid;
 
-  /* The malloced hostname of the owener or NULL.  */
+  /* The numeric uid (user ID) of the owner process or -1 if not
+   * known. */
+  int owner_uid;
+
+  /* The malloced hostname of the owner or NULL.  */
   char *owner_host;
 
   /* The window ID of the parent window over which the pinentry window
