@@ -28,6 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <sys/utsname.h>
 #ifndef HAVE_W32CE_SYSTEM
 # include <locale.h>
 #endif
@@ -441,19 +442,22 @@ pinentry_get_title (pinentry_t pe)
   else if (pe->owner_pid)
     {
       char buf[200];
-      char *cmdline = get_cmdline (pe->owner_pid);
+      struct utsname utsbuf;
+      char *cmdline = NULL;
+
+      if (pe->owner_host &&
+          !uname (&utsbuf) && utsbuf.nodename &&
+          !strcmp (utsbuf.nodename, pe->owner_host))
+        cmdline = get_cmdline (pe->owner_pid);
 
       if (pe->owner_host && cmdline)
         snprintf (buf, sizeof buf, "[%lu]@%s (%s)",
                   pe->owner_pid, pe->owner_host, cmdline);
-      else if (cmdline)
-        snprintf (buf, sizeof buf, "[%lu] (%s)",
-                  pe->owner_pid, cmdline);
       else if (pe->owner_host)
         snprintf (buf, sizeof buf, "[%lu]@%s",
                   pe->owner_pid, pe->owner_host);
       else
-        snprintf (buf, sizeof buf, "[%lu]",
+        snprintf (buf, sizeof buf, "[%lu] <unknown host>",
                   pe->owner_pid);
       buf[sizeof buf - 1] = 0;
       free (cmdline);
