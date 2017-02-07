@@ -588,6 +588,42 @@ pinentry_w32=no
 test $have_w32_system = yes && pinentry_w32=yes
 AM_CONDITIONAL(BUILD_PINENTRY_W32, test "$pinentry_w32" = "yes")
 
+dnl
+dnl Check for FLTK pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-fltk,
+    AC_HELP_STRING([--enable-pinentry-fltk], [build FLTK 1.3 pinentry]),
+           pinentry_fltk=$enableval, pinentry_fltk=maybe)
+
+dnl check for fltk-config
+if test "$pinentry_fltk" != "no"; then
+   AC_PATH_PROG(FLTK_CONFIG, fltk-config, no)
+   if test x"${FLTK_CONFIG}" = xno ; then
+       AC_MSG_WARN([fltk-config is not found])
+       pinentry_fltk=no
+   fi
+fi
+
+dnl check for FLTK libraries and set flags
+if test "$pinentry_fltk" != "no"; then
+   AC_MSG_CHECKING([for FLTK 1.3])
+   FLTK_VERSION=`${FLTK_CONFIG} --api-version`
+   if test ${FLTK_VERSION} != "1.3" ; then
+       AC_MSG_RESULT([no])
+       AC_MSG_WARN([FLTK 1.3 not found (available $FLTK_VERSION)])
+       pinentry_fltk=no
+   else
+       AC_MSG_RESULT([yes])
+       FLTKCFLAGS=`${FLTK_CONFIG} --cflags`
+       FLTKCXXFLAGS=`${FLTK_CONFIG} --cxxflags`
+       FLTKLIBS=`${FLTK_CONFIG} --ldflags`
+       AC_SUBST(FLTKCFLAGS)
+       AC_SUBST(FLTKCXXFLAGS)
+       AC_SUBST(FLTKLIBS)
+       pinentry_fltk=yes
+   fi
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_FLTK, test "$pinentry_fltk" = "yes")
 
 # Figure out the default pinentry.  We are very conservative here.
 # Please change the order only after verifying that the preferred
@@ -611,7 +647,11 @@ else
           if test "$pinentry_w32" = "yes"; then
             PINENTRY_DEFAULT=pinentry-w32
           else
-            AC_MSG_ERROR([[No pinentry enabled.]])
+            if test "$pinentry_fltk" = "yes"; then
+              PINENTRY_DEFAULT=pinentry-fltk
+            else
+              AC_MSG_ERROR([[No pinentry enabled.]])
+            fi
           fi
         fi
       fi
@@ -690,6 +730,7 @@ gtk+-2/Makefile
 gnome3/Makefile
 qt/Makefile
 w32/Makefile
+fltk/Makefile
 doc/Makefile
 Makefile
 ])
@@ -710,6 +751,7 @@ AC_MSG_NOTICE([
 	GNOME 3 Pinentry .: $pinentry_gnome_3
 	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version
 	W32 Pinentry .....: $pinentry_w32
+	FLTK Pinentry ....: $pinentry_fltk
 
 	Fallback to Curses: $fallback_curses
 	Emacs integration : $inside_emacs

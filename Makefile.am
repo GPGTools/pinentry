@@ -70,9 +70,15 @@ else
 pinentry_w32 =
 endif
 
+if BUILD_PINENTRY_FLTK
+pinentry_fltk = fltk
+else
+pinentry_fltk =
+endif
+
 SUBDIRS = m4 secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_emacs} ${pinentry_gtk_2} ${pinentry_gnome_3} \
-	${pinentry_qt} ${pinentry_w32} doc
+	${pinentry_qt} ${pinentry_w32} ${pinentry_fltk} doc
 
 
 install-exec-local:
