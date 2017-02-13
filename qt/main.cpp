@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <memory>
 #include <stdexcept>
 #include <gpg-error.h>
 
@@ -313,7 +312,7 @@ main(int argc, char *argv[])
 {
     pinentry_init("pinentry-qt");
 
-    std::auto_ptr<QApplication> app;
+    QApplication *app = Q_NULLPTR;
 
 #ifdef FALLBACK_CURSES
     if (!pinentry_have_display(argc, argv)) {
@@ -353,14 +352,14 @@ main(int argc, char *argv[])
                 p += strlen(argv[i]) + 1;
             }
 
-        /* We use a modal dialog window, so we don't need the application
-           window anymore.  */
         i = argc;
-        app.reset(new QApplication(i, new_argv));
+        app = new QApplication(i, new_argv);
         app->setWindowIcon(QIcon(QLatin1String(":/document-encrypt.png")));
     }
 
     pinentry_parse_opts(argc, argv);
 
-    return pinentry_loop() ? EXIT_FAILURE : EXIT_SUCCESS ;
+    int rc = pinentry_loop();
+    delete app;
+    return rc ? EXIT_FAILURE : EXIT_SUCCESS ;
 }
