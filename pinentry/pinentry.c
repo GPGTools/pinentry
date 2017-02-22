@@ -1624,6 +1624,8 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 flavor_flag? flavor_flag : "");
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
+      /* if (!rc) */
+      /*   rc = assuan_write_status (ctx, "FEATURES", "tabbing foo bar"); */
     }
   else if (!strcmp (line, "ttyinfo"))
     {
