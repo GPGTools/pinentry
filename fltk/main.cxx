@@ -115,7 +115,7 @@ static int fltk_cmd_handler(pinentry_t pe)
 
 		if (!!pe->pin) // password (or confirmation)
 		{
-			std::auto_ptr<PinWindow> window;
+			std::unique_ptr<PinWindow> window;
 
 			bool isSimple = (NULL == pe->quality_bar) &&	// pinenty.h: If this is not NULL ...
 							is_empty(pe->error) && is_empty(pe->description) &&
