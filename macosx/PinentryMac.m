@@ -33,20 +33,31 @@
 @property (nonatomic, strong) IBOutlet NSButton *saveInKeychainButton;
 @property (nonatomic, strong) IBOutlet NSTextField *passphraseField;
 @property (nonatomic, strong) IBOutlet NSSecureTextField *securePassphraseField;
+@property (nonatomic, strong) IBOutlet NSSecureTextField *repeatPassphraseField;
 @property (nonatomic, strong) IBOutlet NSTextField *errorLabel;
+@property (nonatomic, strong) IBOutlet NSLevelIndicator *qualityBar;
+
 @property (nonatomic, readwrite, strong) NSString *pin;
+@property (nonatomic, strong) NSString *repeatedPin;
 @property (nonatomic, strong) NSString *showTypingText;
 @property (nonatomic, strong) NSString *saveInKeychainText;
+@property (nonatomic, strong) NSString *repeatText;
+
+@property (nonatomic, readonly) BOOL okEnabled;
+@property (nonatomic) NSInteger quality;
+@property (nonatomic) NSInteger minQuality;
+@property (nonatomic) NSInteger warnQuality;
+
 
 - (IBAction)buttonClicked:(NSButton *)sender;
 @end
 
 
 @implementation PinentryMac
-@synthesize titleText, descriptionText, errorText, promptText, okText, notokText, cancelText, showTypingText, saveInKeychainText;
+@synthesize titleText, descriptionText, errorText, promptText, okText, notokText, cancelText, showTypingText, saveInKeychainText, repeatText;
 @synthesize grab, oneButton, confirmMode, saveInKeychain, canUseKeychain, showTyping;
 @synthesize okButton, cancelButton, notokButton, showTypingButton, saveInKeychainButton;
-@synthesize icon, timeout, pin, window;
+@synthesize icon, timeout, window;
 @synthesize passphraseField, securePassphraseField, errorLabel;
 
 
@@ -65,6 +76,7 @@ PinentryMac *_sharedInstance = nil;
 	self.cancelText = localized(@"Cancel");
 	self.showTypingText = localized(@"Show typing");
 	self.saveInKeychainText = localized(@"Save in Keychain");
+	self.repeatText = localized(@"Repeat:");
 	self.titleText = @"Pinentry Mac";
 
 	if (NSAppKitVersionNumber < NSAppKitVersionNumber10_8) {
@@ -91,12 +103,23 @@ PinentryMac *_sharedInstance = nil;
 		[self.showTypingButton removeFromSuperviewWithoutNeedingDisplay];
 		[self.saveInKeychainButton removeFromSuperviewWithoutNeedingDisplay];
 	}
+	if (!self.repeatPassword) {
+		[self.repeatPassphraseField removeFromSuperviewWithoutNeedingDisplay];
+	}
 	if (self.oneButton) {
 		[self.notokButton removeFromSuperviewWithoutNeedingDisplay];
 		[self.cancelButton removeFromSuperviewWithoutNeedingDisplay];
 	} else if (!self.notokText) {
 		[self.notokButton removeFromSuperviewWithoutNeedingDisplay];
 	}
+	if (self.qualityCheck) {
+		self.minQuality = 3;
+		self.warnQuality = 5;
+	} else {
+		[self.qualityBar removeFromSuperviewWithoutNeedingDisplay];
+	}
+
+
 
 	[self.window center];
 
@@ -116,6 +139,40 @@ PinentryMac *_sharedInstance = nil;
 
 	return pressedButton;
 }
+
+
+- (void)setPin:(NSString *)pin {
+	if (pin != _pin) {
+		_pin = pin;
+		if (self.qualityCheck) {
+			NSInteger value = self.qualityCheck(_pin) / 10;
+			if (value < 0) {
+				value = -value;
+				self.minQuality = MAX(self.minQuality, value);
+				self.warnQuality = MAX(self.warnQuality, self.minQuality + 1);
+			}
+			self.quality = value;
+		}
+	}
+}
+- (NSString *)pin {
+	return _pin;
+}
+
++ (NSSet *)keyPathsForValuesAffectingOkEnabled {
+	return [NSSet setWithObjects:@"pin", @"repeatedPin", @"showTyping", nil];
+}
+- (BOOL)okEnabled {
+	if (!self.repeatPassword || self.showTyping) {
+		return YES;
+	}
+	if (self.pin.length == 0 && self.repeatedPin.length == 0) {
+		return YES;
+	}
+	return [self.pin isEqualToString:self.repeatedPin];
+}
+
+
 
 - (void)setValue:(id)value forKey:(NSString *)key {
 	if (timer) {

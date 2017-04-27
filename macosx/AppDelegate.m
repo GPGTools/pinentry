@@ -191,7 +191,7 @@ static int mac_cmd_handler (pinentry_t pe) {
 			pinentry.icon = dict[@"icon"];
 		}
 		if (description) {
-			pinentry.descriptionText = description;
+			pinentry.descriptionText = [description stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		}
 		if (pe->ok) {
 			pinentry.okText = [NSString gpgStringWithCString:pe->ok];
@@ -216,6 +216,18 @@ static int mac_cmd_handler (pinentry_t pe) {
 			if (pe->keyinfo) {
 				pinentry.canUseKeychain = YES;
 			}
+			if (pe->repeat_passphrase) {
+				pinentry.repeatPassword = YES;
+			}
+			if (pe->quality_bar) {
+				pinentry.qualityCheck = ^NSInteger(NSString *password) {
+					if (password.length == 0) {
+						return 0;
+					}
+					NSUInteger quality = pinentry_inq_quality(pe, password.UTF8String, [password lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
+					return quality;
+				};
+			}
 
 			if ([pinentry runModal] != 1) {
 				return -1;
@@ -234,6 +246,12 @@ static int mac_cmd_handler (pinentry_t pe) {
 			pinentry_setbufferlen(pe, len + 1);
 			if (pe->pin) {
 				strcpy(pe->pin, passphrase);
+
+				if (pe->repeat_passphrase) {
+					pe->repeat_okay = YES;
+				}
+
+
 				return len;
 			}
 
