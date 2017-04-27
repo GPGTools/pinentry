@@ -27,6 +27,7 @@
 	NSInteger pressedButton;
 	NSTimer *timer;
 	NSArray *topLevelObjects;
+	NSString *_pin;
 }
 
 @property (nonatomic, strong) NSString *titleText;
@@ -47,6 +48,8 @@
 @property (nonatomic) NSInteger timeout;
 @property (nonatomic, strong) NSImage *icon;
 
+@property (nonatomic) BOOL repeatPassword;
+@property (nonatomic, copy) NSInteger (^qualityCheck)(NSString *password);
 
 @property (nonatomic, readonly) NSString *pin;
 
