@@ -312,7 +312,7 @@ main(int argc, char *argv[])
 {
     pinentry_init("pinentry-qt");
 
-    QApplication *app = Q_NULLPTR;
+    QApplication *app = NULL;
 
 #ifdef FALLBACK_CURSES
     if (!pinentry_have_display(argc, argv)) {
