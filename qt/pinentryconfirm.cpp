@@ -19,6 +19,9 @@
 #include "pinentryconfirm.h"
 #include "pinentrydialog.h"
 #include <QAbstractButton>
+#include <QGridLayout>
+#include <QSpacerItem>
+#include <QFontMetrics>
 
 PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
                                  const QString &desc, StandardButtons buttons, QWidget *parent) :
@@ -44,6 +47,18 @@ bool PinentryConfirm::timedOut() const
 
 void PinentryConfirm::showEvent(QShowEvent *event)
 {
+    static bool resized;
+    if (!resized) {
+        QGridLayout* lay = dynamic_cast<QGridLayout*> (layout());
+        if (lay) {
+            QSize textSize = fontMetrics().size(Qt::TextExpandTabs, text(), fontMetrics().maxWidth());
+            QSpacerItem* horizontalSpacer = new QSpacerItem(textSize.width() + iconPixmap().width(),
+                                                            0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+            lay->addItem(horizontalSpacer, lay->rowCount(), 1, 1, lay->columnCount() - 1);
+        }
+        resized = true;
+    }
+
     QDialog::showEvent(event);
     raiseWindow(this);
 }
