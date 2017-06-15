@@ -90,7 +90,7 @@ NSDictionary *parseUserData(pinentry_t pe) {
 		}
 
 		workString = [description stringBetweenString:@"ID " andString:@"," needEnd:YES];
-		if (workString.length == 8) {
+		if (workString.length == 8 || workString.length == 16) {
 			keyID = workString;
 		}
 	}
