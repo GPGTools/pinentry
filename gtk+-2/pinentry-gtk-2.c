@@ -113,9 +113,9 @@ constrain_size (GtkWidget *win, GtkRequisition *req, gpointer data)
 }
 
 
-/* Realize the window as transient if we grab the keyboard.  This
-   makes the window a modal dialog to the root window, which helps the
-   window manager.  See the following quote from:
+/* Realize the window as transient.  This makes the window a modal
+   dialog to the root window, which helps the window manager.
+   See the following quote from:
    https://standards.freedesktop.org/wm-spec/wm-spec-1.4.html#id2512420
 
    Implementing enhanced support for application transient windows
@@ -586,12 +586,12 @@ create_window (pinentry_t ctx)
 #endif
   g_signal_connect (G_OBJECT (win), "size-request",
 		    G_CALLBACK (constrain_size), NULL);
+
+  g_signal_connect (G_OBJECT (win),
+		    "realize", G_CALLBACK (make_transient), NULL);
+
   if (!confirm_mode)
     {
-      if (pinentry->grab)
-	g_signal_connect (G_OBJECT (win),
-			  "realize", G_CALLBACK (make_transient), NULL);
-
       /* We need to grab the keyboard when its visible! not when its
          mapped (there is a difference)  */
       g_object_set (G_OBJECT(win), "events",
