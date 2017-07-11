@@ -85,6 +85,7 @@ AC_PROG_RANLIB
 # for Qt and autoconf does does not allow that.
 AC_PROG_CXX
 AC_PROG_LN_S
+PKG_PROG_PKG_CONFIG
 AC_CHECK_TOOL(WINDRES, windres, :)
 AC_CHECK_PROGS(GITLOG_TO_CHANGELOG, gitlog-to-changelog,
                [build-aux/gitlog-to-changelog])
@@ -428,62 +429,36 @@ AC_ARG_ENABLE(pinentry-gnome3,
             AC_HELP_STRING([--enable-pinentry-gnome3], [build GNOME 3 pinentry]),
             pinentry_gnome_3=$enableval, pinentry_gnome_3=maybe)
 
-dnl check for pkg-config
-if test "$pinentry_gtk_2" != "no" -o "$pinentry_gnome_3" != "no"; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-	if test x"${PKG_CONFIG}" = xno ; then
-		pinentry_gtk_2=no
-		pinentry_gnome_3=no
-	fi
-fi
-
 dnl check if the module gtk+-2.0 exists
 if test "$pinentry_gtk_2" != "no"; then
-	AC_MSG_CHECKING([for gtk+-2])
-	"${PKG_CONFIG}" --exists gtk+-2.0
-	if test $? -ne 0 ; then
-		AC_MSG_RESULT([no])
-		AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
-		pinentry_gtk_2=no
-	else
-		AC_MSG_RESULT([yes])
-		AC_MSG_CHECKING([gtk+-2 version >= 2.4.0])
-		modvers=`"${PKG_CONFIG}" --modversion gtk+-2.0`
-		AC_MSG_RESULT([$modvers])
-		"${PKG_CONFIG}" --atleast-version=2.4.0 gtk+-2.0
-		if test $? -ne 0 ; then
-			AC_MSG_WARN([building GTK+-2 pinentry disabled])
+	PKG_CHECK_MODULES(
+		GTK2,
+		[gtk+-2.0 >= 2.4.0],
+		[
+			test "$pinentry_gtk_2" != "no" && pinentry_gtk_2=yes
+			test "$pinentry_gnome_3" != "no" && pinentry_gnome_3=yes
+		],
+		[
+			AC_MSG_WARN([pkg-config could not find the module gtk+-2.0])
 			pinentry_gtk_2=no
-		else
-			GTK2CFLAGS=`"${PKG_CONFIG}" --cflags gtk+-2.0`
-			GTK2LIBS=`"${PKG_CONFIG}" --libs gtk+-2.0`
-			AC_SUBST(GTK2CFLAGS)
-			AC_SUBST(GTK2LIBS)
-			if test "$pinentry_gtk_2" != "no"
-			then
-			  pinentry_gtk_2=yes
-			fi
-		fi
-	fi
+		]
+	)
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
 
 if test "$pinentry_gnome_3" != "no"; then
-	AC_MSG_CHECKING([for gcr])
-	"${PKG_CONFIG}" --exists gcr-base-3
-	if test $? -ne 0 ; then
-		AC_MSG_RESULT([no])
-		AC_MSG_WARN([pkg-config could not find the module gcr-base-3])
-		pinentry_gnome_3=no
-	else
-		AC_MSG_RESULT([yes])
-		GNOME3CFLAGS=`"${PKG_CONFIG}" --cflags gcr-base-3`
-		GNOME3LIBS=`"${PKG_CONFIG}" --libs gcr-base-3`
-		AC_SUBST(GNOME3CFLAGS)
-		AC_SUBST(GNOME3LIBS)
-		AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
-		pinentry_gnome_3=yes
-	fi
+	PKG_CHECK_MODULES(
+		GNOME3,
+		[gcr-3,gcr-base-3],
+		[
+			pinentry_gnome_3=yes
+			AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
+		],
+		[
+			AC_MSG_WARN([pkg-config could not find the module gcr-3,gcr-base-3])
+			pinentry_gnome_3=no
+		]
+	)
 fi
 
 AM_CONDITIONAL(BUILD_PINENTRY_GNOME_3, test "$pinentry_gnome_3" = "yes")
@@ -496,36 +471,17 @@ AC_ARG_ENABLE(libsecret,
 	    [optionally cache passphrases using libsecret]),
             libsecret=$enableval, libsecret=maybe)
 
-dnl check for pkg-config
-if test "$libsecret" != "no" -o "$pinentry-qt" != "no"; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-  if test x"${PKG_CONFIG}" = xno ; then
-    if test "$pinentry_qt" = "yes"; then
-      AC_MSG_ERROR([[
-                    ***
-                    *** pkg-config is required to find the Qt libraries for pinentry-qt
-                    ***]])
-    else
-      pinentry_qt=no
-    fi
-    libsecret=no
-  fi
-fi
-
 dnl check if the module libsecret exists
 if test "$libsecret" != "no"; then
-	AC_MSG_CHECKING([for libsecret])
-	"${PKG_CONFIG}" --exists 'libsecret-1'
-	if test $? -ne 0 ; then
-		AC_MSG_RESULT([no])
-		AC_MSG_WARN([pkg-config could not find the modules libsecret-1])
-		libsecret=no
-	else
-		AC_MSG_RESULT([yes])
-		LIBSECRET_CFLAGS=`"${PKG_CONFIG}" --cflags 'libsecret-1'`
-		LIBSECRET_LIBS=`"${PKG_CONFIG}" --libs 'libsecret-1'`
-		libsecret=yes
-	fi
+	PKG_CHECK_MODULES(
+		LIBSECRET,
+		[libsecret-1],
+		[libsecret=yes],
+		[
+			AC_MSG_WARN([pkg-config could not find the module libsecret-1])
+			libsecret=no
+		]
+	)
 fi
 AM_CONDITIONAL(BUILD_WITH_LIBSECRET, test "$libsecret" = "yes")
 if test "$libsecret" = "yes"; then
