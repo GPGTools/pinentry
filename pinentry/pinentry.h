@@ -75,6 +75,8 @@ struct pinentry
   char *ttyname;
   /* The type of the terminal.  (Assuan: "OPTION ttytype TTYTYPE".)  */
   char *ttytype;
+  /* Set the alert mode (none, beep or flash).  */
+  char *ttyalert;
   /* The LC_CTYPE value for the terminal.  (Assuan: "OPTION lc-ctype
      LC_CTYPE".)  */
   char *lc_ctype;

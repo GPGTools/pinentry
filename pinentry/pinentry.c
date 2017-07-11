@@ -87,6 +87,7 @@ pinentry_reset (int use_defaults)
   int grab = pinentry.grab;
   char *ttyname = pinentry.ttyname;
   char *ttytype = pinentry.ttytype;
+  char *ttyalert = pinentry.ttyalert;
   char *lc_ctype = pinentry.lc_ctype;
   char *lc_messages = pinentry.lc_messages;
   int allow_external_password_cache = pinentry.allow_external_password_cache;
@@ -123,6 +124,7 @@ pinentry_reset (int use_defaults)
     {
       free (pinentry.ttyname);
       free (pinentry.ttytype);
+      free (pinentry.ttyalert);
       free (pinentry.lc_ctype);
       free (pinentry.lc_messages);
       free (pinentry.default_ok);
@@ -179,6 +181,7 @@ pinentry_reset (int use_defaults)
       pinentry.grab = grab;
       pinentry.ttyname = ttyname;
       pinentry.ttytype = ttytype;
+      pinentry.ttyalert = ttyalert;
       pinentry.lc_ctype = lc_ctype;
       pinentry.lc_messages = lc_messages;
       pinentry.allow_external_password_cache = allow_external_password_cache;
@@ -818,6 +821,7 @@ pinentry_parse_opts (int argc, char *argv[])
                  "Grab keyboard only while window is focused"),
     ARGPARSE_s_u('W', "parent-wid", "Parent window ID (for positioning)"),
     ARGPARSE_s_s('c', "colors", "|STRING|Set custom colors for ncurses"),
+    ARGPARSE_s_s('a', "ttyalert", "|STRING|Set the alert mode (none, beep or flash)"),
     ARGPARSE_end()
   };
   ARGPARSE_ARGS pargs = { &argc, &argv, 0 };
@@ -909,6 +913,17 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.timeout = pargs.r.ret_int;
 	  break;
 
+	case 'a':
+	  pinentry.ttyalert = strdup (pargs.r.ret_str);
+	  if (!pinentry.ttyalert)
+	    {
+#ifndef HAVE_W32CE_SYSTEM
+	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
+#endif
+	      exit (EXIT_FAILURE);
+	    }
+	  break;
+
         default:
           pargs.err = ARGPARSE_PRINT_WARNING;
 	  break;
@@ -973,6 +988,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 	free (pinentry.ttytype);
       pinentry.ttytype = strdup (value);
       if (!pinentry.ttytype)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "ttyalert"))
+    {
+      if (pinentry.ttyalert)
+	free (pinentry.ttyalert);
+      pinentry.ttyalert = strdup (value);
+      if (!pinentry.ttyalert)
 	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "lc-ctype"))

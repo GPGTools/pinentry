@@ -889,6 +889,14 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   cbreak ();		/* Take input chars one at a time, no wait for \n.  */
   noecho ();		/* Don't echo input - in color.  */
 
+  if (pinentry->ttyalert)
+    {
+      if (! strcmp(pinentry->ttyalert, "beep"))
+	beep ();
+      else if (! strcmp(pinentry->ttyalert, "flash"))
+	flash ();
+    }
+
   if (has_colors ())
     {
       start_color ();
