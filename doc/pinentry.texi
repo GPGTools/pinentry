@@ -261,14 +261,12 @@ be explicitly disabled by passing @code{--disable-inside-emacs} to
 @code{configure} when building @pinentry{}.
 
 Having Emacs get the passphrase is convenient, however, it is a
-significant security risk.  Emacs keeps all key presses buffered.
-(You can see the recent key presses by typing @code{C-h l}
-(@code{view-lossage}) in emacs.)  Further, Emacs is a huge program,
-which doesn't provide any process isolation to speak of.  As such,
-having it handle the passphrase adds a huge chunk of code to the
-user's trusted computing base.  Because of this concern, Emacs doesn't
-enable this by default (the user has to run @code{(pinentry-start)},
-e.g., from his or her @code{.emacs} file, explicitly).
+significant security risk.  Emacs is a huge program, which doesn't
+provide any process isolation to speak of.  As such, having it handle
+the passphrase adds a huge chunk of code to the user's trusted computing
+base.  Because of this concern, Emacs doesn't enable this by default,
+unless the @code{allow-emacs-pinentry} option is explicitly set in his
+or her @code{.gnupg/gpg-agent.conf} file.
 
 Similar to the inside-emacs check, the @pinentry{} frontends check
 whether the @code{DISPLAY} variable is set and a working X server is
