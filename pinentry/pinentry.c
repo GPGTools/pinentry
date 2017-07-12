@@ -1438,10 +1438,14 @@ cmd_getpin (assuan_context_t ctx, char *line)
       && ! pinentry.error)
     {
       char *password;
+      int give_up_on_password_store = 0;
 
       pinentry.tried_password_cache = 1;
 
-      password = password_cache_lookup (pinentry.keyinfo);
+      password = password_cache_lookup (pinentry.keyinfo, &give_up_on_password_store);
+      if (give_up_on_password_store)
+	pinentry.allow_external_password_cache = 0;
+
       if (password)
 	/* There is a cached password.  Try it.  */
 	{

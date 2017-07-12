@@ -96,7 +96,7 @@ password_cache_save (const char *keygrip, const char *password)
 }
 
 char *
-password_cache_lookup (const char *keygrip)
+password_cache_lookup (const char *keygrip, int *fatal_error)
 {
 #ifdef HAVE_LIBSECRET
   GError *error = NULL;
@@ -112,6 +112,9 @@ password_cache_lookup (const char *keygrip)
 
   if (error != NULL)
     {
+      if (fatal_error)
+	*fatal_error = 1;
+
       fprintf (stderr, "Failed to lookup password for key %s with secret service: %s\n",
 	     keygrip, error->message);
       g_error_free (error);
