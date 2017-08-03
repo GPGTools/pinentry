@@ -516,7 +516,10 @@ show_hide_button_toggled (GtkWidget *widget, gpointer data)
     }
 
   gtk_label_set_markup (GTK_LABEL(label), text);
-  gtk_widget_set_tooltip_text (GTK_WIDGET(button), tooltip);
+  if (!pinentry->grab)
+    {
+      gtk_widget_set_tooltip_text (GTK_WIDGET(button), tooltip);
+    }
   g_free (tooltip);
 }
 
@@ -736,7 +739,7 @@ create_window (pinentry_t ctx)
 	  gtk_progress_bar_set_text (GTK_PROGRESS_BAR (qualitybar),
 				     QUALITYBAR_EMPTY_TEXT);
 	  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
-          if (pinentry->quality_bar_tt)
+          if (pinentry->quality_bar_tt && !pinentry->grab)
 	    {
 #if !GTK_CHECK_VERSION (2, 12, 0)
 	      gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), qualitybar,
