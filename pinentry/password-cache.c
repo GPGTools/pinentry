@@ -91,6 +91,8 @@ password_cache_save (const char *keygrip, const char *password)
 
   free (label);
 #else
+  (void) keygrip;
+  (void) password;
   return;
 #endif
 }
@@ -135,6 +137,7 @@ password_cache_lookup (const char *keygrip, int *fatal_error)
 
   return password2;
 #else
+  (void) keygrip;
   return NULL;
 #endif
 }
@@ -161,6 +164,7 @@ password_cache_clear (const char *keygrip)
     return 1;
   return 0;
 #else
+  (void) keygrip;
   return -1;
 #endif
 }
