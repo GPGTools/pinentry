@@ -136,9 +136,6 @@ make_transient (GtkWidget *win, GdkEvent *event, gpointer data)
   (void)event;
   (void)data;
 
-  if (! pinentry->grab)
-    return;
-
   /* Make window transient for the root window.  */
   screen = gdk_screen_get_default ();
   root = gdk_screen_get_root_window (screen);
