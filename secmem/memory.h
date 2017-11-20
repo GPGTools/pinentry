@@ -2,19 +2,19 @@
  * Copyright (C) 1998,1999 Free Software Foundation, Inc.
  * Copyright (C) 1999,2000 Robert Bihlmeyer <robbe@orcus.priv.at>
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #ifndef _MEMORY_H
@@ -24,7 +24,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#if 0 
+#if 0
 }
 #endif
 #endif
@@ -46,7 +46,7 @@ void secmem_set_flags( unsigned flags );
 unsigned secmem_get_flags(void);
 size_t secmem_get_max_size (void);
 
-#if 0 
+#if 0
 {
 #endif
 #ifdef __cplusplus

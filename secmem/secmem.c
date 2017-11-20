@@ -1,6 +1,6 @@
 /* secmem.c  -	memory allocation from a secure heap
- *	Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
- *      Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -61,21 +61,21 @@ typedef union {
 #define log_error log_info
 #define log_bug log_fatal
 
-void 
+void
 log_info(char *template, ...)
 {
   va_list args;
-  
+
   va_start(args, template);
   vfprintf(stderr, template, args);
   va_end(args);
 }
 
-void 
+void
 log_fatal(char *template, ...)
 {
   va_list args;
-  
+
   va_start(args, template);
   vfprintf(stderr, template, args);
   va_end(args);
@@ -456,7 +456,7 @@ secmem_dump_stats()
 }
 
 
-size_t 
+size_t
 secmem_get_max_size (void)
 {
   return poolsize;

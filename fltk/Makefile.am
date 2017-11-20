@@ -1,4 +1,5 @@
 # Makefile.am - PIN entry FLTK frontend.
+# SPDX-License-Identifier: GPL-2.0+
 
 bin_PROGRAMS = pinentry-fltk
 
