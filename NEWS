@@ -3,6 +3,8 @@ Noteworthy changes in version 1.0.1 (unreleased)
 
  * A FLTK1.3-based pinentry has been contributed.
 
+ * A TQt3-based pinentry has been contributed.
+
  * New option --ttyalert for pinentry-curses to alert the user.
 
  * Don't show "save passphrase" checkbox if secret service is

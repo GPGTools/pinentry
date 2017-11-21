@@ -536,6 +536,42 @@ if test "$pinentry_qt" = "yes"; then
   fi
 fi
 
+dnl
+dnl Check for TQt pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-tqt,
+	      AC_HELP_STRING([--enable-pinentry-tqt], [build tqt pinentry]),
+	      pinentry_tqt=$enableval, pinentry_tqt=no)
+
+if test "$pinentry_tqt" != "no"; then
+
+  if test "$pinentry_qt" = "yes"; then
+    AC_MSG_ERROR([[
+    ***
+    *** Building both Qt and TQt pinentries is not supported.
+    *** Use --disable-pinentry-qt if you want the TQt pinentry.
+    ***]])
+  fi
+
+  PKG_CHECK_MODULES(PINENTRY_TQT, tqt,
+                    have_tqt_libs=yes,
+                    [PKG_CHECK_MODULES(PINENTRY_TQT, tqt-mt,
+                     have_tqt_libs=yes, have_tqt_libs=no)])
+
+  if test "$have_tqt_libs" = "yes"; then
+    AC_CHECK_TOOL([TQT_MOC], tqmoc, "no")
+  fi
+
+  if test "$have_tqt_libs" = "yes" -a "$TQT_MOC" != "no"; then
+    pinentry_tqt=yes
+  else
+    AC_MSG_WARN([TQt is not found])
+    pinentry_tqt=no
+  fi
+
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_TQT, test "$pinentry_tqt" = "yes")
+
 #
 # Check whether we should build the W32 pinentry.  This is actually
 # the simplest check as we do this only for that platform.
@@ -606,7 +642,11 @@ else
             if test "$pinentry_fltk" = "yes"; then
               PINENTRY_DEFAULT=pinentry-fltk
             else
-              AC_MSG_ERROR([[No pinentry enabled.]])
+              if test "$pinentry_tqt" = "yes"; then
+                PINENTRY_DEFAULT=pinentry-tqt
+              else
+                AC_MSG_ERROR([[No pinentry enabled.]])
+              fi
             fi
           fi
         fi
@@ -685,6 +725,7 @@ emacs/Makefile
 gtk+-2/Makefile
 gnome3/Makefile
 qt/Makefile
+tqt/Makefile
 w32/Makefile
 fltk/Makefile
 doc/Makefile
@@ -706,6 +747,7 @@ AC_MSG_NOTICE([
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
 	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version
+	TQt Pinentry .....: $pinentry_tqt
 	W32 Pinentry .....: $pinentry_w32
 	FLTK Pinentry ....: $pinentry_fltk
 

@@ -30,6 +30,8 @@ pinentry/Makefile.in
 pinentry/Makefile
 qt/Makefile.in
 qt/Makefile
+tqt/Makefile.in
+tqt/Makefile
 secmem/Makefile.in
 secmem/Makefile
 w32/Makefile.in
