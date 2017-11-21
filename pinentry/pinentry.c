@@ -29,7 +29,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-#include <sys/utsname.h>
+#ifndef HAVE_W32_SYSTEM
+# include <sys/utsname.h>
+#endif
 #ifndef HAVE_W32CE_SYSTEM
 # include <locale.h>
 #endif
@@ -41,8 +43,10 @@
 # include <windows.h>
 #endif
 
+#undef WITH_UTF8_CONVERSION
 #if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
-#include <iconv.h>
+# include <iconv.h>
+# define WITH_UTF8_CONVERSION 1
 #endif
 
 #include <assuan.h>
@@ -79,6 +83,11 @@ static const char *flavor_flag;
  * the call to pinentry_have_display and set it then in our
  * parser.  */
 static char *remember_display;
+
+/* Flag to remember whether a warning has been printed.  */
+#ifdef WITH_UTF8_CONVERSION
+static int lc_ctype_unknown_warning;
+#endif
 
 
 static void
@@ -229,9 +238,7 @@ pinentry_assuan_reset_handler (assuan_context_t ctx, char *line)
 
 
 
-static int lc_ctype_unknown_warning = 0;
-
-#if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
+#ifdef WITH_UTF8_CONVERSION
 char *
 pinentry_utf8_to_local (const char *lc_ctype, const char *text)
 {
@@ -294,10 +301,13 @@ pinentry_utf8_to_local (const char *lc_ctype, const char *text)
     }
   return output_buf;
 }
+#endif /*WITH_UTF8_CONVERSION*/
+
 
 /* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
    SECURE set to true, use secure memory for the returned buffer.
    Return NULL on error. */
+#ifdef WITH_UTF8_CONVERSION
 char *
 pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
 {
@@ -369,7 +379,7 @@ pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
     }
   return output_buf;
 }
-#endif
+#endif /*WITH_UTF8_CONVERSION*/
 
 
 /* Copy TEXT or TEXTLEN to BUFFER and escape as required.  Return a
@@ -399,6 +409,10 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
 }
 
 
+
+/* Return a malloced copy of the commandline for PID.  If this is not
+ * possible NULL is returned.  */
+#ifndef HAVE_W32_SYSTEM
 static char *
 get_cmdline (unsigned long pid)
 {
@@ -432,16 +446,18 @@ get_cmdline (unsigned long pid)
 
   return strdup (buffer);
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 /* Atomically ask the kernel for information about process PID.
  * Return a malloc'ed copy of the process name as long as the process
  * uid matches UID.  If it cannot determine that the process has uid
  * UID, it returns NULL.
-
+ *
  * This is not as informative as get_cmdline, but it verifies that the
  * process does belong to the user in question.
  */
+#ifndef HAVE_W32_SYSTEM
 static char *
 get_pid_name_for_uid (unsigned long pid, int uid)
 {
@@ -466,6 +482,8 @@ get_pid_name_for_uid (unsigned long pid, int uid)
   fclose (fp);
   if (n == 0)
     return NULL;
+  /* Fixme: Is it specified that "Name" is always the first line?  For
+   * robustness I would prefer to have a real parser here. -wk  */
   if (strncmp (buffer, "Name:\t", 6))
     return NULL;
   end = strcspn (buffer + 6, "\n") + 6;
@@ -480,6 +498,7 @@ get_pid_name_for_uid (unsigned long pid, int uid)
 
   return strdup (buffer + 6);
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 /* Return a malloced string with the title.  The caller mus free the
@@ -492,6 +511,7 @@ pinentry_get_title (pinentry_t pe)
 
   if (pe->title)
     title = strdup (pe->title);
+#ifndef HAVE_W32_SYSTEM
   else if (pe->owner_pid)
     {
       char buf[200];
@@ -522,6 +542,7 @@ pinentry_get_title (pinentry_t pe)
       free (cmdline);
       title = strdup (buf);
     }
+#endif /*!HAVE_W32_SYSTEM*/
   else
     title = strdup (this_pgmname);
 
@@ -1024,7 +1045,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     pinentry.grab = 1;
   else if (!strcmp (key, "debug-wait"))
     {
-#ifndef HAVE_W32CE_SYSTEM
+#ifndef HAVE_W32_SYSTEM
       fprintf (stderr, "%s: waiting for debugger - my pid is %u ...\n",
 	       this_pgmname, (unsigned int) getpid());
       sleep (*value?atoi (value):5);

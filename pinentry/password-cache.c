@@ -139,6 +139,7 @@ password_cache_lookup (const char *keygrip, int *fatal_error)
   return password2;
 #else
   (void) keygrip;
+  (void) fatal_error;
   return NULL;
 #endif
 }
