@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.0.1 (unreleased)
+Noteworthy changes in version 1.1.0 (2017-12-03)
 ------------------------------------------------
 
  * A FLTK1.3-based pinentry has been contributed.
@@ -9,6 +9,14 @@ Noteworthy changes in version 1.0.1 (unreleased)
 
  * Don't show "save passphrase" checkbox if secret service is
    unavailable.
+
+ * The GTK Pinentry shows on Linux some information anout the process
+   which invoked the Pinentry.
+
+ * The GTK Pinentry does not anymore show tooltips when keyboard
+   grabbing is enabled.
+
+ * Fixed various minor problems.
 
 
 Noteworthy changes in version 1.0.0 (2016-11-22)
