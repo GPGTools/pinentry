@@ -33,6 +33,8 @@
 ** Contact info@trolltech.com if any conditions of this licensing are
 ** not clear to you.
 **
+** SPDX-License-Identifier: GPL-2.0 OR QPL-1.0
+**
 **********************************************************************/
 
 #ifndef SECTQINTERNAL_P_H

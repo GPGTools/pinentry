@@ -15,7 +15,7 @@
 **
 ** This file may be distributed and/or modified under the terms of the
 ** GNU General Public License version 2 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
+** Foundation and appearing in the file COPYING included in the
 ** packaging of this file.
 **
 ** Licensees holding valid TQt Enterprise Edition or TQt Professional Edition
@@ -32,6 +32,8 @@
 **
 ** Contact info@trolltech.com if any conditions of this licensing are
 ** not clear to you.
+**
+** SPDX-License-Identifier: GPL-2.0 OR QPL-1.0
 **
 **********************************************************************/
 
