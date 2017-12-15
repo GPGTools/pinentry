@@ -19,7 +19,7 @@
 
 #import "PassphraseLengthFormatter.h"
 
-#define MAX_PASSPHRASE_LENGTH 300
+#define MAX_PASSPHRASE_LENGTH 255
 
 @implementation PassphraseLengthFormatter
 
