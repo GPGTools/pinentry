@@ -19,7 +19,7 @@
 
 #import "PassphraseLengthFormatter.h"
 
-#define MAX_PASSPHRASE_LENGTH 300
+#define MAX_PASSPHRASE_LENGTH 255
 
 @implementation PassphraseLengthFormatter
 
@@ -44,7 +44,8 @@
     // Code found on http://stackoverflow.com/a/19635242 which seems to work properly and as expected.
 
     NSString *proposedString = *partialStringPtr;
-	if (proposedString.length <= MAX_PASSPHRASE_LENGTH) {
+	// The limit is bytes, not characters.
+	if ([proposedString lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= MAX_PASSPHRASE_LENGTH) {
         return YES;
 	}
 
