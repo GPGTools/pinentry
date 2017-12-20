@@ -44,7 +44,8 @@
     // Code found on http://stackoverflow.com/a/19635242 which seems to work properly and as expected.
 
     NSString *proposedString = *partialStringPtr;
-	if (proposedString.length <= MAX_PASSPHRASE_LENGTH) {
+    // The limit is bytes, not characters.
+    if ([proposedString lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= MAX_PASSPHRASE_LENGTH) {
         return YES;
 	}
 
