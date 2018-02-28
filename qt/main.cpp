@@ -30,12 +30,14 @@
 #include "pinentrydialog.h"
 #include "pinentry.h"
 
-#include <qapplication.h>
+#include <QApplication>
+#include <QDebug>
 #include <QIcon>
-#include <QString>
-#include <qwidget.h>
-#include <qmessagebox.h>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QString>
+#include <QWidget>
+#include <QWindow>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +61,10 @@
   #else
     Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
   #endif
+#endif
+
+#ifdef Q_OS_WIN
+#include <windows.h>
 #endif
 
 static QString escape_accel(const QString &s)
@@ -97,22 +103,6 @@ static QString escape_accel(const QString &s)
     return result;
 }
 
-/* Hack for creating a QWidget with a "foreign" window ID */
-class ForeignWidget : public QWidget
-{
-public:
-    explicit ForeignWidget(WId wid) : QWidget(0)
-    {
-        QWidget::destroy();
-        create(wid, false, false);
-    }
-
-    ~ForeignWidget()
-    {
-        destroy(false, false);
-    }
-};
-
 namespace
 {
 class InvalidUtf8 : public std::invalid_argument
@@ -139,16 +129,43 @@ static QString from_utf8(const char *s)
     return result;
 }
 
+static void
+setup_foreground_window(QWidget *widget, WId parentWid)
+{
+    /* For windows set the desktop window as the transient parent */
+    QWindow *parentWindow = nullptr;
+    if (parentWid) {
+        parentWindow = QWindow::fromWinId(parentWid);
+    }
+#ifdef Q_OS_WIN
+    if (!parentWindow) {
+        HWND desktop = GetDesktopWindow();
+        if (desktop) {
+            parentWindow = QWindow::fromWinId((WId) desktop);
+        }
+    }
+#endif
+    if (parentWindow) {
+        // Ensure that we have a native wid
+        widget->winId();
+        QWindow *wndHandle = widget->windowHandle();
+
+        if (wndHandle) {
+            wndHandle->setTransientParent(parentWindow);
+        }
+    }
+    widget->setWindowFlags(Qt::Window |
+                           Qt::CustomizeWindowHint |
+                           Qt::WindowTitleHint |
+                           Qt::WindowCloseButtonHint |
+                           Qt::WindowStaysOnTopHint |
+                           Qt::WindowMinimizeButtonHint);
+}
+
 static int
 qt_cmd_handler(pinentry_t pe)
 {
-    QWidget *parent = 0;
     char *str;
-
-    /* FIXME: Add parent window ID to pinentry and GTK.  */
-    if (pe->parent_wid) {
-        parent = new ForeignWidget((WId) pe->parent_wid);
-    }
 
     int want_pass = !!pe->pin;
 
@@ -184,9 +201,9 @@ qt_cmd_handler(pinentry_t pe)
     if (want_pass) {
         char *str;
 
-        PinEntryDialog pinentry(parent, 0, pe->timeout, true, !!pe->quality_bar,
+        PinEntryDialog pinentry(nullptr, 0, pe->timeout, true, !!pe->quality_bar,
                                 repeatString, visibilityTT, hideTT);
-
+        setup_foreground_window(&pinentry, pe->parent_wid);
         pinentry.setPinentryInfo(pe);
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
         pinentry.setDescription(from_utf8(pe->description));
@@ -247,7 +264,8 @@ qt_cmd_handler(pinentry_t pe)
             pe->notok      ? QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel :
             /* else */       QMessageBox::Ok | QMessageBox::Cancel ;
 
-        PinentryConfirm box(QMessageBox::Information, pe->timeout, title, desc, buttons, parent);
+        PinentryConfirm box(QMessageBox::Information, pe->timeout, title, desc, buttons, nullptr);
+        setup_foreground_window(&box, pe->parent_wid);
 
         const struct {
             QMessageBox::StandardButton button;
@@ -274,7 +292,7 @@ qt_cmd_handler(pinentry_t pe)
         }
 
         box.show();
-        raiseWindow(&box);
+        box.raise();
 
         const int rc = box.exec();
 

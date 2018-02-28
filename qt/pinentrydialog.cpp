@@ -41,6 +41,7 @@
 #include <windows.h>
 #endif
 
+#if 0
 /* I [wk] have no idea for what this code was supposed to do.
    Foregrounding a window is heavily restricted by modern Windows
    versions.  This is the reason why gpg-agent employs its
@@ -52,6 +53,10 @@
    a Window is so restricted that it AllowSetForegroundWindow
    does not always work (e.g. when the ForegroundWindow timeout
    has not expired.
+
+   [ah 2018-02-28] Disabled this again in favor of using
+   windows stays on top hint. The code that is in main
+   setup_foreground_window.
    */
 #ifdef Q_OS_WIN
 WINBOOL SetForegroundWindowEx(HWND hWnd)
@@ -103,6 +108,8 @@ void raiseWindow(QWidget *w)
 #endif
 }
 
+#endif
+
 QPixmap icon(QStyle::StandardPixmap which)
 {
     QPixmap pm = qApp->windowIcon().pixmap(48, 48);
@@ -129,7 +136,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                                const QString &repeatString,
                                const QString &visibilityTT,
                                const QString &hideTT)
-    : QDialog(parent, Qt::WindowStaysOnTopHint),
+    : QDialog(parent),
       mRepeat(NULL),
       _grabbed(false),
       mVisibilityTT(visibilityTT),
@@ -138,7 +145,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisiCB(NULL)
 {
     _timed_out = false;
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (modal) {
         setWindowModality(Qt::ApplicationModal);
@@ -260,7 +266,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 void PinEntryDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    raiseWindow(this);
+    raise();
 }
 
 void PinEntryDialog::setDescription(const QString &txt)
