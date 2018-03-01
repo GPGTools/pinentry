@@ -38,7 +38,7 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
     setAccessibleDescription(desc);
     setAccessibleName(title);
 #endif
-    raise();
+    raiseWindow(this);
 }
 
 bool PinentryConfirm::timedOut() const
@@ -61,7 +61,7 @@ void PinentryConfirm::showEvent(QShowEvent *event)
     }
 
     QDialog::showEvent(event);
-    raise();
+    raiseWindow(this);
 }
 
 void PinentryConfirm::slotTimeout()

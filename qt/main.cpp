@@ -292,7 +292,7 @@ qt_cmd_handler(pinentry_t pe)
         }
 
         box.show();
-        box.raise();
+        raiseWindow(&box);
 
         const int rc = box.exec();
 

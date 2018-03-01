@@ -41,7 +41,6 @@
 #include <windows.h>
 #endif
 
-#if 0
 /* I [wk] have no idea for what this code was supposed to do.
    Foregrounding a window is heavily restricted by modern Windows
    versions.  This is the reason why gpg-agent employs its
@@ -57,6 +56,11 @@
    [ah 2018-02-28] Disabled this again in favor of using
    windows stays on top hint. The code that is in main
    setup_foreground_window.
+
+   [ah 2018-03-01] Enabled this again because the focus did
+   not change to the pinentry window without the attach
+   thread input stuff. The setup_foreground_window helps though
+   so that stays enabled.
    */
 #ifdef Q_OS_WIN
 WINBOOL SetForegroundWindowEx(HWND hWnd)
@@ -107,8 +111,6 @@ void raiseWindow(QWidget *w)
     }
 #endif
 }
-
-#endif
 
 QPixmap icon(QStyle::StandardPixmap which)
 {
@@ -266,7 +268,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 void PinEntryDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    raise();
+    raiseWindow(this);
 }
 
 void PinEntryDialog::setDescription(const QString &txt)
