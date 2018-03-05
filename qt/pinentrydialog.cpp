@@ -53,16 +53,13 @@
    does not always work (e.g. when the ForegroundWindow timeout
    has not expired.
 
-   [ah 2018-02-28] Disabled this again in favor of using
+   [ah 2018-03-05] Disabled this again in favor of using
    windows stays on top hint. The code that is in main
-   setup_foreground_window.
-
-   [ah 2018-03-01] Enabled this again because the focus did
-   not change to the pinentry window without the attach
-   thread input stuff. The setup_foreground_window helps though
-   so that stays enabled.
+   setup_foreground_window. Additionally the setFocus
+   now works because it is posted after the window is shown
+   and our raise window also activates the pinentry window.
    */
-#ifdef Q_OS_WIN
+#if 0
 WINBOOL SetForegroundWindowEx(HWND hWnd)
 {
     //Attach foreground window thread to our thread
@@ -83,10 +80,9 @@ WINBOOL SetForegroundWindowEx(HWND hWnd)
 
 void raiseWindow(QWidget *w)
 {
-    /* Maybe Qt will become aggressive enough one day that
-     * this is enough on windows too*/
+    w->activateWindow();
     w->raise();
-#ifdef Q_OS_WIN
+#if 0
     HWND wid = (HWND)w->effectiveWinId();
     /* In the meantime we do our own attention grabbing */
     if (!SetForegroundWindow(wid) && !SetForegroundWindowEx(wid)) {
@@ -210,7 +206,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     connect(_edit, SIGNAL(textChanged(QString)),
             this, SLOT(textChanged(QString)));
 
-    _edit->setFocus();
+    QTimer::singleShot(0, _edit, SLOT(setFocus()));
 
     QGridLayout *const grid = new QGridLayout(this);
     int row = 1;
