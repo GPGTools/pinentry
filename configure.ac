@@ -419,6 +419,42 @@ fi
 
 
 dnl
+dnl Check for EFL pinentry programs.
+dnl
+AC_ARG_ENABLE(pinentry-efl,
+            AC_HELP_STRING([--enable-pinentry-efl], [build EFL pinentry]),
+            pinentry_efl=$enableval, pinentry_efl=maybe)
+
+dnl check for pkg-config
+if test "$pinentry_efl" != "no"; then
+	AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+	if test x"${PKG_CONFIG}" = xno ; then
+		pinentry_efl=no
+	fi
+fi
+
+if test "$pinentry_efl" != "no"; then
+	AC_MSG_CHECKING([for efl])
+	"${PKG_CONFIG}" --exists 'elementary >= 1.18'
+	if test $? -ne 0 ; then
+		AC_MSG_RESULT([no])
+		AC_MSG_WARN([efl >= 1.18 is required for efl pinentry])
+		pinentry_efl=no
+	else
+		AC_MSG_RESULT([yes])
+		EFL_CFLAGS=`"${PKG_CONFIG}" --cflags ecore-x elementary`
+		EFL_LIBS=`"${PKG_CONFIG}" --libs ecore-x elementary`
+		AC_SUBST(EFL_CFLAGS)
+		AC_SUBST(EFL_LIBS)
+		if test "$pinentry_efl" != "no"
+		then
+			pinentry_efl=yes
+		fi
+	fi
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_EFL, test "$pinentry_efl" = "yes")
+
+dnl
 dnl Check for GTK+-2 / GNOME3 pinentry programs.
 dnl
 AC_ARG_ENABLE(pinentry-gtk2,
@@ -645,7 +681,11 @@ else
               if test "$pinentry_tqt" = "yes"; then
                 PINENTRY_DEFAULT=pinentry-tqt
               else
-                AC_MSG_ERROR([[No pinentry enabled.]])
+                if test "$pinentry_efl" = "yes"; then
+                  PINENTRY_DEFAULT=pinentry-efl
+                else
+                  AC_MSG_ERROR([[No pinentry enabled.]])
+                fi
               fi
             fi
           fi
@@ -721,6 +761,7 @@ secmem/Makefile
 pinentry/Makefile
 curses/Makefile
 tty/Makefile
+efl/Makefile
 emacs/Makefile
 gtk+-2/Makefile
 gnome3/Makefile
@@ -744,6 +785,7 @@ AC_MSG_NOTICE([
 	Curses Pinentry ..: $pinentry_curses
 	TTY Pinentry .....: $pinentry_tty
 	Emacs Pinentry ...: $pinentry_emacs
+	EFL Pinentry .....: $pinentry_efl
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
 	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version
