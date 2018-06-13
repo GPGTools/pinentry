@@ -221,7 +221,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(string.h unistd.h langinfo.h termio.h locale.h utime.h wchar.h)
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS(seteuid stpcpy mmap)
+AC_CHECK_FUNCS(seteuid stpcpy mmap stat)
 GNUPG_CHECK_MLOCK
 
 dnl Checks for standard types.

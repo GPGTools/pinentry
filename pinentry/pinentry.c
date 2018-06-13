@@ -27,6 +27,8 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <assert.h>
 #ifndef HAVE_W32_SYSTEM
@@ -1706,6 +1708,33 @@ cmd_message (assuan_context_t ctx, char *line)
   return cmd_confirm (ctx, "--one-button");
 }
 
+
+/* Return a staically allocated string with information on the mode,
+ * uid, and gid of DEVICE.  On error "?" is returned if DEVICE is
+ * NULL, "-" is returned.  */
+static const char *
+device_stat_string (const char *device)
+{
+#ifdef HAVE_STAT
+  static char buf[40];
+  struct stat st;
+
+  if (!device || !*device)
+    return "-";
+
+  if (stat (device, &st))
+    return "?";  /* Error */
+  snprintf (buf, sizeof buf, "%lo/%lu/%lu",
+            (unsigned long)st.st_mode,
+            (unsigned long)st.st_uid,
+            (unsigned long)st.st_gid);
+  return buf;
+#else
+  return "-";
+#endif
+}
+
+
 /* GETINFO <what>
 
    Multipurpose function to return a variety of information.
@@ -1721,7 +1750,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc;
   const char *s;
-  char buffer[100];
+  char buffer[150];
 
   if (!strcmp (line, "version"))
     {
@@ -1753,10 +1782,17 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "ttyinfo"))
     {
-      snprintf (buffer, sizeof buffer, "%s %s %s",
+      snprintf (buffer, sizeof buffer, "%s %s %s %s %lu/%lu",
                 pinentry.ttyname? pinentry.ttyname : "-",
                 pinentry.ttytype? pinentry.ttytype : "-",
-                pinentry.display? pinentry.display : "-" );
+                pinentry.display? pinentry.display : "-",
+                device_stat_string (pinentry.ttyname),
+#ifdef HAVE_DOSISH_SYSTEM
+                0l, 0l
+#else
+                (unsigned long)geteuid (), (unsigned long)getegid ()
+#endif
+                );
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
