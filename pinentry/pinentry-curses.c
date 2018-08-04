@@ -94,6 +94,8 @@ struct dialog
   int pin_max;
   /* Length of PIN.  */
   int pin_len;
+  int got_input;
+  int no_echo;
 
   int ok_y;
   int ok_x;
@@ -596,6 +598,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       addstr (dialog->ok);
     }
 
+  dialog->got_input = 0;
+  dialog->no_echo = 0;
+
  out:
   if (description)
     free (description);
@@ -730,6 +735,12 @@ dialog_input (dialog_t diag, int alt, int chr)
 		diag->pin_loc = diag->pin_len;
 	    }
 	}
+      else if (!diag->got_input)
+	{
+	  diag->no_echo = 1;
+	  move (diag->pin_y, diag->pin_x);
+	  addstr ("[no echo]");
+	}
       break;
 
     case 'l' - 'a' + 1: /* control-l */
@@ -801,19 +812,24 @@ dialog_input (dialog_t diag, int alt, int chr)
       break;
     }
 
-  if (old_loc < diag->pin_loc)
+  diag->got_input = 1;
+
+  if (!diag->no_echo)
     {
-      move (diag->pin_y, diag->pin_x + old_loc);
-      while (old_loc++ < diag->pin_loc)
-	addch ('*');
-    }
-  else if (old_loc > diag->pin_loc)
-    {
+      if (old_loc < diag->pin_loc)
+	{
+	  move (diag->pin_y, diag->pin_x + old_loc);
+	  while (old_loc++ < diag->pin_loc)
+	    addch ('*');
+	}
+      else if (old_loc > diag->pin_loc)
+	{
+	  move (diag->pin_y, diag->pin_x + diag->pin_loc);
+	  while (old_loc-- > diag->pin_loc)
+	    addch ('_');
+	}
       move (diag->pin_y, diag->pin_x + diag->pin_loc);
-      while (old_loc-- > diag->pin_loc)
-	addch ('_');
     }
-  move (diag->pin_y, diag->pin_x + diag->pin_loc);
 }
 
 static int
