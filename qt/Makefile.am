@@ -43,16 +43,17 @@ pinentry_qt_LDADD = \
 	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
 
 BUILT_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 CLEANFILES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
-	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h
+	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
+	pinlineedit.h pinlineedit.cpp
 
 nodist_pinentry_qt_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@

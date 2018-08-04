@@ -36,6 +36,7 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QCheckBox>
+#include "pinlineedit.h"
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -137,6 +138,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     : QDialog(parent),
       mRepeat(NULL),
       _grabbed(false),
+      _got_input(false),
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
@@ -163,7 +165,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _prompt = new QLabel(this);
     _prompt->hide();
 
-    _edit = new QLineEdit(this);
+    _edit = new PinLineEdit(this);
     _edit->setMaxLength(256);
     _edit->setEchoMode(QLineEdit::Password);
 
@@ -205,6 +207,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             this, SLOT(updateQuality(QString)));
     connect(_edit, SIGNAL(textChanged(QString)),
             this, SLOT(textChanged(QString)));
+    connect(_edit, SIGNAL(backspacePressed()),
+            this, SLOT(onBackspace()));
 
     QTimer::singleShot(0, _edit, SLOT(setFocus()));
 
@@ -356,6 +360,16 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
     }
 }
 
+void PinEntryDialog::onBackspace()
+{
+    if (!_got_input) {
+        _edit->setEchoMode(QLineEdit::NoEcho);
+        if (mRepeat) {
+            mRepeat->setEchoMode(QLineEdit::NoEcho);
+        }
+    }
+}
+
 void PinEntryDialog::updateQuality(const QString &txt)
 {
     int length;
@@ -365,6 +379,8 @@ void PinEntryDialog::updateQuality(const QString &txt)
     if (_timer) {
         _timer->stop();
     }
+
+    _got_input = true;
 
     if (!_have_quality_bar || !_pinentry_info) {
         return;
