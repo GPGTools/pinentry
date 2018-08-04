@@ -419,6 +419,22 @@ changed_text_handler (GtkWidget *widget)
 }
 
 
+/* Called upon a press on Backspace in the entry widget.
+   Used to completely disable echoing if we got no prior input. */
+static void
+backspace_handler (GtkWidget *widget, gpointer data)
+{
+  (void)data;
+
+  if (!got_input)
+    {
+      gtk_entry_set_invisible_char (GTK_ENTRY (entry), 0);
+      if (repeat_entry)
+	gtk_entry_set_invisible_char (GTK_ENTRY (repeat_entry), 0);
+    }
+}
+
+
 #ifdef HAVE_LIBSECRET
 static void
 may_save_passphrase_toggled (GtkWidget *widget, gpointer data)
@@ -713,6 +729,8 @@ create_window (pinentry_t ctx)
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
+      g_signal_connect (G_OBJECT (entry), "backspace",
+                        G_CALLBACK (backspace_handler), entry);
       hbox = gtk_hbox_new (FALSE, HIG_TINY);
       gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
       /* There was a wish in issue #2139 that this button should not
