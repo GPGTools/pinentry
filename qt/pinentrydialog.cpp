@@ -138,7 +138,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     : QDialog(parent),
       mRepeat(NULL),
       _grabbed(false),
-      _got_input(false),
+      _disable_echo_allowed(true),
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
@@ -318,6 +318,8 @@ void PinEntryDialog::setPrompt(const QString &txt)
 {
     _prompt->setText(txt);
     _prompt->setVisible(!txt.isEmpty());
+    if (txt.contains("PIN"))
+      _disable_echo_allowed = false;
 }
 
 QString PinEntryDialog::prompt() const
@@ -362,7 +364,7 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
 
 void PinEntryDialog::onBackspace()
 {
-    if (!_got_input) {
+    if (_disable_echo_allowed) {
         _edit->setEchoMode(QLineEdit::NoEcho);
         if (mRepeat) {
             mRepeat->setEchoMode(QLineEdit::NoEcho);
@@ -380,7 +382,7 @@ void PinEntryDialog::updateQuality(const QString &txt)
         _timer->stop();
     }
 
-    _got_input = true;
+    _disable_echo_allowed = false;
 
     if (!_have_quality_bar || !_pinentry_info) {
         return;

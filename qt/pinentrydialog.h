@@ -109,7 +109,7 @@ private:
     bool       _grabbed;
     bool       _have_quality_bar;
     bool       _timed_out;
-    bool       _got_input;
+    bool       _disable_echo_allowed;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mRepeatError,

@@ -87,7 +87,7 @@ private:
   bool       _grabbed;
   bool       _have_quality_bar;
   pinentry_t _pinentry_info;
-  bool       _got_input;
+  bool       _disable_echo_allowed;
 };
 
 

@@ -729,8 +729,14 @@ create_window (pinentry_t ctx)
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
-      g_signal_connect (G_OBJECT (entry), "backspace",
-                        G_CALLBACK (backspace_handler), entry);
+
+      /* Enable disabling echo if we're not asking for a PIN. */
+      if (pinentry->prompt && !strstr (pinentry->prompt, "PIN"))
+	{
+	  g_signal_connect (G_OBJECT (entry), "backspace",
+			    G_CALLBACK (backspace_handler), entry);
+	}
+
       hbox = gtk_hbox_new (FALSE, HIG_TINY);
       gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
       /* There was a wish in issue #2139 that this button should not
