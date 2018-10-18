@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <deployment version="1070" identifier="macosx"/>
-        <development version="5000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+        <deployment version="101200" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="PinentryMac">
@@ -137,7 +137,7 @@
                         </constraints>
                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="errorText" id="839">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
@@ -156,7 +156,7 @@
                             <binding destination="-2" name="value" keyPath="promptText" id="903"/>
                         </connections>
                     </textField>
-                    <textField verticalHuggingPriority="800" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="800" preferredMaxLayoutWidth="420" translatesAutoresizingMaskIntoConstraints="NO" id="820" userLabel="Description">
+                    <textField verticalHuggingPriority="800" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="800" preferredMaxLayoutWidth="419" translatesAutoresizingMaskIntoConstraints="NO" id="820" userLabel="Description">
                         <rect key="frame" x="104" y="190" width="423" height="49"/>
                         <constraints>
                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="43" id="2of-pb-1si"/>
