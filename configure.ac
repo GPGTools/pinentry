@@ -40,7 +40,7 @@ m4_define([mym4_betastring],
           m4_esyscmd_s([git describe --match 'pinentry-[0-9].[0-9].*[0-9]' \
                            --long|  awk -F- '$3!=0{print"-beta"$3}']))
 m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
-m4_define([mym4_full_version],[mym4_version[]])
+m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
 AC_INIT([pinentry],[mym4_full_version], [https://bugs.gnupg.org])
 
