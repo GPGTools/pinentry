@@ -754,6 +754,12 @@ AH_BOTTOM([
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
+build_doc=yes
+AC_ARG_ENABLE([doc], AC_HELP_STRING([--disable-doc],
+                                    [do not build the documentation]),
+                     build_doc=$enableval, build_doc=yes)
+AM_CONDITIONAL([BUILD_DOC], [test "x$build_doc" != xno])
+
 
 AC_CONFIG_FILES([
 m4/Makefile
