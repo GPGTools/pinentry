@@ -241,12 +241,12 @@ static int fltk_cmd_handler(pinentry_t pe)
 				if (pe->one_button)
 				{
 					fl_ok = ok.c_str();
-					fl_message(message);
+					fl_message("%s", message);
 					result = 1; // OK
 				}
 				else if (pe->notok)
 				{
-					switch (fl_choice(message, ok.c_str(), cancel.c_str(), pe->notok))
+					switch (fl_choice("%s", ok.c_str(), cancel.c_str(), pe->notok, message))
 					{
 					case 0: result = 1; break;
 					case 2: result = 0; break;
@@ -256,7 +256,7 @@ static int fltk_cmd_handler(pinentry_t pe)
 				}
 				else
 				{
-					switch (fl_choice(message, ok.c_str(), cancel.c_str(), NULL))
+					switch (fl_choice("%s", ok.c_str(), cancel.c_str(), NULL, message))
 					{
 					case 0: result = 1; break;
 					default:
