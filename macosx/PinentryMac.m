@@ -55,7 +55,7 @@
 
 @implementation PinentryMac
 @synthesize titleText, descriptionText, errorText, promptText, okText, notokText, cancelText, showTypingText, saveInKeychainText, repeatText;
-@synthesize grab, oneButton, confirmMode, saveInKeychain, canUseKeychain, showTyping;
+@synthesize grab, oneButton, confirmMode, showTyping;
 @synthesize okButton, cancelButton, notokButton, showTypingButton, saveInKeychainButton;
 @synthesize icon, timeout, window;
 @synthesize passphraseField, securePassphraseField, errorLabel;
@@ -71,6 +71,8 @@ PinentryMac *_sharedInstance = nil;
 
 	self.showTyping = [[NSUserDefaults standardUserDefaults] boolForKey:@"ShowPassphrase"];
 	self.saveInKeychain = [[NSUserDefaults standardUserDefaults] boolForKey:@"UseKeychain"];
+	_disableKeychain = [[NSUserDefaults standardUserDefaults] boolForKey:@"DisableKeychain"];
+
 
 	self.okText = localized(@"OK");
 	self.cancelText = localized(@"Cancel");
@@ -184,6 +186,17 @@ PinentryMac *_sharedInstance = nil;
 - (void)buttonClicked:(NSButton *)sender {
 	pressedButton = sender.tag;
 	[self.window close];
+}
+
+/*
+ * The user can only select to save the password in the keychain when
+ * gpg-agent sent a chaching-id AND the use of the keychain was NOT disabled.
+ */
+- (BOOL)canUseKeychain {
+	return _canUseKeychain && !_disableKeychain;
+}
+- (BOOL)saveInKeychain {
+	return _saveInKeychain && !_disableKeychain;
 }
 
 

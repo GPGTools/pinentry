@@ -28,6 +28,7 @@
 	NSTimer *timer;
 	NSArray *topLevelObjects;
 	NSString *_pin;
+	BOOL _disableKeychain;
 }
 
 @property (nonatomic, strong) NSString *titleText;
