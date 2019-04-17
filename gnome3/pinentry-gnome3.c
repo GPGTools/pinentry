@@ -452,9 +452,9 @@ pe_gnome_screen_locked (void)
   g_object_unref(dbus);
   if (!reply)
     {
-      /* G_IO_ERROR_TIMED_OUT is the expected response when there is
+      /* G_IO_ERROR_IS_DIRECTORY is the expected response when there is
        * no gnome screensaver at all, don't be noisy in that case: */
-      if (!(error && error->code == G_IO_ERROR_TIMED_OUT))
+      if (!(error && error->code == G_IO_ERROR_IS_DIRECTORY))
         fprintf (stderr, "Failed to get d-bus reply for org.gnome.ScreenSaver.GetActive (%d): %s\n",
                  error ? error->code : -1,
                  error ? error->message : "<no GError>");
