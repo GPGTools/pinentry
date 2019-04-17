@@ -446,7 +446,7 @@ pe_gnome_screen_locked (void)
                                        NULL,
                                        ((const GVariantType *) "(b)"),
                                        G_DBUS_CALL_FLAGS_NO_AUTO_START,
-                                       0,
+                                       -1,
                                        NULL,
                                        &error);
   g_object_unref(dbus);
