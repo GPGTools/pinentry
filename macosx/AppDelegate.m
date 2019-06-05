@@ -146,49 +146,47 @@ NSDictionary *parseUserData(pinentry_t pe) {
 
 static int mac_cmd_handler (pinentry_t pe) {
 	@autoreleasepool {
+		int returnValue = -1;
+
+
+		// cacheId is used to save the passphrase in the macOS keychain.
 		NSString *cacheId = nil;
 		if (pe->keyinfo) {
-			cacheId = [NSString gpgStringWithCString:pe->keyinfo];
-			if (cacheId.length > 2) {
+			NSString *keyinfo = [NSString gpgStringWithCString:pe->keyinfo];
+			if (keyinfo.length > 2) {
 				// keyinfo has the form x/fingerprint. x is the cache mode it's one of u (user), s (ssh) or n (normal).
 				// Ignore cache_mode at the moment.
-				cacheId = [cacheId substringFromIndex:2];
-			} else {
-				cacheId = nil;
+				cacheId = [keyinfo substringFromIndex:2];
 			}
 		}
 
-		// cacheId is used to save the passphrase in the Mac OS X keychain.
-		if (cacheId && pe->pin) {
-			if (pe->error) {
-				storePassphraseInKeychain(cacheId, nil, nil);
-			} else {
-				const char *passphrase;
-				passphrase = [getPassphraseFromKeychain(cacheId) UTF8String];
-				if (passphrase) {
-					int len = strlen(passphrase);
-					pinentry_setbufferlen(pe, len + 1);
-					if (pe->pin) {
-						strcpy(pe->pin, passphrase);
-						return len;
-					} else {
-						return -1;
-					}
+		if (cacheId && pe->pin && !pe->error) {
+			// Search for a stored password in the macOS keychain.
+			const char *passphrase = [getPassphraseFromKeychain(cacheId) UTF8String];
+			if (passphrase) { // A password was found.
+				int len = strlen(passphrase);
+				pinentry_setbufferlen(pe, len + 1);
+				if (pe->pin) {
+					// Write the password into pe->pin and return its length.
+					strcpy(pe->pin, passphrase);
+					return len;
+				} else {
+					// That is bad! Could not allocate enough memory for the password.
+					return -1;
 				}
 			}
 		}
 
 
-		NSDictionary *dict = parseUserData(pe);
-		NSString *description = dict[@"description"];
-		NSString *keychainLabel = dict[@"keychainLabel"];
-
-
 		PinentryMac *pinentry = [[PinentryMac alloc] init];
 
+		NSDictionary *userData = parseUserData(pe);
+		NSString *description = userData[@"description"];
+
+
 		pinentry.grab = pe->grab;
-		if (dict[@"icon"]) {
-			pinentry.icon = dict[@"icon"];
+		if (userData[@"icon"]) {
+			pinentry.icon = userData[@"icon"];
 		}
 		if (description) {
 			pinentry.descriptionText = [description stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -213,7 +211,7 @@ static int mac_cmd_handler (pinentry_t pe) {
 			if (pe->error) {
 				pinentry.errorText = [NSString gpgStringWithCString:pe->error];
 			}
-			if (pe->keyinfo) {
+			if (cacheId) {
 				pinentry.canUseKeychain = YES;
 			}
 			if (pe->repeat_passphrase) {
@@ -229,33 +227,36 @@ static int mac_cmd_handler (pinentry_t pe) {
 				};
 			}
 
-			if ([pinentry runModal] != 1) {
-				return -1;
-			}
+			if ([pinentry runModal] == 1) {
+				const char *passphrase = [pinentry.pin ? pinentry.pin : @"" UTF8String];
+				if (passphrase) {
+					int len = strlen(passphrase);
+					pinentry_setbufferlen(pe, len + 1);
+					if (pe->pin) {
+						// Write the password into pe->pin and return its length at the end of this method.
+						strcpy(pe->pin, passphrase);
 
-			const char *passphrase = [pinentry.pin ? pinentry.pin : @"" UTF8String];
-			if (!passphrase) {
-				return -1;
-			}
+						if (pe->repeat_passphrase) {
+							pe->repeat_okay = YES;
+						}
 
-			if (pinentry.saveInKeychain && cacheId) {
-				storePassphraseInKeychain(cacheId, pinentry.pin, keychainLabel);
-			}
-
-			int len = strlen(passphrase);
-			pinentry_setbufferlen(pe, len + 1);
-			if (pe->pin) {
-				strcpy(pe->pin, passphrase);
-
-				if (pe->repeat_passphrase) {
-					pe->repeat_okay = YES;
+						returnValue = len;
+					}
 				}
-
-
-				return len;
 			}
 
-			return -1;
+			if (cacheId) { // Having a cacheId means, we can use the keychain.
+				NSString *keychainLabel = userData[@"keychainLabel"];
+				if (pinentry.saveInKeychain) {
+					// The user wants the password to be stored, do so.
+					storePassphraseInKeychain(cacheId, pinentry.pin, keychainLabel);
+				} else if (pe->error) {
+					// The last password return from pinentry was wrong.
+					// Remove a possible stored wrong password from the keychain.
+					storePassphraseInKeychain(cacheId, nil, keychainLabel);
+				}
+			}
+
 		} else {
 			pinentry.confirmMode = YES;
 			pinentry.oneButton = pe->one_button;
@@ -265,13 +266,20 @@ static int mac_cmd_handler (pinentry_t pe) {
 
 			switch ([pinentry runModal]) {
 				case 1:
-					return 1;
+					returnValue = 1;
+					break;
 				case 2:
-					return 0;
+					returnValue = 0;
+					break;
+				default:
+					pe->canceled = 1;
+					returnValue = 0;
+					break;
 			}
-			pe->canceled = 1;
-			return 0;
 		}
+
+
+		return returnValue;
 	}
 }
 
