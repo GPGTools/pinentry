@@ -84,7 +84,7 @@ BOOL storePassphraseInKeychain(NSString *fingerprint, NSString *passphrase, NSSt
 	return status == errSecSuccess;
 }
 
-NSString *getPassphraseFromKeychain(NSString *fingerprint) {
+NSString *getPassphraseFromKeychain(NSString *fingerprint, BOOL *keychainUnusable) {
 	SecKeychainRef keychainRef = nil;
 
 	NSString *keychainPath = [[NSUserDefaults standardUserDefaults] valueForKey:@"KeychainPath"];
@@ -98,17 +98,45 @@ NSString *getPassphraseFromKeychain(NSString *fingerprint) {
 								kSecClassGenericPassword, kSecClass,
 								@GPG_SERVICE_NAME, kSecAttrService,
 								fingerprint, kSecAttrAccount,
+								kCFBooleanFalse, kSecReturnData,
+								keychainRef, kSecUseKeychain,
+								nil];
+
+	int status1 = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, nil);
+
+
+
+	attributes = [NSDictionary dictionaryWithObjectsAndKeys:
+								kSecClassGenericPassword, kSecClass,
+								@GPG_SERVICE_NAME, kSecAttrService,
+								fingerprint, kSecAttrAccount,
 								kCFBooleanTrue, kSecReturnData,
 								keychainRef, kSecUseKeychain,
 								nil];
 	CFTypeRef passphraseData = nil;
 
-	int status = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
+	int status2 = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
+
+	if (status1 == errSecSuccess) {
+		if (status2 == errSecAuthFailed) {
+			// The keychain is unusable because of the Apple bug radar://50789571
+			// Do not try to use the keychain in any form.
+			if (keychainUnusable) {
+				*keychainUnusable = YES;
+			}
+		} else if (status2 == errSecUserCanceled) {
+			// The user did not allow pinentry to use the keychain.
+			// Do not use the keychain, do prevent removing or overwriting of the correct passphrase.
+			if (keychainUnusable) {
+				*keychainUnusable = YES;
+			}
+		}
+	}
 
 	if (keychainRef) {
 		CFRelease(keychainRef);
 	}
-	if (status != 0) {
+	if (status2 != 0) {
 		return nil;
 	}
 

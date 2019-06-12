@@ -32,6 +32,7 @@ static int mac_cmd_handler (pinentry_t pe);
 pinentry_cmd_handler_t pinentry_cmd_handler = mac_cmd_handler;
 
 
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
 	[[NSUserDefaults standardUserDefaults] addSuiteNamed:@"org.gpgtools.common"];
 	[[NSUserDefaults standardUserDefaults] registerDefaults:@{@"UseKeychain": @YES}];
@@ -146,6 +147,9 @@ NSDictionary *parseUserData(pinentry_t pe) {
 
 static int mac_cmd_handler (pinentry_t pe) {
 	@autoreleasepool {
+		static NSString *lastCacheIdUsed = nil; // The cacheId used the last time, to return a passphrase from the keychain.
+		static BOOL doNotUseKeychain = NO; // Remeber if the keychain should not be used. TODO: Differentiate between keys.
+		BOOL lastTryWasKeychain = NO;
 		int returnValue = -1;
 
 
@@ -160,13 +164,29 @@ static int mac_cmd_handler (pinentry_t pe) {
 			}
 		}
 
-		if (cacheId && pe->pin && !pe->error) {
+		if (lastCacheIdUsed && [cacheId isEqualToString:lastCacheIdUsed]) {
+			// The last passphrase returned came from the keychain.
+			// We are here again. That means the passphrase was wrong. :(
+			lastTryWasKeychain = YES;
+		}
+		lastCacheIdUsed = nil;
+
+
+		if (cacheId && // We can use the keychain.
+			pe->pin && // The gpg-agent wants a passphrase. pe->pin == nil means the agent wants a confirmation dialog without a text field.
+			!pe->error && // Do not use the keychain, if there was an error (e.g. wrong passphrase).
+			!lastTryWasKeychain) { // Only try the keychain once.
+
+
 			// Search for a stored password in the macOS keychain.
-			const char *passphrase = [getPassphraseFromKeychain(cacheId) UTF8String];
+			NSString *passphraseFromKeychain = getPassphraseFromKeychain(cacheId, &doNotUseKeychain);
+			const char *passphrase = passphraseFromKeychain.UTF8String;
 			if (passphrase) { // A password was found.
 				int len = strlen(passphrase);
 				pinentry_setbufferlen(pe, len + 1);
 				if (pe->pin) {
+					lastCacheIdUsed = cacheId;
+
 					// Write the password into pe->pin and return its length.
 					strcpy(pe->pin, passphrase);
 					return len;
@@ -175,6 +195,10 @@ static int mac_cmd_handler (pinentry_t pe) {
 					return -1;
 				}
 			}
+		}
+		if (doNotUseKeychain) {
+			// Hide the "Save in keychain" box and also prevent pinentry from removing or overwriting a stored passphrase.
+			cacheId = nil;
 		}
 
 
@@ -227,8 +251,9 @@ static int mac_cmd_handler (pinentry_t pe) {
 				};
 			}
 
-			if ([pinentry runModal] == 1) {
-				const char *passphrase = [pinentry.pin ? pinentry.pin : @"" UTF8String];
+			if ([pinentry runModal] == 1) { // The user clicked OK.
+				NSString *pin = pinentry.pin ? pinentry.pin : @"";
+				const char *passphrase = pin.UTF8String;
 				if (passphrase) {
 					int len = strlen(passphrase);
 					pinentry_setbufferlen(pe, len + 1);
@@ -242,18 +267,21 @@ static int mac_cmd_handler (pinentry_t pe) {
 
 						returnValue = len;
 					}
-				}
-			}
 
-			if (cacheId) { // Having a cacheId means, we can use the keychain.
-				NSString *keychainLabel = userData[@"keychainLabel"];
-				if (pinentry.saveInKeychain) {
-					// The user wants the password to be stored, do so.
-					storePassphraseInKeychain(cacheId, pinentry.pin, keychainLabel);
-				} else if (pe->error) {
-					// The last password return from pinentry was wrong.
-					// Remove a possible stored wrong password from the keychain.
-					storePassphraseInKeychain(cacheId, nil, keychainLabel);
+
+					if (cacheId) { // Having a cacheId means, we can use the keychain.
+						NSString *keychainLabel = userData[@"keychainLabel"];
+						if (pinentry.saveInKeychain) {
+							// The user wants the password to be stored, do so.
+							storePassphraseInKeychain(cacheId, pin, keychainLabel);
+						}
+
+						/* No need to remove the passphrase from the keychain, because we only try it once.
+						 * Back in the days, gpg-agent called a new pinentry for every try.
+						 * So it was not possible to know, if the keychain was used before.
+						 * Now pinentry get only called once and we can remember, if we got the last passphrase from the keychain.
+						 */
+					}
 				}
 			}
 
