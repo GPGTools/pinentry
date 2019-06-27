@@ -65,10 +65,18 @@ terminal_restore (int fd)
 }
 
 static int
-terminal_setup (int fd)
+terminal_setup (int fd, int line_edit)
 {
   n_term = o_term;
-  n_term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+  if (line_edit)
+    n_term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+  else
+    {
+      n_term.c_lflag &= ~(ECHO|ICANON);
+      n_term.c_lflag |= ISIG;
+      n_term.c_cc[VMIN] = 1;
+      n_term.c_cc[VTIME]= 0;
+    }
   if ((tcsetattr(fd, TCSAFLUSH, &n_term)) == -1)
     return -1;
   return 1;
@@ -556,7 +564,7 @@ tty_cmd_handler (pinentry_t pinentry)
 
   if (! rc)
     {
-      if (terminal_setup (fileno (ttyfi)) == -1)
+      if (terminal_setup (fileno (ttyfi), !!pinentry->pin) == -1)
         {
           int err = errno;
           fprintf (stderr, "terminal_setup failure, exiting\n");
