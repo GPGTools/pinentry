@@ -51,10 +51,22 @@ static struct termios n_term;
 static struct termios o_term;
 
 static int
-cbreak (int fd)
+terminal_save (int fd)
 {
-  if ((tcgetattr(fd, &o_term)) == -1)
+  if ((tcgetattr (fd, &o_term)) == -1)
     return -1;
+  return 0;
+}
+
+static void
+terminal_restore (int fd)
+{
+  tcsetattr (fd, TCSANOW, &o_term);
+}
+
+static int
+terminal_setup (int fd)
+{
   n_term = o_term;
   n_term.c_lflag = n_term.c_lflag & ~(ECHO|ICANON);
   n_term.c_cc[VMIN] = 1;
@@ -234,14 +246,6 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	notok = button (pinentry->notok, "No", ttyfo);
     }
 
-  if (cbreak (fileno (ttyfi)) == -1)
-    {
-      int err = errno;
-      fprintf (stderr, "cbreak failure, exiting\n");
-      errno = err;
-      return -1;
-    }
-
   while (1)
     {
       int input;
@@ -308,8 +312,6 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
     pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
 #endif
 
-  tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
-
   return ret;
 }
 
@@ -322,14 +324,6 @@ read_password (FILE *ttyfi, FILE *ttyfo)
   char *buffer;
 
   (void) ttyfo;
-
-  if (cbreak (fileno (ttyfi)) == -1)
-    {
-      int err = errno;
-      fprintf (stderr, "cbreak failure, exiting\n");
-      errno = err;
-      return NULL;
-    }
 
   buffer = secmem_malloc (len);
   if (! buffer)
@@ -379,8 +373,6 @@ read_password (FILE *ttyfi, FILE *ttyfo)
 	}
     }
   buffer[count] = '\0';
-
-  tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
 
   if (done == -1)
     {
@@ -555,12 +547,26 @@ tty_cmd_handler(pinentry_t pinentry)
         }
     }
 
+  if (terminal_save (fileno (ttyfi)) < 0)
+    rc = -1;
+
   if (! rc)
     {
-      if (pinentry->pin)
-	rc = password (pinentry, ttyfi, ttyfo);
+      if (terminal_setup (fileno (ttyfi)) == -1)
+        {
+          int err = errno;
+          fprintf (stderr, "terminal_setup failure, exiting\n");
+          errno = err;
+        }
       else
-	rc = confirm (pinentry, ttyfi, ttyfo);
+        {
+          if (pinentry->pin)
+            rc = password (pinentry, ttyfi, ttyfo);
+          else
+            rc = confirm (pinentry, ttyfi, ttyfo);
+
+          terminal_restore (fileno (ttyfi));
+        }
     }
 
   do_touch_file (pinentry);
