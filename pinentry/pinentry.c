@@ -1615,6 +1615,10 @@ cmd_getpin (assuan_context_t ctx, char *line)
       if (pinentry.specific_err)
         {
           write_status_error (ctx, &pinentry);
+
+          if (gpg_err_code (pinentry.specific_err) == GPG_ERR_FULLY_CANCELED)
+            assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+
           return pinentry.specific_err;
         }
       return (pinentry.locale_err
@@ -1685,6 +1689,10 @@ cmd_confirm (assuan_context_t ctx, char *line)
   if (pinentry.specific_err)
     {
       write_status_error (ctx, &pinentry);
+
+      if (gpg_err_code (pinentry.specific_err) == GPG_ERR_FULLY_CANCELED)
+        assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+
       return pinentry.specific_err;
     }
 
