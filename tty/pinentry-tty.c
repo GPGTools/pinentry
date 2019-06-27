@@ -68,9 +68,7 @@ static int
 terminal_setup (int fd)
 {
   n_term = o_term;
-  n_term.c_lflag = n_term.c_lflag & ~(ECHO|ICANON);
-  n_term.c_cc[VMIN] = 1;
-  n_term.c_cc[VTIME]= 0;
+  n_term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
   if ((tcsetattr(fd, TCSAFLUSH, &n_term)) == -1)
     return -1;
   return 1;
@@ -266,18 +264,26 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       fflush (ttyfo);
 
       input = fgetc (ttyfi);
-      fprintf (ttyfo, "%c\n", input);
-      input = tolower (input);
 
-      if (input == EOF || input == 0x4)
-	/* End of file or control-d (= end of file).  */
+      if (input == EOF)
 	{
 	  pinentry->close_button = 1;
 
 	  pinentry->canceled = 1;
+
+#ifndef HAVE_DOSISH_SYSTEM
+          if (!timed_out && errno == EINTR)
+            pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
+#endif
+
 	  ret = 0;
 	  break;
 	}
+      else
+        {
+          fprintf (ttyfo, "%c\n", input);
+          input = tolower (input);
+        }
 
       if (pinentry->one_button)
 	{
@@ -316,7 +322,7 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 }
 
 static char *
-read_password (FILE *ttyfi, FILE *ttyfo)
+read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   int done = 0;
   int len = 128;
@@ -352,19 +358,16 @@ read_password (FILE *ttyfi, FILE *ttyfo)
       c = fgetc (ttyfi);
       switch (c)
 	{
-	case 0x4: case EOF:
-	  /* Control-d (i.e., end of file) or a real EOF.  */
-	  done = -1;
+        case EOF:
+          done = -1;
+#ifndef HAVE_DOSISH_SYSTEM
+          if (!timed_out && errno == EINTR)
+            pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
+#endif
 	  break;
 
 	case '\n':
 	  done = 1;
-	  break;
-
-	case 0x7f:
-	  /* Backspace.  */
-	  if (count > 0)
-	    count --;
 	  break;
 
 	default:
@@ -417,7 +420,7 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 		|| prompt[strlen(prompt) - 1] == '?') ? "" : ":");
       fflush (ttyfo);
 
-      passphrase = read_password (ttyfi, ttyfo);
+      passphrase = read_password (pinentry, ttyfi, ttyfo);
       fputc ('\n', ttyfo);
       if (! passphrase)
 	{
@@ -439,7 +442,7 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 		    || prompt[strlen(prompt) - 1] == '?') ? "" : ":");
 	  fflush (ttyfo);
 
-	  passphrase2 = read_password (ttyfi, ttyfo);
+	  passphrase2 = read_password (pinentry, ttyfi, ttyfo);
 	  fputc ('\n', ttyfo);
 	  if (! passphrase2)
 	    {
@@ -501,7 +504,7 @@ do_touch_file(pinentry_t pinentry)
 
 #ifndef HAVE_DOSISH_SYSTEM
 static void
-catchsig(int sig)
+catchsig (int sig)
 {
   if (sig == SIGALRM)
     timed_out = 1;
@@ -509,7 +512,7 @@ catchsig(int sig)
 #endif
 
 int
-tty_cmd_handler(pinentry_t pinentry)
+tty_cmd_handler (pinentry_t pinentry)
 {
   int rc = 0;
   FILE *ttyfi = stdin;
@@ -522,10 +525,11 @@ tty_cmd_handler(pinentry_t pinentry)
     {
       struct sigaction sa;
 
-      memset(&sa, 0, sizeof(sa));
+      memset (&sa, 0, sizeof(sa));
       sa.sa_handler = catchsig;
-      sigaction(SIGALRM, &sa, NULL);
-      alarm(pinentry->timeout);
+      sigaction (SIGALRM, &sa, NULL);
+      sigaction (SIGINT, &sa, NULL);
+      alarm (pinentry->timeout);
     }
 #endif
 
