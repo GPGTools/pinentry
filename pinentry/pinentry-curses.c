@@ -133,7 +133,7 @@ typedef char CH;
 #endif
 
 /* Return the next line up to MAXWIDTH columns wide in START and LEN.
-   Return value is the width needed (columns+1) of the line.
+   Return value is the width needed for the line.
    The first invocation should have 0 as *LEN.  If the line ends with
    a \n, it is a normal line that will be continued.  If it is a '\0'
    the end of the text is reached after this line.  In all other cases
@@ -148,7 +148,8 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
   CH *end;
 
   /* Skip to next line.  */
-  *start_p += len;
+  if (len)
+    *start_p += len + 1;
   /* Skip leading space.  */
   while (**start_p == SPCH)
     (*start_p)++;
@@ -158,11 +159,11 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
 
   while (width < maxwidth - 1 && *end != NULLCH && *end != NLCH)
     {
-      len++;
-      end++;
       if (*end == SPCH)
 	last_space = len;
       width += CHWIDTH (*end);
+      len++;
+      end++;
     }
 
   if (*end != NULLCH && *end != NLCH && last_space != 0)
@@ -174,7 +175,7 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
       (*start_p)[len] = NLCH;
     }
   *len_p = len;
-  return width + 1;
+  return width;
 }
 
 #ifdef HAVE_NCURSESW
