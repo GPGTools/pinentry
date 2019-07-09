@@ -148,8 +148,7 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
   CH *end;
 
   /* Skip to next line.  */
-  if (len)
-    *start_p += len + 1;
+  *start_p += len;
   /* Skip leading space.  */
   while (**start_p == SPCH)
     (*start_p)++;
@@ -174,7 +173,7 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
       len = last_space;
       (*start_p)[len] = NLCH;
     }
-  *len_p = len;
+  *len_p = len + 1;
   return width;
 }
 
@@ -353,7 +352,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	    description_x = width;
 	  y++;
 	}
-      while (start[len]);
+      while (start[len-1]);
       y++;
     }
 
@@ -482,12 +481,12 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	  addch (ACS_VLINE);
 	  addch (' ');
 	  collect_line (size_x - 4, &start, &len);
-	  for (i = 0; i < len; i++)
+	  for (i = 0; i < len - 1; i++)
 	    {
 	      ADDCH (start[i]);
 	    }
-	  if (start[len] != NULLCH && start[len] != NLCH)
-	    ADDCH (start[len]);
+	  if (start[len-1] != NULLCH && start[len-1] != NLCH)
+	    ADDCH (start[len-1]);
 	  ypos++;
 	}
       while (start[len]);
