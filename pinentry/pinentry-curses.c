@@ -352,7 +352,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	    description_x = width;
 	  y++;
 	}
-      while (start[len-1]);
+      while (start[len - 1]);
       y++;
     }
 
@@ -485,11 +485,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	    {
 	      ADDCH (start[i]);
 	    }
-	  if (start[len-1] != NULLCH && start[len-1] != NLCH)
-	    ADDCH (start[len-1]);
+	  if (start[len - 1] != NULLCH && start[len - 1] != NLCH)
+	    ADDCH (start[len - 1]);
 	  ypos++;
 	}
-      while (start[len]);
+      while (start[len - 1]);
       move (ypos, xpos);
       addch (ACS_VLINE);
       ypos++;
