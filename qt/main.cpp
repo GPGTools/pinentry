@@ -330,6 +330,7 @@ main(int argc, char *argv[])
     pinentry_init("pinentry-qt");
 
     QApplication *app = NULL;
+    int new_argc = 0;
 
 #ifdef FALLBACK_CURSES
     if (!pinentry_have_display(argc, argv)) {
@@ -369,8 +370,15 @@ main(int argc, char *argv[])
                 p += strlen(argv[i]) + 1;
             }
 
-        i = argc;
-        app = new QApplication(i, new_argv);
+        /* Note: QApplication uses int &argc so argc has to be valid
+         * for the full lifetime of the application.
+         *
+         * As Qt might modify argc / argv we use copies here so that
+         * we do not loose options that are handled in both. e.g. display.
+         */
+        new_argc = argc;
+        Q_ASSERT (new_argc);
+        app = new QApplication(new_argc, new_argv);
         app->setWindowIcon(QIcon(QLatin1String(":/document-encrypt.png")));
     }
 
