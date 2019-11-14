@@ -32,6 +32,9 @@ extern "C" {
    receiving an Assuan request "OPTION allow-emacs-prompt".  */
 void pinentry_enable_emacs_cmd_handler (void);
 
+/* Return info on whether emacs support is enabled.  */
+int pinentry_emacs_status (void);
+
 /* Initialize the Emacs interface, return true if success.  */
 int pinentry_emacs_init (void);
 

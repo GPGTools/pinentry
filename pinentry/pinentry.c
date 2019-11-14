@@ -1751,7 +1751,7 @@ device_stat_string (const char *device)
      version     - Return the version of the program.
      pid         - Return the process id of the server.
      flavor      - Return information about the used pinentry flavor
-     ttyinfo     - Return DISPLAY and ttyinfo.
+     ttyinfo     - Return DISPLAY, ttyinfo and an emacs pinentry status
  */
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -1790,16 +1790,24 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "ttyinfo"))
     {
-      snprintf (buffer, sizeof buffer, "%s %s %s %s %lu/%lu",
+      char emacs_status[10];
+#ifdef INSIDE_EMACS
+      snprintf (emacs_status, sizeof emacs_status,
+                "%d", pinentry_emacs_status ());
+#else
+      strcpy (emacs_status, "-");
+#endif
+      snprintf (buffer, sizeof buffer, "%s %s %s %s %lu/%lu %s",
                 pinentry.ttyname? pinentry.ttyname : "-",
                 pinentry.ttytype? pinentry.ttytype : "-",
                 pinentry.display? pinentry.display : "-",
                 device_stat_string (pinentry.ttyname),
 #ifdef HAVE_DOSISH_SYSTEM
-                0l, 0l
+                0l, 0l,
 #else
-                (unsigned long)geteuid (), (unsigned long)getegid ()
+                (unsigned long)geteuid (), (unsigned long)getegid (),
 #endif
+                emacs_status
                 );
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
