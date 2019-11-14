@@ -37,10 +37,10 @@ main (int argc, char *argv[])
 {
   pinentry_init ("pinentry-emacs");
 
+  pinentry_parse_opts (argc, argv);
+
   if (!pinentry_emacs_init ())
     return 1;
-
-  pinentry_parse_opts (argc, argv);
 
   if (pinentry_loop ())
     return 1;
