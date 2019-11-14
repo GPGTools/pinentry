@@ -424,6 +424,7 @@ changed_text_handler (GtkWidget *widget)
 static void
 backspace_handler (GtkWidget *widget, gpointer data)
 {
+  (void)widget;
   (void)data;
 
   if (!got_input)
