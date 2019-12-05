@@ -71,9 +71,6 @@ static GtkWidget *entry;
 static GtkWidget *repeat_entry;
 static GtkWidget *error_label;
 static GtkWidget *qualitybar;
-#if !GTK_CHECK_VERSION (2, 12, 0)
-static GtkTooltips *tooltips;
-#endif
 static gboolean got_input;
 static guint timeout_source;
 static int confirm_mode;
@@ -585,10 +582,6 @@ create_window (pinentry_t ctx)
 
   repeat_entry = NULL;
 
-#if !GTK_CHECK_VERSION (2, 12, 0)
-  tooltips = gtk_tooltips_new ();
-#endif
-
   /* FIXME: check the grabbing code against the one we used with the
      old gpg-agent */
   win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -764,13 +757,8 @@ create_window (pinentry_t ctx)
 	  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
           if (pinentry->quality_bar_tt && !pinentry->grab)
 	    {
-#if !GTK_CHECK_VERSION (2, 12, 0)
-	      gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), qualitybar,
-				    pinentry->quality_bar_tt, "");
-#else
 	      gtk_widget_set_tooltip_text (qualitybar,
 					   pinentry->quality_bar_tt);
-#endif
 	    }
 	  gtk_table_attach (GTK_TABLE (table), qualitybar, 1, 2, nrow, nrow+1,
 	  		    GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
