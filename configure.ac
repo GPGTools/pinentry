@@ -469,7 +469,7 @@ dnl check if the module gtk+-2.0 exists
 if test "$pinentry_gtk_2" != "no"; then
 	PKG_CHECK_MODULES(
 		GTK2,
-		[gtk+-2.0 >= 2.4.0],
+		[gtk+-2.0 >= 2.12.0],
 		[
 			test "$pinentry_gtk_2" != "no" && pinentry_gtk_2=yes
 			test "$pinentry_gnome_3" != "no" && pinentry_gnome_3=yes
