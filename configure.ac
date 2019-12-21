@@ -556,6 +556,7 @@ fi
 
 AC_SUBST(PINENTRY_QT_CFLAGS)
 AC_SUBST(PINENTRY_QT_LIBS)
+AC_SUBST(PINENTRY_QT_LDFLAGS)
 AC_SUBST(MOC)
 
 dnl If we have come so far, qt pinentry can be build.

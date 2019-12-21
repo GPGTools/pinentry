@@ -57,6 +57,11 @@ AC_DEFUN([FIND_QT],
       PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -std=c++11"
     fi
 
+    qtlibdir=`"$PKG_CONFIG" --variable libdir Qt5Core`
+    if test -n "$qtlibdir"; then
+        PINENTRY_QT_LDFLAGS="$PINENTRY_QT_LDFLAGS -Wl,-rpath \"$qtlibdir\""
+    fi
+
     AC_CHECK_TOOL(MOC, moc)
     AC_MSG_CHECKING([moc version])
     mocversion=`$MOC -v 2>&1`

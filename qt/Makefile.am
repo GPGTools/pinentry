@@ -41,6 +41,7 @@ AM_CXXFLAGS = $(PINENTRY_QT_CFLAGS)
 pinentry_qt_LDADD = \
 	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
 	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
+pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
 
 BUILT_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
