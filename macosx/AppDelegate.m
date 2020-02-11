@@ -181,7 +181,7 @@ static int mac_cmd_handler (pinentry_t pe) {
 			// Search for a stored password in the macOS keychain.
 			NSString *passphraseFromKeychain = getPassphraseFromKeychain(cacheId, &doNotUseKeychain);
 			const char *passphrase = passphraseFromKeychain.UTF8String;
-			if (passphrase) { // A password was found.
+			if (passphrase && passphraseFromKeychain.length) { // A non-empty password was found.
 				int len = strlen(passphrase);
 				pinentry_setbufferlen(pe, len + 1);
 				if (pe->pin) {
@@ -271,8 +271,9 @@ static int mac_cmd_handler (pinentry_t pe) {
 
 					if (cacheId) { // Having a cacheId means, we can use the keychain.
 						NSString *keychainLabel = userData[@"keychainLabel"];
-						if (pinentry.saveInKeychain) {
-							// The user wants the password to be stored, do so.
+						if (pinentry.saveInKeychain && pin.length) {
+							// The user wants the password to be stored and
+							// the password is not empty. Store it.
 							storePassphraseInKeychain(cacheId, pin, keychainLabel);
 						}
 
