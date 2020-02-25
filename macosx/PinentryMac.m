@@ -162,10 +162,10 @@ PinentryMac *_sharedInstance = nil;
 }
 
 + (NSSet *)keyPathsForValuesAffectingOkEnabled {
-	return [NSSet setWithObjects:@"pin", @"repeatedPin", @"showTyping", nil];
+	return [NSSet setWithObjects:@"pin", @"repeatedPin", nil];
 }
 - (BOOL)okEnabled {
-	if (!self.repeatPassword || self.showTyping) {
+	if (!self.repeatPassword) {
 		return YES;
 	}
 	if (self.pin.length == 0 && self.repeatedPin.length == 0) {

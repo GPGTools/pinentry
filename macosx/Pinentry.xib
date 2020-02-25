@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment version="101200" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -23,7 +23,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="Pinentry Mac" allowsToolTipsWhenApplicationIsInactive="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="811" userLabel="Window">
+        <window title="Pinentry Mac" allowsToolTipsWhenApplicationIsInactive="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="811" userLabel="Window">
             <windowStyleMask key="styleMask" titled="YES"/>
             <windowCollectionBehavior key="collectionBehavior" canJoinAllSpaces="YES" transient="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -40,7 +40,7 @@
                         </constraints>
                         <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="Passphrase" drawsBackground="YES" id="822">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <accessibility description="Passphrase"/>
@@ -84,7 +84,7 @@
                         </constraints>
                         <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" focusRingType="exterior" title="Passphrase Plain" drawsBackground="YES" id="827">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <accessibility description="Passphrase"/>
@@ -145,7 +145,7 @@
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="867" userLabel="Prompt Text">
-                        <rect key="frame" x="104" y="138" width="74" height="17"/>
+                        <rect key="frame" x="104" y="138" width="74" height="16"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Passphrase" id="868">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -183,14 +183,14 @@
                             <binding destination="-2" name="value" keyPath="icon" id="Umh-tu-SLL"/>
                         </connections>
                     </imageView>
-                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KJK-Es-8hH" userLabel="Passphrase" customClass="ShortcutHandlingSecureTextField">
+                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="KJK-Es-8hH" customClass="ShortcutHandlingSecureTextField">
                         <rect key="frame" x="184" y="105" width="341" height="22"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="22" id="3Cu-9A-DaI"/>
                         </constraints>
                         <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="Repeated Passphrase" drawsBackground="YES" id="2uu-ak-yp4">
                             <font key="font" metaFont="system"/>
-                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <accessibility description="Passphrase"/>
@@ -227,7 +227,7 @@
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="450" verticalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="8xy-6G-oMZ" userLabel="Prompt Text">
-                        <rect key="frame" x="104" y="108" width="74" height="17"/>
+                        <rect key="frame" x="104" y="108" width="74" height="16"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Repeat" id="bxj-VP-LW9">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -373,6 +373,50 @@ Gw
                             <outlet property="nextKeyView" destination="818" id="QH8-FT-UA6"/>
                         </connections>
                     </button>
+                    <textField hidden="YES" focusRingType="exterior" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mZm-JY-bgq" userLabel="Repeated Passphrase Plain" customClass="ShortcutHandlingTextField">
+                        <rect key="frame" x="184" y="105" width="341" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="22" id="Q8f-fa-qz6"/>
+                        </constraints>
+                        <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" focusRingType="exterior" title="Passphrase Plain" drawsBackground="YES" id="Khd-cb-BeG" userLabel="Repeated Passphrase Plain">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <accessibility description="Passphrase"/>
+                        <connections>
+                            <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="u7w-aR-wpW" id="7Kw-fo-oOk">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="enabled" keyPath="showTyping" id="u7w-aR-wpW"/>
+                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="pmk-31-k2j" id="YHa-XE-Ysn">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="7Kw-fo-oOk" id="pmk-31-k2j">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="value" keyPath="repeatedPin" id="TL6-Cb-Id8">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
+                            <outlet property="formatter" destination="BRc-lA-8W3" id="1Ng-gR-qrU"/>
+                            <outlet property="nextKeyView" destination="KJK-Es-8hH" id="QgP-gx-WTI"/>
+                        </connections>
+                    </textField>
                 </subviews>
                 <constraints>
                     <constraint firstItem="813" firstAttribute="top" secondItem="5Ch-Nw-7sb" secondAttribute="bottom" constant="8" id="0hp-qO-tuX"/>
@@ -380,6 +424,7 @@ Gw
                     <constraint firstAttribute="trailing" secondItem="818" secondAttribute="trailing" constant="20" id="5sW-E6-SFu"/>
                     <constraint firstItem="820" firstAttribute="leading" secondItem="838" secondAttribute="leading" id="9iz-1H-h3j"/>
                     <constraint firstItem="813" firstAttribute="leading" secondItem="814" secondAttribute="leading" id="A5W-om-IQW"/>
+                    <constraint firstItem="mZm-JY-bgq" firstAttribute="width" secondItem="KJK-Es-8hH" secondAttribute="width" id="ARF-16-XLL"/>
                     <constraint firstAttribute="bottom" secondItem="818" secondAttribute="bottom" constant="20" id="Air-fp-JH4"/>
                     <constraint firstItem="8xy-6G-oMZ" firstAttribute="baseline" secondItem="KJK-Es-8hH" secondAttribute="baseline" id="Beb-U8-9Bf"/>
                     <constraint firstItem="813" firstAttribute="top" secondItem="KJK-Es-8hH" secondAttribute="bottom" priority="751" constant="8" id="CMm-fX-CKQ"/>
@@ -414,9 +459,11 @@ Gw
                     <constraint firstItem="5Ch-Nw-7sb" firstAttribute="leading" secondItem="814" secondAttribute="leading" id="oK3-TW-nxf"/>
                     <constraint firstItem="820" firstAttribute="leading" secondItem="816" secondAttribute="trailing" constant="13" id="pOO-gs-POq"/>
                     <constraint firstAttribute="trailing" secondItem="820" secondAttribute="trailing" constant="20" id="pvj-qC-ZEi"/>
+                    <constraint firstItem="mZm-JY-bgq" firstAttribute="leading" secondItem="KJK-Es-8hH" secondAttribute="leading" id="qJJ-no-Pgl"/>
                     <constraint firstItem="814" firstAttribute="top" secondItem="838" secondAttribute="bottom" constant="8" id="r9z-Tr-C4x"/>
                     <constraint firstItem="814" firstAttribute="top" secondItem="820" secondAttribute="bottom" priority="751" constant="20" id="rH6-UL-Lbo"/>
                     <constraint firstItem="5Ch-Nw-7sb" firstAttribute="top" secondItem="814" secondAttribute="bottom" priority="751" constant="8" id="rP0-q6-cvX"/>
+                    <constraint firstItem="mZm-JY-bgq" firstAttribute="firstBaseline" secondItem="KJK-Es-8hH" secondAttribute="firstBaseline" id="sRN-zy-L3I"/>
                     <constraint firstItem="932" firstAttribute="leading" secondItem="813" secondAttribute="trailing" constant="8" id="sZD-aP-GZx"/>
                     <constraint firstItem="813" firstAttribute="bottom" secondItem="932" secondAttribute="bottom" id="sxK-Dw-QuL"/>
                     <constraint firstItem="KJK-Es-8hH" firstAttribute="leading" secondItem="8xy-6G-oMZ" secondAttribute="trailing" constant="8" id="tAT-Ad-KMb"/>
