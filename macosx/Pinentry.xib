@@ -195,7 +195,7 @@
                         </textFieldCell>
                         <accessibility description="Passphrase"/>
                         <connections>
-                            <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="ulS-LN-pDa" id="X9u-Ny-dEI">
+                            <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="9dX-84-L32" id="5RR-Dz-MnV">
                                 <dictionary key="options">
                                     <integer key="NSMultipleValuesPlaceholder" value="-1"/>
                                     <integer key="NSNoSelectionPlaceholder" value="-1"/>
@@ -204,7 +204,20 @@
                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                 </dictionary>
                             </binding>
-                            <binding destination="-2" name="hidden" keyPath="confirmMode" previousBinding="X9u-Ny-dEI" id="fbK-ed-BaV">
+                            <binding destination="-2" name="enabled" keyPath="showTyping" id="9dX-84-L32">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="T5i-ho-6J2" id="2wz-9v-GXs">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="5RR-Dz-MnV" id="T5i-ho-6J2">
                                 <dictionary key="options">
                                     <integer key="NSMultipleValuesPlaceholder" value="-1"/>
                                     <integer key="NSNoSelectionPlaceholder" value="-1"/>
@@ -215,11 +228,6 @@
                             <binding destination="-2" name="value" keyPath="repeatedPin" id="XaY-xI-9v0">
                                 <dictionary key="options">
                                     <bool key="NSContinuouslyUpdatesValue" value="YES"/>
-                                </dictionary>
-                            </binding>
-                            <binding destination="-2" name="enabled" keyPath="showTyping" id="ulS-LN-pDa">
-                                <dictionary key="options">
-                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
                                 </dictionary>
                             </binding>
                             <outlet property="formatter" destination="BRc-lA-8W3" id="Awu-RW-jGP"/>
@@ -394,7 +402,6 @@ Gw
                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                 </dictionary>
                             </binding>
-                            <binding destination="-2" name="enabled" keyPath="showTyping" id="u7w-aR-wpW"/>
                             <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="pmk-31-k2j" id="YHa-XE-Ysn">
                                 <dictionary key="options">
                                     <integer key="NSMultipleValuesPlaceholder" value="-1"/>
@@ -403,16 +410,17 @@ Gw
                                     <integer key="NSNullPlaceholder" value="-1"/>
                                 </dictionary>
                             </binding>
-                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="7Kw-fo-oOk" id="pmk-31-k2j">
-                                <dictionary key="options">
-                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                </dictionary>
-                            </binding>
                             <binding destination="-2" name="value" keyPath="repeatedPin" id="TL6-Cb-Id8">
                                 <dictionary key="options">
                                     <bool key="NSContinuouslyUpdatesValue" value="YES"/>
                                 </dictionary>
                             </binding>
+                            <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="7Kw-fo-oOk" id="pmk-31-k2j">
+                                <dictionary key="options">
+                                    <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                </dictionary>
+                            </binding>
+                            <binding destination="-2" name="enabled" keyPath="showTyping" id="u7w-aR-wpW"/>
                             <outlet property="formatter" destination="BRc-lA-8W3" id="1Ng-gR-qrU"/>
                             <outlet property="nextKeyView" destination="KJK-Es-8hH" id="QgP-gx-WTI"/>
                         </connections>
