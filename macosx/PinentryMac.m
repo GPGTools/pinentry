@@ -33,7 +33,8 @@
 @property (nonatomic, strong) IBOutlet NSButton *saveInKeychainButton;
 @property (nonatomic, strong) IBOutlet NSTextField *passphraseField;
 @property (nonatomic, strong) IBOutlet NSSecureTextField *securePassphraseField;
-@property (nonatomic, strong) IBOutlet NSSecureTextField *repeatPassphraseField;
+@property (nonatomic, strong) IBOutlet NSTextField *repeatPassphraseField;
+@property (nonatomic, strong) IBOutlet NSSecureTextField *secureRepeatPassphraseField;
 @property (nonatomic, strong) IBOutlet NSTextField *errorLabel;
 @property (nonatomic, strong) IBOutlet NSLevelIndicator *qualityBar;
 
@@ -107,6 +108,7 @@ PinentryMac *_sharedInstance = nil;
 	}
 	if (!self.repeatPassword) {
 		[self.repeatPassphraseField removeFromSuperviewWithoutNeedingDisplay];
+		[self.secureRepeatPassphraseField removeFromSuperviewWithoutNeedingDisplay];
 	}
 	if (self.oneButton) {
 		[self.notokButton removeFromSuperviewWithoutNeedingDisplay];

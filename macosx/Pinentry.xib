@@ -14,9 +14,10 @@
                 <outlet property="okButton" destination="818" id="897"/>
                 <outlet property="passphraseField" destination="814" id="gb2-Wc-Avb"/>
                 <outlet property="qualityBar" destination="5Ch-Nw-7sb" id="m3m-Wh-LEg"/>
-                <outlet property="repeatPassphraseField" destination="KJK-Es-8hH" id="hKz-RV-iQi"/>
+                <outlet property="repeatPassphraseField" destination="mZm-JY-bgq" id="jI7-5q-iv2"/>
                 <outlet property="saveInKeychainButton" destination="932" id="mB3-hm-iCf"/>
                 <outlet property="securePassphraseField" destination="819" id="1110"/>
+                <outlet property="secureRepeatPassphraseField" destination="KJK-Es-8hH" id="djK-fV-Xy0"/>
                 <outlet property="showTypingButton" destination="813" id="939"/>
                 <outlet property="window" destination="811" id="896"/>
             </connections>
@@ -195,6 +196,14 @@
                         </textFieldCell>
                         <accessibility description="Passphrase"/>
                         <connections>
+                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="T5i-ho-6J2" id="2wz-9v-GXs">
+                                <dictionary key="options">
+                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
+                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
+                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
+                                    <integer key="NSNullPlaceholder" value="-1"/>
+                                </dictionary>
+                            </binding>
                             <binding destination="-2" name="enabled2" keyPath="confirmMode" previousBinding="9dX-84-L32" id="5RR-Dz-MnV">
                                 <dictionary key="options">
                                     <integer key="NSMultipleValuesPlaceholder" value="-1"/>
@@ -204,17 +213,14 @@
                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                 </dictionary>
                             </binding>
+                            <binding destination="-2" name="value" keyPath="repeatedPin" id="XaY-xI-9v0">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                             <binding destination="-2" name="enabled" keyPath="showTyping" id="9dX-84-L32">
                                 <dictionary key="options">
                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                </dictionary>
-                            </binding>
-                            <binding destination="-2" name="hidden2" keyPath="confirmMode" previousBinding="T5i-ho-6J2" id="2wz-9v-GXs">
-                                <dictionary key="options">
-                                    <integer key="NSMultipleValuesPlaceholder" value="-1"/>
-                                    <integer key="NSNoSelectionPlaceholder" value="-1"/>
-                                    <integer key="NSNotApplicablePlaceholder" value="-1"/>
-                                    <integer key="NSNullPlaceholder" value="-1"/>
                                 </dictionary>
                             </binding>
                             <binding destination="-2" name="hidden" keyPath="showTyping" previousBinding="5RR-Dz-MnV" id="T5i-ho-6J2">
@@ -223,11 +229,6 @@
                                     <integer key="NSNoSelectionPlaceholder" value="-1"/>
                                     <integer key="NSNotApplicablePlaceholder" value="-1"/>
                                     <integer key="NSNullPlaceholder" value="-1"/>
-                                </dictionary>
-                            </binding>
-                            <binding destination="-2" name="value" keyPath="repeatedPin" id="XaY-xI-9v0">
-                                <dictionary key="options">
-                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
                                 </dictionary>
                             </binding>
                             <outlet property="formatter" destination="BRc-lA-8W3" id="Awu-RW-jGP"/>
