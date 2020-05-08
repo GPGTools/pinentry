@@ -99,7 +99,7 @@ pinentry_reset (int use_defaults)
      Don't reset them.  */
   int grab = pinentry.grab;
   char *ttyname = pinentry.ttyname;
-  char *ttytype = pinentry.ttytype;
+  char *ttytype = pinentry.ttytype_l;
   char *ttyalert = pinentry.ttyalert;
   char *lc_ctype = pinentry.lc_ctype;
   char *lc_messages = pinentry.lc_messages;
@@ -137,7 +137,7 @@ pinentry_reset (int use_defaults)
   if (use_defaults)
     {
       free (pinentry.ttyname);
-      free (pinentry.ttytype);
+      free (pinentry.ttytype_l);
       free (pinentry.ttyalert);
       free (pinentry.lc_ctype);
       free (pinentry.lc_messages);
@@ -196,7 +196,7 @@ pinentry_reset (int use_defaults)
     {
       pinentry.grab = grab;
       pinentry.ttyname = ttyname;
-      pinentry.ttytype = ttytype;
+      pinentry.ttytype_l = ttytype;
       pinentry.ttyalert = ttyalert;
       pinentry.lc_ctype = lc_ctype;
       pinentry.lc_messages = lc_messages;
@@ -952,8 +952,8 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'N':
-	  pinentry.ttytype = strdup (pargs.r.ret_str);
-	  if (!pinentry.ttytype)
+	  pinentry.ttytype_l = strdup (pargs.r.ret_str);
+	  if (!pinentry.ttytype_l)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
@@ -1072,10 +1072,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "ttytype"))
     {
-      if (pinentry.ttytype)
-	free (pinentry.ttytype);
-      pinentry.ttytype = strdup (value);
-      if (!pinentry.ttytype)
+      if (pinentry.ttytype_l)
+	free (pinentry.ttytype_l);
+      pinentry.ttytype_l = strdup (value);
+      if (!pinentry.ttytype_l)
 	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "ttyalert"))
@@ -1799,7 +1799,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 #endif
       snprintf (buffer, sizeof buffer, "%s %s %s %s %lu/%lu %s",
                 pinentry.ttyname? pinentry.ttyname : "-",
-                pinentry.ttytype? pinentry.ttytype : "-",
+                pinentry.ttytype_l? pinentry.ttytype_l : "-",
                 pinentry.display? pinentry.display : "-",
                 device_stat_string (pinentry.ttyname),
 #ifdef HAVE_DOSISH_SYSTEM

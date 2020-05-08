@@ -1210,7 +1210,7 @@ curses_cmd_handler (pinentry_t pinentry)
     }
 #endif
 
-  rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
+  rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype_l);
   do_touch_file (pinentry);
   return rc;
 }
