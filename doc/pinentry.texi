@@ -100,7 +100,7 @@ This manual documents how to use the @pinentry{} and its protocol.
 The @pinentry{} is a small GUI application used to enter PINs or
 passphrases. It is usually invoked by @sc{gpg-agent}
 (@pxref{Invoking GPG-AGENT, ,Invoking the gpg-agent, gnupg,
-    The `GNU Privacy Guard' Manual}, for details).       
+    The `GNU Privacy Guard' Manual}, for details).
 
 @pinentry{} comes in several flavors to fit the look and feel of the
 used GUI toolkit: A @sc{GTK+} based one named @code{pinentry-gtk}; a
@@ -152,7 +152,7 @@ Here is a list of options supported by all flavors of pinentry:
 @table @gnupgtabopt
 @item --version
 @opindex version
-Print the program version and licensing information. 
+Print the program version and licensing information.
 
 @item --help
 @opindex help
@@ -198,10 +198,10 @@ indefinitely, set this to 0, which is the default.
 @itemx --ttytype @var{string}
 @itemx --lc-ctype @var{string}
 @itemx --lc-messages @var{string}
-@opindex display 
-@opindex ttyname 
-@opindex ttytype 
-@opindex lc-ctype 
+@opindex display
+@opindex ttyname
+@opindex ttytype
+@opindex lc-ctype
 @opindex lc-messa
 These options are used to pass localization information to
 @pinentry{}.  They are required because @pinentry{} is usually called
@@ -274,7 +274,7 @@ available.  If this is not the case, then they fallback to the curses
 front end.  This can also be disabled by passing
 @code{--disable-fallback-curses} to @code{configure} at build time.
 
-@c 
+@c
 @c  Assuan Protocol
 @c
 @node Protocol
@@ -499,7 +499,7 @@ the passphrase retry counter.
   C: getpin
   S: S PASSWORD_FROM_CACHE
   S: D 1234
-  C: OK
+  S: OK
 @end example
 
 Note: if @code{allow-external-password-cache} is not specified, an
@@ -751,5 +751,3 @@ was pressed.
 @c ---------------------------------------------------------------------
 
 @bye
-
-
