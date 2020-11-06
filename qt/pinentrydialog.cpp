@@ -289,7 +289,7 @@ void PinEntryDialog::setDescription(const QString &txt)
     _desc->setAccessibleDescription(txt);
 #endif
     _icon->setPixmap(icon());
-    setError(QString::null);
+    setError(QString());
 }
 
 QString PinEntryDialog::description() const
