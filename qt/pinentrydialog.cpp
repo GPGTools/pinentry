@@ -143,6 +143,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
+      mGenerateActionEdit(NULL),
       mVisiCB(NULL)
 {
     _timed_out = false;
@@ -246,7 +247,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     if (!generateIcon.isNull()) {
         mGenerateActionEdit = _edit->addAction(generateIcon,
                                                QLineEdit::LeadingPosition);
-        mGenerateActionEdit->setVisible(true);
         mGenerateActionEdit->setToolTip(mGenerateTT);
         connect(mGenerateActionEdit, SIGNAL(triggered()), this, SLOT(generatePin()));
     }
@@ -374,6 +374,9 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
 
 void PinEntryDialog::setGenpinLabel(const QString &txt)
 {
+    if (!mGenerateActionEdit) {
+        return;
+    }
     if (txt.isEmpty()) {
         mGenerateActionEdit->setVisible(false);
     } else {
@@ -384,7 +387,9 @@ void PinEntryDialog::setGenpinLabel(const QString &txt)
 
 void PinEntryDialog::setGenpinTT(const QString &txt)
 {
-    mGenerateActionEdit->setToolTip(txt);
+    if (mGenerateActionEdit) {
+        mGenerateActionEdit->setToolTip(txt);
+    }
 }
 
 void PinEntryDialog::onBackspace()
