@@ -626,7 +626,57 @@ pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
   return value;
 }
 
+/* Run a genpin inquiry */
+char *
+pinentry_inq_genpin (pinentry_t pin)
+{
+  assuan_context_t ctx = pin->ctx_assuan;
+  const char prefix[] = "INQUIRE GENPIN";
+  char *line;
+  size_t linelen;
+  int gotvalue = 0;
+  char *value = NULL;
+  int rc;
 
+  if (!ctx)
+    return 0; /* Can't run the callback.  */
+
+  rc = assuan_write_line (ctx, prefix);
+  if (rc)
+    {
+      fprintf (stderr, "ASSUAN WRITE LINE failed: rc=%d\n", rc);
+      return 0;
+    }
+
+  for (;;)
+    {
+      do
+        {
+          rc = assuan_read_line (ctx, &line, &linelen);
+          if (rc)
+            {
+              fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
+              return 0;
+            }
+        }
+      while (*line == '#' || !linelen);
+      if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+          && (!line[3] || line[3] == ' '))
+        break; /* END command received*/
+      if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N'
+          && (!line[3] || line[3] == ' '))
+        break; /* CAN command received*/
+      if (line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+          && (!line[3] || line[3] == ' '))
+        break; /* ERR command received*/
+      if (line[0] != 'D' || line[1] != ' ' || linelen < 3 || gotvalue)
+        continue;
+      gotvalue = 1;
+      value = strdup (line + 2);
+    }
+
+  return value;
+}
 
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
    new buffer on success and 0 on failure or when the old buffer is
@@ -1509,6 +1559,53 @@ cmd_setqualitybar_tt (assuan_context_t ctx, char *line)
   return 0;
 }
 
+/* Set the tooltip to be used for a generate action.  */
+static gpg_error_t
+cmd_setgenpin_tt (assuan_context_t ctx, char *line)
+{
+  char *newval;
+
+  (void)ctx;
+
+  if (*line)
+    {
+      newval = malloc (strlen (line) + 1);
+      if (!newval)
+        return gpg_error_from_syserror ();
+
+      strcpy_escaped (newval, line);
+    }
+  else
+    newval = NULL;
+  if (pinentry.genpin_tt)
+    free (pinentry.genpin_tt);
+  pinentry.genpin_tt = newval;
+  return 0;
+}
+
+/* Set the label to be used for a generate action.  */
+static gpg_error_t
+cmd_setgenpin_label (assuan_context_t ctx, char *line)
+{
+  char *newval;
+
+  (void)ctx;
+
+  if (*line)
+    {
+      newval = malloc (strlen (line) + 1);
+      if (!newval)
+        return gpg_error_from_syserror ();
+
+      strcpy_escaped (newval, line);
+    }
+  else
+    newval = NULL;
+  if (pinentry.genpin_label)
+    free (pinentry.genpin_label);
+  pinentry.genpin_label = newval;
+  return 0;
+}
 
 static gpg_error_t
 cmd_getpin (assuan_context_t ctx, char *line)
@@ -1868,6 +1965,8 @@ register_commands (assuan_context_t ctx)
       { "MESSAGE",    cmd_message },
       { "SETQUALITYBAR", cmd_setqualitybar },
       { "SETQUALITYBAR_TT", cmd_setqualitybar_tt },
+      { "SETGENPIN",    cmd_setgenpin_label },
+      { "SETGENPIN_TT", cmd_setgenpin_tt },
       { "GETINFO",    cmd_getinfo },
       { "SETTITLE",   cmd_settitle },
       { "SETTIMEOUT", cmd_settimeout },

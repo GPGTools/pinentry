@@ -80,6 +80,9 @@ public:
     void setQualityBar(const QString &);
     void setQualityBarTT(const QString &);
 
+    void setGenpinLabel(const QString &);
+    void setGenpinTT(const QString &);
+
     void setPinentryInfo(pinentry_t);
 
     bool timedOut() const;
@@ -91,6 +94,7 @@ protected slots:
     void focusChanged(QWidget *old, QWidget *now);
     void toggleVisibility();
     void onBackspace();
+    void generatePin();
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);
@@ -114,8 +118,10 @@ private:
     QTimer    *_timer;
     QString    mRepeatError,
                mVisibilityTT,
+               mGenerateTT,
                mHideTT;
-    QAction   *mVisiActionEdit;
+    QAction   *mVisiActionEdit,
+              *mGenerateActionEdit;
     QCheckBox *mVisiCB;
 };
 

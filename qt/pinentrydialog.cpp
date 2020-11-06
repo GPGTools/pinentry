@@ -26,6 +26,7 @@
 
 #include <QProgressBar>
 #include <QApplication>
+#include <QFontMetrics>
 #include <QStyle>
 #include <QPainter>
 #include <QPushButton>
@@ -167,6 +168,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     _edit = new PinLineEdit(this);
     _edit->setMaxLength(256);
+    _edit->setMinimumWidth(_edit->fontMetrics().averageCharWidth()*20 + 48);
     _edit->setEchoMode(QLineEdit::Password);
 
     _prompt->setBuddy(_edit);
@@ -239,7 +241,15 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     /* Set up the show password action */
     const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
     const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
+    const QIcon generateIcon = QIcon::fromTheme(QLatin1String("password-generate"));
 #if QT_VERSION >= 0x050200
+    if (!generateIcon.isNull()) {
+        mGenerateActionEdit = _edit->addAction(generateIcon,
+                                               QLineEdit::LeadingPosition);
+        mGenerateActionEdit->setVisible(true);
+        mGenerateActionEdit->setToolTip(mGenerateTT);
+        connect(mGenerateActionEdit, SIGNAL(triggered()), this, SLOT(generatePin()));
+    }
     if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
         mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
         mVisiActionEdit->setVisible(false);
@@ -362,6 +372,21 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
     }
 }
 
+void PinEntryDialog::setGenpinLabel(const QString &txt)
+{
+    if (txt.isEmpty()) {
+        mGenerateActionEdit->setVisible(false);
+    } else {
+        mGenerateActionEdit->setText(txt);
+        mGenerateActionEdit->setVisible(true);
+    }
+}
+
+void PinEntryDialog::setGenpinTT(const QString &txt)
+{
+    mGenerateActionEdit->setToolTip(txt);
+}
+
 void PinEntryDialog::onBackspace()
 {
     if (_disable_echo_allowed) {
@@ -442,11 +467,28 @@ void PinEntryDialog::textChanged(const QString &text)
     if (mVisiActionEdit && sender() == _edit) {
         mVisiActionEdit->setVisible(!_edit->text().isEmpty());
     }
+    if (mGenerateActionEdit) {
+        mGenerateActionEdit->setVisible(_edit->text().isEmpty() &&
+                                        _pinentry_info->genpin_label);
+    }
+}
+
+void PinEntryDialog::generatePin()
+{
+    const char *pin = pinentry_inq_genpin(_pinentry_info);
+    if (pin) {
+        if (_edit->echoMode() == QLineEdit::Password) {
+            toggleVisibility();
+        }
+        const auto pinStr = QString::fromUtf8(pin);
+        _edit->setText(pinStr);
+        mRepeat->setText(pinStr);
+    }
 }
 
 void PinEntryDialog::toggleVisibility()
 {
-    if (sender() == mVisiActionEdit) {
+    if (sender() != mVisiCB) {
         if (_edit->echoMode() == QLineEdit::Password) {
             mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
             mVisiActionEdit->setToolTip(mHideTT);
@@ -462,8 +504,7 @@ void PinEntryDialog::toggleVisibility()
                 mRepeat->setEchoMode(QLineEdit::Password);
             }
         }
-    }
-    if (sender() == mVisiCB) {
+    } else {
         if (mVisiCB->isChecked()) {
             if (mRepeat) {
                 mRepeat->setEchoMode(QLineEdit::Normal);

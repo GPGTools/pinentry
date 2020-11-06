@@ -197,6 +197,11 @@ qt_cmd_handler(pinentry_t pe)
         pe->default_tt_hide ? from_utf8(pe->default_tt_hide) :
                               QLatin1String("Hide passphrase");
 
+    const QString generateLbl = pe->genpin_label ? from_utf8(pe->genpin_label) :
+                                QString();
+    const QString generateTT = pe->genpin_tt ? from_utf8(pe->genpin_tt) :
+                               QString();
+
 
     if (want_pass) {
         char *str;
@@ -208,6 +213,8 @@ qt_cmd_handler(pinentry_t pe)
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
         pinentry.setDescription(from_utf8(pe->description));
         pinentry.setRepeatErrorText(repeatError);
+        pinentry.setGenpinLabel(generateLbl);
+        pinentry.setGenpinTT(generateTT);
 
         str = pinentry_get_title (pe);
         if (str) {
