@@ -159,8 +159,12 @@ static int mac_cmd_handler (pinentry_t pe) {
 			NSString *keyinfo = [NSString gpgStringWithCString:pe->keyinfo];
 			if (keyinfo.length > 2) {
 				// keyinfo has the form x/fingerprint. x is the cache mode it's one of u (user), s (ssh) or n (normal).
-				// Ignore cache_mode at the moment.
-				cacheId = [keyinfo substringFromIndex:2];
+
+				NSString *cacheMode = [keyinfo substringToIndex:1];
+
+				if (![cacheMode isEqualToString:@"u"]) { // Do not store password for symmetric encryption.
+					cacheId = [keyinfo substringFromIndex:2];
+				}
 			}
 		}
 
