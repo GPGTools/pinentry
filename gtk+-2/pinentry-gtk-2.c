@@ -892,7 +892,7 @@ create_window (pinentry_t ctx)
   gtk_container_add (GTK_CONTAINER(bbox), w);
   if (!confirm_mode)
     {
-      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+      gtk_widget_set_can_default (w, TRUE);
       gtk_widget_grab_default (w);
     }
 
