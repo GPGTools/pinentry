@@ -43,8 +43,10 @@ pinentry_qt_LDADD = \
 	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
 pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
 
+if BUILD_PINENTRY_QT
 BUILT_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
+endif
 
 CLEANFILES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
