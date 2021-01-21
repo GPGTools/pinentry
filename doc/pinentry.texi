@@ -214,16 +214,16 @@ options using Assuan protocol options.
 @chapter Front Ends
 
 There are several different flavors of @pinentry{}.  Concretely, there
-are Gtk+2, Qt@tie{}4, Gnome@tie{}3, Emacs, curses and tty variants.
-These different implementations provide higher levels of integration
-with a specific environment.  For instance, the Gnome@tie{}3
-@pinentry{} uses Gnome@tie{}3 widgets to display the prompts.  For
-Gnome@tie{}3 users, this higher level of integration provides a more
-consistent aesthetic.  However, this comes at a cost.  Because this
-@pinentry{} uses so many components, there is a larger chance of a
-failure.  In particular, there is a larger chance that the passphrase
-is saved in memory and that memory is exposed to an attacker (consider
-the OpenSSL Heartbeat vulnerability).
+are Gtk+2, Qt@tie{}4, TQt, EFL, FLTK, Gnome@tie{}3, Emacs, curses and
+tty variants.  These different implementations provide higher levels
+of integration with a specific environment.  For instance, the
+Gnome@tie{}3 @pinentry{} uses Gnome@tie{}3 widgets to display the
+prompts.  For Gnome@tie{}3 users, this higher level of integration
+provides a more consistent aesthetic.  However, this comes at a cost.
+Because this @pinentry{} uses so many components, there is a larger
+chance of a failure.  In particular, there is a larger chance that the
+passphrase is saved in memory and that memory is exposed to an
+attacker (consider the OpenSSL Heartbeat vulnerability).
 
 To understand how many components touch the passphrase, consider again
 the Gnome@tie{}3 implementation.  When a user presses a button on the
