@@ -37,7 +37,9 @@
 #include <QPushButton>
 #include <QString>
 #include <QWidget>
+#if QT_VERSION >= 0x050000
 #include <QWindow>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,6 +134,7 @@ static QString from_utf8(const char *s)
 static void
 setup_foreground_window(QWidget *widget, WId parentWid)
 {
+#if QT_VERSION >= 0x050000
     /* For windows set the desktop window as the transient parent */
     QWindow *parentWindow = nullptr;
     if (parentWid) {
@@ -154,6 +157,7 @@ setup_foreground_window(QWidget *widget, WId parentWid)
             wndHandle->setTransientParent(parentWindow);
         }
     }
+#endif
     widget->setWindowFlags(Qt::Window |
                            Qt::CustomizeWindowHint |
                            Qt::WindowTitleHint |

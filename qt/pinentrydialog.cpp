@@ -224,10 +224,22 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));
 
+#if QT_VERSION >= 0x050000
+    /* This is mostly an issue on Windows where this results
+       in the pinentry popping up nicely with an animation and
+       comes to front. It is not ifdefed for Windows only since
+       window managers on Linux like KWin can also have this
+       result in an animation when the pinentry is shown and
+       not just popping it up.
+    */
     setWindowState(Qt::WindowMinimized);
     QTimer::singleShot(0, this, [this] () {
         raiseWindow (this);
     });
+#else
+    activateWindow();
+    raise();
+#endif
 }
 
 void PinEntryDialog::showEvent(QShowEvent *event)
