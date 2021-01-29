@@ -51,14 +51,32 @@ static struct termios n_term;
 static struct termios o_term;
 
 static int
-cbreak (int fd)
+terminal_save (int fd)
 {
-  if ((tcgetattr(fd, &o_term)) == -1)
+  if ((tcgetattr (fd, &o_term)) == -1)
     return -1;
+  return 0;
+}
+
+static void
+terminal_restore (int fd)
+{
+  tcsetattr (fd, TCSANOW, &o_term);
+}
+
+static int
+terminal_setup (int fd, int line_edit)
+{
   n_term = o_term;
-  n_term.c_lflag = n_term.c_lflag & ~(ECHO|ICANON);
-  n_term.c_cc[VMIN] = 1;
-  n_term.c_cc[VTIME]= 0;
+  if (line_edit)
+    n_term.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+  else
+    {
+      n_term.c_lflag &= ~(ECHO|ICANON);
+      n_term.c_lflag |= ISIG;
+      n_term.c_cc[VMIN] = 1;
+      n_term.c_cc[VTIME]= 0;
+    }
   if ((tcsetattr(fd, TCSAFLUSH, &n_term)) == -1)
     return -1;
   return 1;
@@ -69,10 +87,32 @@ cbreak (int fd)
 #define ALERT_START "\033[1;31m"
 #define NORMAL_RESTORE "\033[0m"
 
+static void
+fputs_highlighted (char *text, char *highlight, FILE *ttyfo)
+{
+  for (; *text; text ++)
+    {
+      /* Skip accelerator prefix.  */
+      if (*text == '_')
+        {
+          text ++;
+          if (! *text)
+            break;
+        }
+
+      if (text == highlight)
+        fputs (UNDERLINE_START, ttyfo);
+      fputc (*text, ttyfo);
+      if (text == highlight)
+        fputs (NORMAL_RESTORE, ttyfo);
+    }
+}
+
 static char
 button (char *text, char *default_text, FILE *ttyfo)
 {
   char *highlight;
+  int use_default = 0;
 
   if (! text)
     return 0;
@@ -110,25 +150,17 @@ button (char *text, char *default_text, FILE *ttyfo)
     {
       if (! default_text)
 	return 0;
-      text = highlight = default_text;
+      highlight = default_text;
+      use_default = 1;
     }
 
   fputs ("  ", ttyfo);
-  for (; *text; text ++)
+  fputs_highlighted (text, highlight, ttyfo);
+  if (use_default)
     {
-      /* Skip accelerator prefix.  */
-      if (*text == '_')
-        {
-          text ++;
-          if (! *text)
-            break;
-        }
-
-      if (text == highlight)
-	fputs (UNDERLINE_START, ttyfo);
-      fputc (*text, ttyfo);
-      if (text == highlight)
-	fputs (NORMAL_RESTORE, ttyfo);
+      fputs (" (", ttyfo);
+      fputs_highlighted (default_text, highlight, ttyfo);
+      fputc (')', ttyfo);
     }
   fputc ('\n', ttyfo);
 
@@ -220,14 +252,6 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 	notok = button (pinentry->notok, "No", ttyfo);
     }
 
-  if (cbreak (fileno (ttyfi)) == -1)
-    {
-      int err = errno;
-      fprintf (stderr, "cbreak failure, exiting\n");
-      errno = err;
-      return -1;
-    }
-
   while (1)
     {
       int input;
@@ -248,18 +272,26 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
       fflush (ttyfo);
 
       input = fgetc (ttyfi);
-      fprintf (ttyfo, "%c\n", input);
-      input = tolower (input);
 
-      if (input == EOF || input == 0x4)
-	/* End of file or control-d (= end of file).  */
+      if (input == EOF)
 	{
 	  pinentry->close_button = 1;
 
 	  pinentry->canceled = 1;
+
+#ifndef HAVE_DOSISH_SYSTEM
+          if (!timed_out && errno == EINTR)
+            pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
+#endif
+
 	  ret = 0;
 	  break;
 	}
+      else
+        {
+          fprintf (ttyfo, "%c\n", input);
+          input = tolower (input);
+        }
 
       if (pinentry->one_button)
 	{
@@ -294,13 +326,11 @@ confirm (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
     pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
 #endif
 
-  tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
-
   return ret;
 }
 
 static char *
-read_password (FILE *ttyfi, FILE *ttyfo)
+read_password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 {
   int done = 0;
   int len = 128;
@@ -308,14 +338,6 @@ read_password (FILE *ttyfi, FILE *ttyfo)
   char *buffer;
 
   (void) ttyfo;
-
-  if (cbreak (fileno (ttyfi)) == -1)
-    {
-      int err = errno;
-      fprintf (stderr, "cbreak failure, exiting\n");
-      errno = err;
-      return NULL;
-    }
 
   buffer = secmem_malloc (len);
   if (! buffer)
@@ -344,19 +366,16 @@ read_password (FILE *ttyfi, FILE *ttyfo)
       c = fgetc (ttyfi);
       switch (c)
 	{
-	case 0x4: case EOF:
-	  /* Control-d (i.e., end of file) or a real EOF.  */
-	  done = -1;
+        case EOF:
+          done = -1;
+#ifndef HAVE_DOSISH_SYSTEM
+          if (!timed_out && errno == EINTR)
+            pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
+#endif
 	  break;
 
 	case '\n':
 	  done = 1;
-	  break;
-
-	case 0x7f:
-	  /* Backspace.  */
-	  if (count > 0)
-	    count --;
 	  break;
 
 	default:
@@ -365,8 +384,6 @@ read_password (FILE *ttyfi, FILE *ttyfo)
 	}
     }
   buffer[count] = '\0';
-
-  tcsetattr (fileno(ttyfi), TCSANOW, &o_term);
 
   if (done == -1)
     {
@@ -411,7 +428,7 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 		|| prompt[strlen(prompt) - 1] == '?') ? "" : ":");
       fflush (ttyfo);
 
-      passphrase = read_password (ttyfi, ttyfo);
+      passphrase = read_password (pinentry, ttyfi, ttyfo);
       fputc ('\n', ttyfo);
       if (! passphrase)
 	{
@@ -433,7 +450,7 @@ password (pinentry_t pinentry, FILE *ttyfi, FILE *ttyfo)
 		    || prompt[strlen(prompt) - 1] == '?') ? "" : ":");
 	  fflush (ttyfo);
 
-	  passphrase2 = read_password (ttyfi, ttyfo);
+	  passphrase2 = read_password (pinentry, ttyfi, ttyfo);
 	  fputc ('\n', ttyfo);
 	  if (! passphrase2)
 	    {
@@ -495,7 +512,7 @@ do_touch_file(pinentry_t pinentry)
 
 #ifndef HAVE_DOSISH_SYSTEM
 static void
-catchsig(int sig)
+catchsig (int sig)
 {
   if (sig == SIGALRM)
     timed_out = 1;
@@ -503,7 +520,7 @@ catchsig(int sig)
 #endif
 
 int
-tty_cmd_handler(pinentry_t pinentry)
+tty_cmd_handler (pinentry_t pinentry)
 {
   int rc = 0;
   FILE *ttyfi = stdin;
@@ -516,10 +533,11 @@ tty_cmd_handler(pinentry_t pinentry)
     {
       struct sigaction sa;
 
-      memset(&sa, 0, sizeof(sa));
+      memset (&sa, 0, sizeof(sa));
       sa.sa_handler = catchsig;
-      sigaction(SIGALRM, &sa, NULL);
-      alarm(pinentry->timeout);
+      sigaction (SIGALRM, &sa, NULL);
+      sigaction (SIGINT, &sa, NULL);
+      alarm (pinentry->timeout);
     }
 #endif
 
@@ -541,12 +559,26 @@ tty_cmd_handler(pinentry_t pinentry)
         }
     }
 
+  if (terminal_save (fileno (ttyfi)) < 0)
+    rc = -1;
+
   if (! rc)
     {
-      if (pinentry->pin)
-	rc = password (pinentry, ttyfi, ttyfo);
+      if (terminal_setup (fileno (ttyfi), !!pinentry->pin) == -1)
+        {
+          int err = errno;
+          fprintf (stderr, "terminal_setup failure, exiting\n");
+          errno = err;
+        }
       else
-	rc = confirm (pinentry, ttyfi, ttyfo);
+        {
+          if (pinentry->pin)
+            rc = password (pinentry, ttyfi, ttyfo);
+          else
+            rc = confirm (pinentry, ttyfi, ttyfo);
+
+          terminal_restore (fileno (ttyfi));
+        }
     }
 
   do_touch_file (pinentry);

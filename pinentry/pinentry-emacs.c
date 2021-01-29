@@ -680,6 +680,22 @@ pinentry_enable_emacs_cmd_handler (void)
   pinentry_cmd_handler = initial_emacs_cmd_handler;
 }
 
+
+/* Returns true if the Emacs pinentry is enabled.  The value is 1
+ * before the first connection with Emacs has been done and 2 if the
+ * connection to Emacs has been establish.  Returns false if the Emacs
+ * pinentry is not enabled.  */
+int
+pinentry_emacs_status (void)
+{
+  if (pinentry_cmd_handler == initial_emacs_cmd_handler)
+    return 1;
+  else if (pinentry_cmd_handler == emacs_cmd_handler)
+    return 2;
+  else
+    return 0;
+}
+
 int
 pinentry_emacs_init (void)
 {

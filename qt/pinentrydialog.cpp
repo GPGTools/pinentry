@@ -26,6 +26,7 @@
 
 #include <QProgressBar>
 #include <QApplication>
+#include <QFontMetrics>
 #include <QStyle>
 #include <QPainter>
 #include <QPushButton>
@@ -36,71 +37,28 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QCheckBox>
+#include "pinlineedit.h"
+
+#include <QDebug>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
+#if QT_VERSION >= 0x050700
+#include <QtPlatformHeaders/QWindowsWindowFunctions>
 #endif
-
-/* I [wk] have no idea for what this code was supposed to do.
-   Foregrounding a window is heavily restricted by modern Windows
-   versions.  This is the reason why gpg-agent employs its
-   AllowSetForegroundWindow callback machinery to ask the supposed to
-   be be calling process to allow a pinentry to go into the
-   foreground.
-
-   [ah] This is a Hack to workaround the fact that Foregrounding
-   a Window is so restricted that it AllowSetForegroundWindow
-   does not always work (e.g. when the ForegroundWindow timeout
-   has not expired.
-   */
-#ifdef Q_OS_WIN
-WINBOOL SetForegroundWindowEx(HWND hWnd)
-{
-    //Attach foreground window thread to our thread
-    const DWORD ForeGroundID = GetWindowThreadProcessId(::GetForegroundWindow(), NULL);
-    const DWORD CurrentID   = GetCurrentThreadId();
-    WINBOOL retval;
-
-    AttachThreadInput(ForeGroundID, CurrentID, TRUE);
-    //Do our stuff here
-    HWND hLastActivePopupWnd = GetLastActivePopup(hWnd);
-    retval = SetForegroundWindow(hLastActivePopupWnd);
-
-    //Detach the attached thread
-    AttachThreadInput(ForeGroundID, CurrentID, FALSE);
-    return retval;
-}// End SetForegroundWindowEx
 #endif
 
 void raiseWindow(QWidget *w)
 {
-    /* Maybe Qt will become aggressive enough one day that
-     * this is enough on windows too*/
-    w->raise();
 #ifdef Q_OS_WIN
-    HWND wid = (HWND)w->effectiveWinId();
-    /* In the meantime we do our own attention grabbing */
-    if (!SetForegroundWindow(wid) && !SetForegroundWindowEx(wid)) {
-        OutputDebugString("SetForegroundWindow (ex) failed");
-        /* Yet another fallback which will not work on some
-         * versions and is not recommended by msdn */
-        if (!ShowWindow(wid, SW_SHOWNORMAL)) {
-            OutputDebugString("ShowWindow failed.");
-        }
-    }
-    /* Even if SetForgeoundWindow / SetForegroundWinowEx don't fail
-     * we sometimes are still not in the foreground. So we try yet
-     * another hack by using SetWindowPos */
-    if (!SetWindowPos(wid, HWND_TOPMOST, 0, 0, 0, 0,
-                      SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)) {
-        OutputDebugString("SetWindowPos failed.");
-    } else {
-        /* Without moving back to NOTOPMOST we just stay on top.
-         * Even if the user changes focus. */
-        SetWindowPos(wid, HWND_NOTOPMOST, 0, 0, 0, 0,
-                     SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-    }
+#if QT_VERSION >= 0x050700
+    QWindowsWindowFunctions::setWindowActivationBehavior(
+            QWindowsWindowFunctions::AlwaysActivateWindow);
 #endif
+#endif
+    w->setWindowState((w->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
+    w->activateWindow();
+    w->raise();
 }
 
 QPixmap icon(QStyle::StandardPixmap which)
@@ -129,16 +87,17 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                                const QString &repeatString,
                                const QString &visibilityTT,
                                const QString &hideTT)
-    : QDialog(parent, Qt::WindowStaysOnTopHint),
+    : QDialog(parent),
       mRepeat(NULL),
       _grabbed(false),
+      _disable_echo_allowed(true),
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
+      mGenerateActionEdit(NULL),
       mVisiCB(NULL)
 {
     _timed_out = false;
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (modal) {
         setWindowModality(Qt::ApplicationModal);
@@ -159,8 +118,9 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _prompt = new QLabel(this);
     _prompt->hide();
 
-    _edit = new QLineEdit(this);
+    _edit = new PinLineEdit(this);
     _edit->setMaxLength(256);
+    _edit->setMinimumWidth(_edit->fontMetrics().averageCharWidth()*20 + 48);
     _edit->setEchoMode(QLineEdit::Password);
 
     _prompt->setBuddy(_edit);
@@ -201,8 +161,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             this, SLOT(updateQuality(QString)));
     connect(_edit, SIGNAL(textChanged(QString)),
             this, SLOT(textChanged(QString)));
-
-    _edit->setFocus();
+    connect(_edit, SIGNAL(backspacePressed()),
+            this, SLOT(onBackspace()));
 
     QGridLayout *const grid = new QGridLayout(this);
     int row = 1;
@@ -231,7 +191,15 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     /* Set up the show password action */
     const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
     const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
+    const QIcon generateIcon = QIcon(); /* Disabled for now
+                                         QIcon::fromTheme(QLatin1String("password-generate")); */
 #if QT_VERSION >= 0x050200
+    if (!generateIcon.isNull()) {
+        mGenerateActionEdit = _edit->addAction(generateIcon,
+                                               QLineEdit::LeadingPosition);
+        mGenerateActionEdit->setToolTip(mGenerateTT);
+        connect(mGenerateActionEdit, SIGNAL(triggered()), this, SLOT(generatePin()));
+    }
     if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
         mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
         mVisiActionEdit->setVisible(false);
@@ -255,12 +223,17 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));
+
+    setWindowState(Qt::WindowMinimized);
+    QTimer::singleShot(0, this, [this] () {
+        raiseWindow (this);
+    });
 }
 
 void PinEntryDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    raiseWindow(this);
+    _edit->setFocus();
 }
 
 void PinEntryDialog::setDescription(const QString &txt)
@@ -271,7 +244,7 @@ void PinEntryDialog::setDescription(const QString &txt)
     _desc->setAccessibleDescription(txt);
 #endif
     _icon->setPixmap(icon());
-    setError(QString::null);
+    setError(QString());
 }
 
 QString PinEntryDialog::description() const
@@ -310,6 +283,8 @@ void PinEntryDialog::setPrompt(const QString &txt)
 {
     _prompt->setText(txt);
     _prompt->setVisible(!txt.isEmpty());
+    if (txt.contains("PIN"))
+      _disable_echo_allowed = false;
 }
 
 QString PinEntryDialog::prompt() const
@@ -352,6 +327,36 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
     }
 }
 
+void PinEntryDialog::setGenpinLabel(const QString &txt)
+{
+    if (!mGenerateActionEdit) {
+        return;
+    }
+    if (txt.isEmpty()) {
+        mGenerateActionEdit->setVisible(false);
+    } else {
+        mGenerateActionEdit->setText(txt);
+        mGenerateActionEdit->setVisible(true);
+    }
+}
+
+void PinEntryDialog::setGenpinTT(const QString &txt)
+{
+    if (mGenerateActionEdit) {
+        mGenerateActionEdit->setToolTip(txt);
+    }
+}
+
+void PinEntryDialog::onBackspace()
+{
+    if (_disable_echo_allowed) {
+        _edit->setEchoMode(QLineEdit::NoEcho);
+        if (mRepeat) {
+            mRepeat->setEchoMode(QLineEdit::NoEcho);
+        }
+    }
+}
+
 void PinEntryDialog::updateQuality(const QString &txt)
 {
     int length;
@@ -361,6 +366,8 @@ void PinEntryDialog::updateQuality(const QString &txt)
     if (_timer) {
         _timer->stop();
     }
+
+    _disable_echo_allowed = false;
 
     if (!_have_quality_bar || !_pinentry_info) {
         return;
@@ -420,11 +427,28 @@ void PinEntryDialog::textChanged(const QString &text)
     if (mVisiActionEdit && sender() == _edit) {
         mVisiActionEdit->setVisible(!_edit->text().isEmpty());
     }
+    if (mGenerateActionEdit) {
+        mGenerateActionEdit->setVisible(_edit->text().isEmpty() &&
+                                        _pinentry_info->genpin_label);
+    }
+}
+
+void PinEntryDialog::generatePin()
+{
+    const char *pin = pinentry_inq_genpin(_pinentry_info);
+    if (pin) {
+        if (_edit->echoMode() == QLineEdit::Password) {
+            toggleVisibility();
+        }
+        const auto pinStr = QString::fromUtf8(pin);
+        _edit->setText(pinStr);
+        mRepeat->setText(pinStr);
+    }
 }
 
 void PinEntryDialog::toggleVisibility()
 {
-    if (sender() == mVisiActionEdit) {
+    if (sender() != mVisiCB) {
         if (_edit->echoMode() == QLineEdit::Password) {
             mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
             mVisiActionEdit->setToolTip(mHideTT);
@@ -440,8 +464,7 @@ void PinEntryDialog::toggleVisibility()
                 mRepeat->setEchoMode(QLineEdit::Password);
             }
         }
-    }
-    if (sender() == mVisiCB) {
+    } else {
         if (mVisiCB->isChecked()) {
             if (mRepeat) {
                 mRepeat->setEchoMode(QLineEdit::Normal);

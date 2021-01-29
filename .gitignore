@@ -20,6 +20,8 @@ doc/Makefile
 doc/pinentry.info
 doc/stamp-vti
 doc/version.texi
+efl/Makefile.in
+efl/Makefile
 fltk/Makefile.in
 fltk/Makefile
 gtk+-2/Makefile.in

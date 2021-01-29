@@ -19,14 +19,14 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 # (Process this file with autoconf to produce a configure script.)
-AC_PREREQ(2.69)
+AC_PREREQ([2.69])
 min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
 # bump the version number immediately after the release, do another
 # commit, and a push so that the git magic is able to work.
-m4_define(mym4_version, [1.1.0])
+m4_define(mym4_version, [1.1.1])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
@@ -42,14 +42,14 @@ m4_define([mym4_betastring],
 m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
 m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-AC_INIT([pinentry],[mym4_full_version], [https://bugs.gnupg.org])
+AC_INIT([pinentry],[mym4_full_version],[https://bugs.gnupg.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_SRCDIR(pinentry/pinentry.h)
 AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 AM_MAINTAINER_MODE
 
@@ -230,7 +230,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(string.h unistd.h langinfo.h termio.h locale.h utime.h wchar.h)
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS(seteuid stpcpy mmap)
+AC_CHECK_FUNCS(seteuid stpcpy mmap stat)
 GNUPG_CHECK_MLOCK
 
 dnl Checks for standard types.
@@ -285,7 +285,7 @@ GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 
 dnl Check for libcap
-AC_ARG_WITH([libcap], AC_HELP_STRING([--without-libcap],
+AC_ARG_WITH([libcap], AS_HELP_STRING([--without-libcap],
             [Disable support for capabilities library]))
 
 if test "x$with_libcap" != "xno"; then
@@ -301,10 +301,10 @@ dnl
 dnl Check for curses pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-curses,
-            AC_HELP_STRING([--enable-pinentry-curses], [build curses pinentry]),
+            AS_HELP_STRING([--enable-pinentry-curses],[build curses pinentry]),
             pinentry_curses=$enableval, pinentry_curses=maybe)
 AC_ARG_ENABLE(fallback-curses,
-            AC_HELP_STRING([--enable-fallback-curses], [include curses fallback]),
+            AS_HELP_STRING([--enable-fallback-curses],[include curses fallback]),
             fallback_curses=$enableval, fallback_curses=maybe)
 
 dnl
@@ -349,7 +349,7 @@ dnl
 dnl Check for tty pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-tty,
-            AC_HELP_STRING([--enable-pinentry-tty], [build tty pinentry]),
+            AS_HELP_STRING([--enable-pinentry-tty],[build tty pinentry]),
             pinentry_tty=$enableval, pinentry_tty=maybe)
 AM_CONDITIONAL(BUILD_PINENTRY_TTY, test "$pinentry_tty" = "yes")
 
@@ -378,21 +378,18 @@ dnl
 dnl Check for emacs pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-emacs,
-            AC_HELP_STRING([--enable-pinentry-emacs], [build emacs pinentry]),
+            AS_HELP_STRING([--enable-pinentry-emacs],[build emacs pinentry]),
             pinentry_emacs=$enableval, pinentry_emacs=no)
 AC_ARG_ENABLE(inside-emacs,
-            AC_HELP_STRING([--enable-inside-emacs], [include emacs hack]),
+            AS_HELP_STRING([--enable-inside-emacs],[include emacs hack]),
             inside_emacs=$enableval, inside_emacs=maybe)
 
 if test "$pinentry_emacs" != "no" -o "$inside_emacs" != "no"; then
   AC_MSG_CHECKING([if Unix domain socket is supported])
-  AC_TRY_COMPILE([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/socket.h>
 #include <sys/un.h>
-],
-	         [int s = socket (AF_UNIX, SOCK_STREAM, 0);],
-		 [_unixsock_works=yes],
-		 [_unixsock_works=no])
+]], [[int s = socket (AF_UNIX, SOCK_STREAM, 0);]])],[_unixsock_works=yes],[_unixsock_works=no])
   AC_MSG_RESULT($_unixsock_works)
   if test "$_unixsock_works" = "yes"; then
     if test "$pinentry_emacs" != "no"; then
@@ -428,21 +425,57 @@ fi
 
 
 dnl
+dnl Check for EFL pinentry programs.
+dnl
+AC_ARG_ENABLE(pinentry-efl,
+            AS_HELP_STRING([--enable-pinentry-efl],[build EFL pinentry]),
+            pinentry_efl=$enableval, pinentry_efl=maybe)
+
+dnl check for pkg-config
+if test "$pinentry_efl" != "no"; then
+	AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+	if test x"${PKG_CONFIG}" = xno ; then
+		pinentry_efl=no
+	fi
+fi
+
+if test "$pinentry_efl" != "no"; then
+	AC_MSG_CHECKING([for efl])
+	"${PKG_CONFIG}" --exists 'elementary >= 1.18'
+	if test $? -ne 0 ; then
+		AC_MSG_RESULT([no])
+		AC_MSG_WARN([efl >= 1.18 is required for efl pinentry])
+		pinentry_efl=no
+	else
+		AC_MSG_RESULT([yes])
+		EFL_CFLAGS=`"${PKG_CONFIG}" --cflags ecore-x elementary`
+		EFL_LIBS=`"${PKG_CONFIG}" --libs ecore-x elementary`
+		AC_SUBST(EFL_CFLAGS)
+		AC_SUBST(EFL_LIBS)
+		if test "$pinentry_efl" != "no"
+		then
+			pinentry_efl=yes
+		fi
+	fi
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_EFL, test "$pinentry_efl" = "yes")
+
+dnl
 dnl Check for GTK+-2 / GNOME3 pinentry programs.
 dnl
 AC_ARG_ENABLE(pinentry-gtk2,
-            AC_HELP_STRING([--enable-pinentry-gtk2], [build GTK+-2 pinentry]),
+            AS_HELP_STRING([--enable-pinentry-gtk2],[build GTK+-2 pinentry]),
             pinentry_gtk_2=$enableval, pinentry_gtk_2=maybe)
 
 AC_ARG_ENABLE(pinentry-gnome3,
-            AC_HELP_STRING([--enable-pinentry-gnome3], [build GNOME 3 pinentry]),
+            AS_HELP_STRING([--enable-pinentry-gnome3],[build GNOME 3 pinentry]),
             pinentry_gnome_3=$enableval, pinentry_gnome_3=maybe)
 
 dnl check if the module gtk+-2.0 exists
 if test "$pinentry_gtk_2" != "no"; then
 	PKG_CHECK_MODULES(
 		GTK2,
-		[gtk+-2.0 >= 2.4.0],
+		[gtk+-2.0 >= 2.12.0],
 		[
 			test "$pinentry_gtk_2" != "no" && pinentry_gtk_2=yes
 			test "$pinentry_gnome_3" != "no" && pinentry_gnome_3=yes
@@ -476,8 +509,8 @@ dnl
 dnl Check for libsecret.
 dnl
 AC_ARG_ENABLE(libsecret,
-            AC_HELP_STRING([--enable-libsecret],
-	    [optionally cache passphrases using libsecret]),
+            AS_HELP_STRING([--enable-libsecret],
+            [optionally cache passphrases using libsecret]),
             libsecret=$enableval, libsecret=maybe)
 
 dnl check if the module libsecret exists
@@ -505,7 +538,7 @@ dnl
 dnl Check for Qt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
-            AC_HELP_STRING([--enable-pinentry-qt], [build qt pinentry]),
+            AS_HELP_STRING([--enable-pinentry-qt],[build qt pinentry]),
             pinentry_qt=$enableval, pinentry_qt=maybe)
 
 
@@ -529,6 +562,7 @@ fi
 
 AC_SUBST(PINENTRY_QT_CFLAGS)
 AC_SUBST(PINENTRY_QT_LIBS)
+AC_SUBST(PINENTRY_QT_LDFLAGS)
 AC_SUBST(MOC)
 
 dnl If we have come so far, qt pinentry can be build.
@@ -549,7 +583,7 @@ dnl
 dnl Check for TQt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-tqt,
-	      AC_HELP_STRING([--enable-pinentry-tqt], [build tqt pinentry]),
+	      AS_HELP_STRING([--enable-pinentry-tqt],[build tqt pinentry]),
 	      pinentry_tqt=$enableval, pinentry_tqt=no)
 
 if test "$pinentry_tqt" != "no"; then
@@ -593,7 +627,7 @@ dnl
 dnl Check for FLTK pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-fltk,
-    AC_HELP_STRING([--enable-pinentry-fltk], [build FLTK 1.3 pinentry]),
+    AS_HELP_STRING([--enable-pinentry-fltk],[build FLTK 1.3 pinentry]),
            pinentry_fltk=$enableval, pinentry_fltk=maybe)
 
 dnl check for fltk-config
@@ -666,7 +700,11 @@ else
               if test "$pinentry_tqt" = "yes"; then
                 PINENTRY_DEFAULT=pinentry-tqt
               else
-                AC_MSG_ERROR([[No pinentry enabled.]])
+                if test "$pinentry_efl" = "yes"; then
+                  PINENTRY_DEFAULT=pinentry-efl
+                else
+                  AC_MSG_ERROR([[No pinentry enabled.]])
+                fi
               fi
             fi
           fi
@@ -736,6 +774,12 @@ AH_BOTTOM([
 #endif /*GNUPG_CONFIG_H_INCLUDED*/
 ])
 
+build_doc=yes
+AC_ARG_ENABLE([doc], AS_HELP_STRING([--disable-doc],
+                                    [do not build the documentation]),
+                     build_doc=$enableval, build_doc=yes)
+AM_CONDITIONAL([BUILD_DOC], [test "x$build_doc" != xno])
+
 
 AC_CONFIG_FILES([
 m4/Makefile
@@ -743,6 +787,7 @@ secmem/Makefile
 pinentry/Makefile
 curses/Makefile
 tty/Makefile
+efl/Makefile
 emacs/Makefile
 gtk+-2/Makefile
 gnome3/Makefile
@@ -767,6 +812,7 @@ AC_MSG_NOTICE([
 	Curses Pinentry ..: $pinentry_curses
 	TTY Pinentry .....: $pinentry_tty
 	Emacs Pinentry ...: $pinentry_emacs
+	EFL Pinentry .....: $pinentry_efl
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
 	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version

@@ -94,6 +94,8 @@ struct dialog
   int pin_max;
   /* Length of PIN.  */
   int pin_len;
+  int got_input;
+  int no_echo;
 
   int ok_y;
   int ok_x;
@@ -113,6 +115,7 @@ typedef struct dialog *dialog_t;
 #ifdef HAVE_NCURSESW
 typedef wchar_t CH;
 #define STRLEN(x) wcslen (x)
+#define STRWIDTH(x) wcswidth (x, wcslen (x))
 #define ADDCH(x) addnwstr (&x, 1);
 #define CHWIDTH(x) wcwidth (x)
 #define NULLCH L'\0'
@@ -121,6 +124,7 @@ typedef wchar_t CH;
 #else
 typedef char CH;
 #define STRLEN(x) strlen (x)
+#define STRWIDTH(x) strlen (x)
 #define ADDCH(x) addch ((unsigned char) x)
 #define CHWIDTH(x) 1
 #define NULLCH '\0'
@@ -128,13 +132,14 @@ typedef char CH;
 #define SPCH ' '
 #endif
 
-/* Return the next line up to MAXLEN columns wide in START and LEN.
+/* Return the next line up to MAXWIDTH columns wide in START and LEN.
+   Return value is the width needed for the line.
    The first invocation should have 0 as *LEN.  If the line ends with
    a \n, it is a normal line that will be continued.  If it is a '\0'
    the end of the text is reached after this line.  In all other cases
    there is a forced line break.  A full line is returned and will be
    continued in the next line.  */
-static void
+static int
 collect_line (int maxwidth, CH **start_p, int *len_p)
 {
   int last_space = 0;
@@ -153,11 +158,11 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
 
   while (width < maxwidth - 1 && *end != NULLCH && *end != NLCH)
     {
-      len++;
-      end++;
       if (*end == SPCH)
 	last_space = len;
       width += CHWIDTH (*end);
+      len++;
+      end++;
     }
 
   if (*end != NULLCH && *end != NLCH && last_space != 0)
@@ -169,6 +174,7 @@ collect_line (int maxwidth, CH **start_p, int *len_p)
       (*start_p)[len] = NLCH;
     }
   *len_p = len + 1;
+  return width;
 }
 
 #ifdef HAVE_NCURSESW
@@ -340,9 +346,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 
       do
 	{
-	  collect_line (size_x - 4, &start, &len);
-	  if (len > description_x)
-	    description_x = len;
+	  int width = collect_line (size_x - 4, &start, &len);
+
+	  if (width > description_x)
+	    description_x = width;
 	  y++;
 	}
       while (start[len - 1]);
@@ -412,7 +419,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       new_x = MIN_PINENTRY_LENGTH;
       if (prompt)
 	{
-	  new_x += STRLEN (prompt) + 1;	/* One space after prompt.  */
+	  new_x += STRWIDTH (prompt) + 1;	/* One space after prompt.  */
 	}
       if (new_x > size_x - 4)
 	new_x = size_x - 4;
@@ -541,11 +548,12 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       if (prompt)
 	{
 	  CH *p = prompt;
-	  i = STRLEN (prompt);
+	  i = STRWIDTH (prompt);
 	  if (i > x - 4 - MIN_PINENTRY_LENGTH)
 	    i = x - 4 - MIN_PINENTRY_LENGTH;
 	  dialog->pin_x += i + 1;
 	  dialog->pin_size -= i + 1;
+	  i = STRLEN (prompt);
 	  while (i-- > 0)
 	    {
 	      ADDCH (*(p++));
@@ -595,6 +603,9 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       move (dialog->ok_y, dialog->ok_x);
       addstr (dialog->ok);
     }
+
+  dialog->got_input = 0;
+  dialog->no_echo = 0;
 
  out:
   if (description)
@@ -730,6 +741,12 @@ dialog_input (dialog_t diag, int alt, int chr)
 		diag->pin_loc = diag->pin_len;
 	    }
 	}
+      else if (!diag->got_input)
+	{
+	  diag->no_echo = 1;
+	  move (diag->pin_y, diag->pin_x);
+	  addstr ("[no echo]");
+	}
       break;
 
     case 'l' - 'a' + 1: /* control-l */
@@ -801,19 +818,24 @@ dialog_input (dialog_t diag, int alt, int chr)
       break;
     }
 
-  if (old_loc < diag->pin_loc)
+  diag->got_input = 1;
+
+  if (!diag->no_echo)
     {
-      move (diag->pin_y, diag->pin_x + old_loc);
-      while (old_loc++ < diag->pin_loc)
-	addch ('*');
-    }
-  else if (old_loc > diag->pin_loc)
-    {
+      if (old_loc < diag->pin_loc)
+	{
+	  move (diag->pin_y, diag->pin_x + old_loc);
+	  while (old_loc++ < diag->pin_loc)
+	    addch ('*');
+	}
+      else if (old_loc > diag->pin_loc)
+	{
+	  move (diag->pin_y, diag->pin_x + diag->pin_loc);
+	  while (old_loc-- > diag->pin_loc)
+	    addch ('_');
+	}
       move (diag->pin_y, diag->pin_x + diag->pin_loc);
-      while (old_loc-- > diag->pin_loc)
-	addch ('_');
     }
-  move (diag->pin_y, diag->pin_x + diag->pin_loc);
 }
 
 static int
@@ -1188,7 +1210,7 @@ curses_cmd_handler (pinentry_t pinentry)
     }
 #endif
 
-  rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype);
+  rc = dialog_run (pinentry, pinentry->ttyname, pinentry->ttytype_l);
   do_touch_file (pinentry);
   return rc;
 }

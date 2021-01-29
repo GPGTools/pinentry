@@ -41,18 +41,22 @@ AM_CXXFLAGS = $(PINENTRY_QT_CFLAGS)
 pinentry_qt_LDADD = \
 	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
 	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
+pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
 
+if BUILD_PINENTRY_QT
 BUILT_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
+endif
 
 CLEANFILES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
-	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h
+	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
+	pinlineedit.h pinlineedit.cpp
 
 nodist_pinentry_qt_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@

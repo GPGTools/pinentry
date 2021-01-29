@@ -33,6 +33,7 @@
 class QLabel;
 class QPushButton;
 class QLineEdit;
+class PinLineEdit;
 class QString;
 class QProgressBar;
 class QCheckBox;
@@ -79,6 +80,9 @@ public:
     void setQualityBar(const QString &);
     void setQualityBarTT(const QString &);
 
+    void setGenpinLabel(const QString &);
+    void setGenpinTT(const QString &);
+
     void setPinentryInfo(pinentry_t);
 
     bool timedOut() const;
@@ -89,6 +93,8 @@ protected slots:
     void textChanged(const QString &);
     void focusChanged(QWidget *old, QWidget *now);
     void toggleVisibility();
+    void onBackspace();
+    void generatePin();
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);
@@ -100,19 +106,22 @@ private:
     QLabel    *_prompt;
     QLabel    *_quality_bar_label;
     QProgressBar *_quality_bar;
-    QLineEdit *_edit;
-    QLineEdit *mRepeat;
+    PinLineEdit *_edit;
+    QLineEdit   *mRepeat;
     QPushButton *_ok;
     QPushButton *_cancel;
     bool       _grabbed;
     bool       _have_quality_bar;
     bool       _timed_out;
+    bool       _disable_echo_allowed;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mRepeatError,
                mVisibilityTT,
+               mGenerateTT,
                mHideTT;
-    QAction   *mVisiActionEdit;
+    QAction   *mVisiActionEdit,
+              *mGenerateActionEdit;
     QCheckBox *mVisiCB;
 };
 

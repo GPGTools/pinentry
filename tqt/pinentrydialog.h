@@ -1,5 +1,5 @@
 /* pinentrydialog.h - A secure KDE dialog for PIN entry.
- * Copyright (C) 2002 Klar‰lvdalens Datakonsult AB
+ * Copyright (C) 2002 Klar√§lvdalens Datakonsult AB
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  *
  * This program is free software; you can redistribute it and/or
@@ -63,6 +63,7 @@ public:
 
 public slots:
   void updateQuality(const SecTQString &);
+  void onBackspace();
 
 signals:
   void accepted();
@@ -86,6 +87,7 @@ private:
   bool       _grabbed;
   bool       _have_quality_bar;
   pinentry_t _pinentry_info;
+  bool       _disable_echo_allowed;
 };
 
 

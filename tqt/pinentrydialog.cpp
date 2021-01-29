@@ -32,7 +32,8 @@
 
 PinEntryDialog::PinEntryDialog( TQWidget* parent, const char* name,
                                 bool modal, bool enable_quality_bar )
-  : TQDialog( parent, name, modal, TQt::WStyle_StaysOnTop ), _grabbed( false )
+  : TQDialog( parent, name, modal, TQt::WStyle_StaysOnTop ), _grabbed( false ),
+    _disable_echo_allowed ( true )
 {
   TQBoxLayout* top = new TQVBoxLayout( this, 6 );
   TQBoxLayout* upperLayout = new TQHBoxLayout( top );
@@ -89,6 +90,8 @@ PinEntryDialog::PinEntryDialog( TQWidget* parent, const char* name,
 	   this, SIGNAL( rejected() ) );
   connect( _edit, SIGNAL( textModified(const SecTQString&) ),
 	   this, SLOT( updateQuality(const SecTQString&) ) );
+  connect (_edit, SIGNAL (backspacePressed()),
+	   this, SLOT (onBackspace ()));
   connect (this, SIGNAL (accepted ()),
 	   this, SLOT (accept ()));
   connect (this, SIGNAL (rejected ()),
@@ -131,6 +134,8 @@ void PinEntryDialog::updateQuality( const SecTQString & txt )
   int percent;
   TQPalette pal;
 
+  _disable_echo_allowed = false;
+
   if (!_have_quality_bar || !_pinentry_info)
     return;
   pin = (char*)txt.utf8();
@@ -156,6 +161,13 @@ void PinEntryDialog::updateQuality( const SecTQString & txt )
       _quality_bar->setPalette (pal);
       _quality_bar->setProgress (percent);
     }
+}
+
+
+void PinEntryDialog::onBackspace()
+{
+  if (_disable_echo_allowed)
+    _edit->setEchoMode( SecTQLineEdit::NoEcho );
 }
 
 
@@ -196,6 +208,8 @@ SecTQString PinEntryDialog::text() const
 void PinEntryDialog::setPrompt( const TQString& txt )
 {
   _prompt->setText( txt );
+  if (txt.contains("PIN"))
+    _disable_echo_allowed = false;
 }
 
 TQString PinEntryDialog::prompt() const

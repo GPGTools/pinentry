@@ -27,6 +27,8 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <assert.h>
 #ifndef HAVE_W32_SYSTEM
@@ -97,7 +99,7 @@ pinentry_reset (int use_defaults)
      Don't reset them.  */
   int grab = pinentry.grab;
   char *ttyname = pinentry.ttyname;
-  char *ttytype = pinentry.ttytype;
+  char *ttytype = pinentry.ttytype_l;
   char *ttyalert = pinentry.ttyalert;
   char *lc_ctype = pinentry.lc_ctype;
   char *lc_messages = pinentry.lc_messages;
@@ -135,7 +137,7 @@ pinentry_reset (int use_defaults)
   if (use_defaults)
     {
       free (pinentry.ttyname);
-      free (pinentry.ttytype);
+      free (pinentry.ttytype_l);
       free (pinentry.ttyalert);
       free (pinentry.lc_ctype);
       free (pinentry.lc_messages);
@@ -194,7 +196,7 @@ pinentry_reset (int use_defaults)
     {
       pinentry.grab = grab;
       pinentry.ttyname = ttyname;
-      pinentry.ttytype = ttytype;
+      pinentry.ttytype_l = ttytype;
       pinentry.ttyalert = ttyalert;
       pinentry.lc_ctype = lc_ctype;
       pinentry.lc_messages = lc_messages;
@@ -624,7 +626,57 @@ pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
   return value;
 }
 
+/* Run a genpin inquiry */
+char *
+pinentry_inq_genpin (pinentry_t pin)
+{
+  assuan_context_t ctx = pin->ctx_assuan;
+  const char prefix[] = "INQUIRE GENPIN";
+  char *line;
+  size_t linelen;
+  int gotvalue = 0;
+  char *value = NULL;
+  int rc;
 
+  if (!ctx)
+    return 0; /* Can't run the callback.  */
+
+  rc = assuan_write_line (ctx, prefix);
+  if (rc)
+    {
+      fprintf (stderr, "ASSUAN WRITE LINE failed: rc=%d\n", rc);
+      return 0;
+    }
+
+  for (;;)
+    {
+      do
+        {
+          rc = assuan_read_line (ctx, &line, &linelen);
+          if (rc)
+            {
+              fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
+              return 0;
+            }
+        }
+      while (*line == '#' || !linelen);
+      if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+          && (!line[3] || line[3] == ' '))
+        break; /* END command received*/
+      if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N'
+          && (!line[3] || line[3] == ' '))
+        break; /* CAN command received*/
+      if (line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+          && (!line[3] || line[3] == ' '))
+        break; /* ERR command received*/
+      if (line[0] != 'D' || line[1] != ' ' || linelen < 3 || gotvalue)
+        continue;
+      gotvalue = 1;
+      value = strdup (line + 2);
+    }
+
+  return value;
+}
 
 /* Try to make room for at least LEN bytes in the pinentry.  Returns
    new buffer on success and 0 on failure or when the old buffer is
@@ -950,8 +1002,8 @@ pinentry_parse_opts (int argc, char *argv[])
 	    }
 	  break;
 	case 'N':
-	  pinentry.ttytype = strdup (pargs.r.ret_str);
-	  if (!pinentry.ttytype)
+	  pinentry.ttytype_l = strdup (pargs.r.ret_str);
+	  if (!pinentry.ttytype_l)
 	    {
 #ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
@@ -1070,10 +1122,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "ttytype"))
     {
-      if (pinentry.ttytype)
-	free (pinentry.ttytype);
-      pinentry.ttytype = strdup (value);
-      if (!pinentry.ttytype)
+      if (pinentry.ttytype_l)
+	free (pinentry.ttytype_l);
+      pinentry.ttytype_l = strdup (value);
+      if (!pinentry.ttytype_l)
 	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "ttyalert"))
@@ -1507,6 +1559,53 @@ cmd_setqualitybar_tt (assuan_context_t ctx, char *line)
   return 0;
 }
 
+/* Set the tooltip to be used for a generate action.  */
+static gpg_error_t
+cmd_setgenpin_tt (assuan_context_t ctx, char *line)
+{
+  char *newval;
+
+  (void)ctx;
+
+  if (*line)
+    {
+      newval = malloc (strlen (line) + 1);
+      if (!newval)
+        return gpg_error_from_syserror ();
+
+      strcpy_escaped (newval, line);
+    }
+  else
+    newval = NULL;
+  if (pinentry.genpin_tt)
+    free (pinentry.genpin_tt);
+  pinentry.genpin_tt = newval;
+  return 0;
+}
+
+/* Set the label to be used for a generate action.  */
+static gpg_error_t
+cmd_setgenpin_label (assuan_context_t ctx, char *line)
+{
+  char *newval;
+
+  (void)ctx;
+
+  if (*line)
+    {
+      newval = malloc (strlen (line) + 1);
+      if (!newval)
+        return gpg_error_from_syserror ();
+
+      strcpy_escaped (newval, line);
+    }
+  else
+    newval = NULL;
+  if (pinentry.genpin_label)
+    free (pinentry.genpin_label);
+  pinentry.genpin_label = newval;
+  return 0;
+}
 
 static gpg_error_t
 cmd_getpin (assuan_context_t ctx, char *line)
@@ -1613,6 +1712,10 @@ cmd_getpin (assuan_context_t ctx, char *line)
       if (pinentry.specific_err)
         {
           write_status_error (ctx, &pinentry);
+
+          if (gpg_err_code (pinentry.specific_err) == GPG_ERR_FULLY_CANCELED)
+            assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+
           return pinentry.specific_err;
         }
       return (pinentry.locale_err
@@ -1683,6 +1786,10 @@ cmd_confirm (assuan_context_t ctx, char *line)
   if (pinentry.specific_err)
     {
       write_status_error (ctx, &pinentry);
+
+      if (gpg_err_code (pinentry.specific_err) == GPG_ERR_FULLY_CANCELED)
+        assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+
       return pinentry.specific_err;
     }
 
@@ -1706,6 +1813,33 @@ cmd_message (assuan_context_t ctx, char *line)
   return cmd_confirm (ctx, "--one-button");
 }
 
+
+/* Return a staically allocated string with information on the mode,
+ * uid, and gid of DEVICE.  On error "?" is returned if DEVICE is
+ * NULL, "-" is returned.  */
+static const char *
+device_stat_string (const char *device)
+{
+#ifdef HAVE_STAT
+  static char buf[40];
+  struct stat st;
+
+  if (!device || !*device)
+    return "-";
+
+  if (stat (device, &st))
+    return "?";  /* Error */
+  snprintf (buf, sizeof buf, "%lo/%lu/%lu",
+            (unsigned long)st.st_mode,
+            (unsigned long)st.st_uid,
+            (unsigned long)st.st_gid);
+  return buf;
+#else
+  return "-";
+#endif
+}
+
+
 /* GETINFO <what>
 
    Multipurpose function to return a variety of information.
@@ -1714,14 +1848,14 @@ cmd_message (assuan_context_t ctx, char *line)
      version     - Return the version of the program.
      pid         - Return the process id of the server.
      flavor      - Return information about the used pinentry flavor
-     ttyinfo     - Return DISPLAY and ttyinfo.
+     ttyinfo     - Return DISPLAY, ttyinfo and an emacs pinentry status
  */
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   int rc;
   const char *s;
-  char buffer[100];
+  char buffer[150];
 
   if (!strcmp (line, "version"))
     {
@@ -1753,10 +1887,25 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "ttyinfo"))
     {
-      snprintf (buffer, sizeof buffer, "%s %s %s",
+      char emacs_status[10];
+#ifdef INSIDE_EMACS
+      snprintf (emacs_status, sizeof emacs_status,
+                "%d", pinentry_emacs_status ());
+#else
+      strcpy (emacs_status, "-");
+#endif
+      snprintf (buffer, sizeof buffer, "%s %s %s %s %lu/%lu %s",
                 pinentry.ttyname? pinentry.ttyname : "-",
-                pinentry.ttytype? pinentry.ttytype : "-",
-                pinentry.display? pinentry.display : "-" );
+                pinentry.ttytype_l? pinentry.ttytype_l : "-",
+                pinentry.display? pinentry.display : "-",
+                device_stat_string (pinentry.ttyname),
+#ifdef HAVE_DOSISH_SYSTEM
+                0l, 0l,
+#else
+                (unsigned long)geteuid (), (unsigned long)getegid (),
+#endif
+                emacs_status
+                );
       buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
@@ -1816,6 +1965,8 @@ register_commands (assuan_context_t ctx)
       { "MESSAGE",    cmd_message },
       { "SETQUALITYBAR", cmd_setqualitybar },
       { "SETQUALITYBAR_TT", cmd_setqualitybar_tt },
+      { "SETGENPIN",    cmd_setgenpin_label },
+      { "SETGENPIN_TT", cmd_setgenpin_tt },
       { "GETINFO",    cmd_getinfo },
       { "SETTITLE",   cmd_settitle },
       { "SETTIMEOUT", cmd_settimeout },

@@ -71,9 +71,6 @@ static GtkWidget *entry;
 static GtkWidget *repeat_entry;
 static GtkWidget *error_label;
 static GtkWidget *qualitybar;
-#if !GTK_CHECK_VERSION (2, 12, 0)
-static GtkTooltips *tooltips;
-#endif
 static gboolean got_input;
 static guint timeout_source;
 static int confirm_mode;
@@ -419,6 +416,23 @@ changed_text_handler (GtkWidget *widget)
 }
 
 
+/* Called upon a press on Backspace in the entry widget.
+   Used to completely disable echoing if we got no prior input. */
+static void
+backspace_handler (GtkWidget *widget, gpointer data)
+{
+  (void)widget;
+  (void)data;
+
+  if (!got_input)
+    {
+      gtk_entry_set_invisible_char (GTK_ENTRY (entry), 0);
+      if (repeat_entry)
+	gtk_entry_set_invisible_char (GTK_ENTRY (repeat_entry), 0);
+    }
+}
+
+
 #ifdef HAVE_LIBSECRET
 static void
 may_save_passphrase_toggled (GtkWidget *widget, gpointer data)
@@ -568,10 +582,6 @@ create_window (pinentry_t ctx)
 
   repeat_entry = NULL;
 
-#if !GTK_CHECK_VERSION (2, 12, 0)
-  tooltips = gtk_tooltips_new ();
-#endif
-
   /* FIXME: check the grabbing code against the one we used with the
      old gpg-agent */
   win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -713,6 +723,14 @@ create_window (pinentry_t ctx)
       gtk_widget_set_size_request (entry, 200, -1);
       g_signal_connect (G_OBJECT (entry), "changed",
                         G_CALLBACK (changed_text_handler), entry);
+
+      /* Enable disabling echo if we're not asking for a PIN. */
+      if (pinentry->prompt && !strstr (pinentry->prompt, "PIN"))
+	{
+	  g_signal_connect (G_OBJECT (entry), "backspace",
+			    G_CALLBACK (backspace_handler), entry);
+	}
+
       hbox = gtk_hbox_new (FALSE, HIG_TINY);
       gtk_box_pack_start (GTK_BOX (hbox), entry, TRUE, TRUE, 0);
       /* There was a wish in issue #2139 that this button should not
@@ -739,13 +757,8 @@ create_window (pinentry_t ctx)
 	  gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar), 0.0);
           if (pinentry->quality_bar_tt && !pinentry->grab)
 	    {
-#if !GTK_CHECK_VERSION (2, 12, 0)
-	      gtk_tooltips_set_tip (GTK_TOOLTIPS (tooltips), qualitybar,
-				    pinentry->quality_bar_tt, "");
-#else
 	      gtk_widget_set_tooltip_text (qualitybar,
 					   pinentry->quality_bar_tt);
-#endif
 	    }
 	  gtk_table_attach (GTK_TABLE (table), qualitybar, 1, 2, nrow, nrow+1,
 	  		    GTK_EXPAND|GTK_FILL, GTK_EXPAND|GTK_FILL, 0, 0);
@@ -879,7 +892,7 @@ create_window (pinentry_t ctx)
   gtk_container_add (GTK_CONTAINER(bbox), w);
   if (!confirm_mode)
     {
-      GTK_WIDGET_SET_FLAGS (w, GTK_CAN_DEFAULT);
+      gtk_widget_set_can_default (w, TRUE);
       gtk_widget_grab_default (w);
     }
 

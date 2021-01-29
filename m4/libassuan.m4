@@ -8,6 +8,8 @@ dnl
 dnl This file is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+dnl SPDX-License-Identifier: FSFULLR
+# Last-changed: 2020-11-17
 
 dnl
 dnl Common code used for libassuan detection [internal]
@@ -16,30 +18,26 @@ dnl
 AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
   AC_ARG_WITH(libassuan-prefix,
-              AC_HELP_STRING([--with-libassuan-prefix=PFX],
+              AS_HELP_STRING([--with-libassuan-prefix=PFX],
                              [prefix where LIBASSUAN is installed (optional)]),
      libassuan_config_prefix="$withval", libassuan_config_prefix="")
   if test x$libassuan_config_prefix != x ; then
-    libassuan_config_args="$libassuan_config_args --prefix=$libassuan_config_prefix"
     if test x${LIBASSUAN_CONFIG+set} != xset ; then
       LIBASSUAN_CONFIG=$libassuan_config_prefix/bin/libassuan-config
     fi
-  else
-    case "${SYSROOT}" in
-       /*)
-         if test -x "${SYSROOT}/bin/libassuan-config" ; then
-           LIBASSUAN_CONFIG="${SYSROOT}/bin/libassuan-config"
-         fi
-         ;;
-       '')
-         ;;
-        *)
-         AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
-         ;;
-     esac
   fi
 
-  AC_PATH_TOOL(LIBASSUAN_CONFIG, libassuan-config, no)
+  use_gpgrt_config=""
+  if test x"${LIBASSUAN_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+    if $GPGRT_CONFIG libassuan --exists; then
+      LIBASSUAN_CONFIG="$GPGRT_CONFIG libassuan"
+      AC_MSG_NOTICE([Use gpgrt-config as libassuan-config])
+      use_gpgrt_config=yes
+    fi
+  fi
+  if test -z "$use_gpgrt_config"; then
+    AC_PATH_PROG(LIBASSUAN_CONFIG, libassuan-config, no)
+  fi
 
   tmp=ifelse([$1], ,1:0.9.2,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
@@ -52,8 +50,7 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 
   AC_MSG_CHECKING(for LIBASSUAN - version >= $min_libassuan_version)
   ok=no
-  if test "$LIBASSUAN_CONFIG" != "no" \
-     && test -f "$LIBASSUAN_CONFIG" ; then
+  if test "$LIBASSUAN_CONFIG" != "no"; then
     req_major=`echo $min_libassuan_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
     req_minor=`echo $min_libassuan_version | \
@@ -61,7 +58,11 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
     req_micro=`echo $min_libassuan_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
 
-    libassuan_config_version=`$LIBASSUAN_CONFIG --version`
+    if test -z "$use_gpgrt_config"; then
+      libassuan_config_version=`$LIBASSUAN_CONFIG --version`
+    else
+      libassuan_config_version=`$LIBASSUAN_CONFIG --modversion`
+    fi
     major=`echo $libassuan_config_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
     minor=`echo $libassuan_config_version | \
@@ -94,7 +95,11 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 
   if test $ok = yes; then
     if test "$req_libassuan_api" -gt 0 ; then
-      tmp=`$LIBASSUAN_CONFIG --api-version 2>/dev/null || echo 0`
+      if test -z "$use_gpgrt_config"; then
+        tmp=`$LIBASSUAN_CONFIG --api-version 2>/dev/null || echo 0`
+      else
+        tmp=`$LIBASSUAN_CONFIG --variable=api_version 2>/dev/null || echo 0`
+      fi
       if test "$tmp" -gt 0 ; then
         AC_MSG_CHECKING([LIBASSUAN API version])
         if test "$req_libassuan_api" -eq "$tmp" ; then
@@ -109,16 +114,20 @@ AC_DEFUN([_AM_PATH_LIBASSUAN_COMMON],
 
   if test $ok = yes; then
     if test x"$host" != x ; then
-      libassuan_config_host=`$LIBASSUAN_CONFIG --host 2>/dev/null || echo none`
+      if test -z "$use_gpgrt_config"; then
+        libassuan_config_host=`$LIBASSUAN_CONFIG --host 2>/dev/null || echo none`
+      else
+        libassuan_config_host=`$LIBASSUAN_CONFIG --variable=host 2>/dev/null || echo none`
+      fi
       if test x"$libassuan_config_host" != xnone ; then
         if test x"$libassuan_config_host" != x"$host" ; then
   AC_MSG_WARN([[
 ***
-*** The config script $LIBASSUAN_CONFIG was
+*** The config script "$LIBASSUAN_CONFIG" was
 *** built for $libassuan_config_host and thus may not match the
 *** used host $host.
 *** You may want to use the configure option --with-libassuan-prefix
-*** to specify a matching config script or use \$SYSROOT.
+*** to specify a matching config script.
 ***]])
         fi
       fi
@@ -150,8 +159,8 @@ dnl
 AC_DEFUN([AM_PATH_LIBASSUAN],
 [ _AM_PATH_LIBASSUAN_COMMON($1)
   if test $ok = yes; then
-    LIBASSUAN_CFLAGS=`$LIBASSUAN_CONFIG $libassuan_config_args --cflags`
-    LIBASSUAN_LIBS=`$LIBASSUAN_CONFIG $libassuan_config_args --libs`
+    LIBASSUAN_CFLAGS=`$LIBASSUAN_CONFIG --cflags`
+    LIBASSUAN_LIBS=`$LIBASSUAN_CONFIG --libs`
     ifelse([$2], , :, [$2])
   else
     LIBASSUAN_CFLAGS=""

@@ -187,6 +187,7 @@ signals:
     void returnPressed();
     void lostFocus();
     void selectionChanged();
+    void backspacePressed();
 
 protected:
     bool event( TQEvent * );

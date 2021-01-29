@@ -719,6 +719,8 @@ void SecTQLineEdit::backspace()
 	    d->del( TRUE );
     }
     d->finishChange( priorState );
+
+    emit backspacePressed();
 }
 
 /*!

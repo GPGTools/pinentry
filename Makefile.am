@@ -82,16 +82,28 @@ else
 pinentry_fltk =
 endif
 
+if BUILD_PINENTRY_EFL
+pinentry_efl = efl
+else
+pinentry_efl =
+endif
+
 if BUILD_PINENTRY_MACOSX
 pinentry_macosx = macosx
 else
 pinentry_macosx =
 endif
 
+if BUILD_DOC
+doc = doc
+else
+doc =
+endif
+
 SUBDIRS = m4 secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_emacs} ${pinentry_gtk_2} ${pinentry_gnome_3} \
 	${pinentry_qt} ${pinentry_tqt} ${pinentry_w32} \
-	${pinentry_fltk} ${pinentry_macosx} doc
+	${pinentry_fltk} ${pinentry_efl} ${pinentry_macosx} ${doc}
 
 
 install-exec-local:

@@ -75,7 +75,7 @@ struct pinentry
      supported.  (Assuan: "OPTION ttyname TTYNAME".)  */
   char *ttyname;
   /* The type of the terminal.  (Assuan: "OPTION ttytype TTYTYPE".)  */
-  char *ttytype;
+  char *ttytype_l;
   /* Set the alert mode (none, beep or flash).  */
   char *ttyalert;
   /* The LC_CTYPE value for the terminal.  (Assuan: "OPTION lc-ctype
@@ -174,6 +174,16 @@ struct pinentry
      (Assuan: "SETQUALITYBAR_TT TOOLTIP".)  */
   char *quality_bar_tt;
 
+  /* If this is not NULL, a generate action should be shown.
+     There will be an inquiry back to the caller to get such a
+     PIN. generate action.  Malloced or NULL.
+     (Assuan: "GENPIN LABEL .)  */
+  char *genpin_label;
+
+  /* The tooltip to be show for the generate action.  Malloced or NULL.
+     (Assuan: "GENPIN TOOLTIP".)  */
+  char *genpin_tt;
+
   /* For the curses pinentry, the color of error messages.  */
   pinentry_color_t color_fg;
   int color_fg_bright;
@@ -220,8 +230,8 @@ struct pinentry
   /* NOTE: If you add any additional fields to this structure, be sure
      to update the initializer in pinentry/pinentry.c!!!  */
 
-  /* For the quality indicator we need to do an inquiry.  Thus we need
-     to save the assuan ctx.  */
+  /* For the quality indicator and genpin we need to do an inquiry.
+     Thus we need to save the assuan ctx.  */
   void *ctx_assuan;
 
   /* An UTF-8 string with an invisible character used to override the
@@ -268,6 +278,9 @@ char *pinentry_get_title (pinentry_t pe);
 /* Run a quality inquiry for PASSPHRASE of LENGTH. */
 int pinentry_inq_quality (pinentry_t pin,
                           const char *passphrase, size_t length);
+
+/* Run a genpin iquriry. Returns a malloced string or NULL */
+char *pinentry_inq_genpin (pinentry_t pin);
 
 /* Try to make room for at least LEN bytes for the pin in the pinentry
    PIN.  Returns new buffer on success and 0 on failure.  */
