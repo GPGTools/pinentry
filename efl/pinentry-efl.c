@@ -249,8 +249,7 @@ create_window (void)
 
   if (pinentry->title)
     {
-      txt = pinentry_utf8_to_local (pinentry->lc_ctype,
-                                    pinentry->title);
+      txt = elm_entry_utf8_to_markup(pinentry->title);
       elm_win_title_set ( win, txt );
       free (txt);
     }
@@ -263,7 +262,7 @@ create_window (void)
 
       obj = elm_label_add(table);
       elm_label_line_wrap_set (obj, ELM_WRAP_WORD);
-      txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->description);
+      txt = elm_entry_utf8_to_markup(pinentry->description);
       len = strlen(txt)+20; // 20 chars for align tag
       aligned = calloc(len+1,sizeof(char));
       if(aligned)
@@ -284,7 +283,7 @@ create_window (void)
     {
     /* Error Label */
     if (pinentry->error)
-        txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->error);
+        txt = elm_entry_utf8_to_markup(pinentry->error);
       else
         txt = "";
       obj = elm_label_add(table);
@@ -312,7 +311,7 @@ create_window (void)
       {
         /* Entry/Prompt Label */
         obj = elm_label_add(table);
-        txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->prompt);
+        txt = elm_entry_utf8_to_markup(pinentry->prompt);
         elm_object_text_set(obj,txt);
         free (txt);
         evas_object_size_hint_weight_set(obj, 0, EVAS_HINT_EXPAND);
@@ -356,8 +355,7 @@ create_window (void)
 	{
           /* Quality Bar Label */
 	  obj = elm_label_add(table);
-          txt = pinentry_utf8_to_local (pinentry->lc_ctype,
-                                        pinentry->quality_bar);
+          txt = elm_entry_utf8_to_markup(pinentry->quality_bar);
           elm_object_text_set(obj,txt);
           free (txt);
           evas_object_size_hint_weight_set(obj, 0, EVAS_HINT_EXPAND);
@@ -381,8 +379,7 @@ create_window (void)
         {
           /* Repeat Label */
 	  obj = elm_label_add(table);
-          txt = pinentry_utf8_to_local (pinentry->lc_ctype,
-                                        pinentry->repeat_passphrase);
+          txt = elm_entry_utf8_to_markup(pinentry->repeat_passphrase);
           elm_object_text_set(obj,txt);
           free (txt);
           evas_object_size_hint_weight_set(obj, 0, EVAS_HINT_EXPAND);
@@ -440,10 +437,9 @@ create_window (void)
       if (pinentry->cancel || pinentry->default_cancel)
         {
           if(pinentry->cancel)
-            txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->cancel);
+            txt = elm_entry_utf8_to_markup(pinentry->cancel);
           else
-            txt = pinentry_utf8_to_local (pinentry->lc_ctype,
-                                          pinentry->default_cancel);
+            txt = elm_entry_utf8_to_markup(pinentry->default_cancel);
           if(txt[0]=='_')
             elm_object_text_set(obj,txt+1);
           else
@@ -488,9 +484,9 @@ create_window (void)
   if (pinentry->ok || pinentry->default_ok)
     {
       if(pinentry->ok)
-        txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->ok);
+        txt = elm_entry_utf8_to_markup(pinentry->ok);
       else
-        txt = pinentry_utf8_to_local (pinentry->lc_ctype, pinentry->default_ok);
+        txt = elm_entry_utf8_to_markup(pinentry->default_ok);
       if(txt[0]=='_')
         elm_object_text_set(obj,txt+1);
       else
