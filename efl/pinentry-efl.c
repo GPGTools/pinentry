@@ -542,10 +542,12 @@ create_window (void)
   evas_object_show (obj);
 
   elm_win_resize_object_add(win,obj);
-  evas_object_show(win);
 
   if(entry)
     elm_object_focus_set (entry, EINA_TRUE);
+
+  evas_object_show(win);
+  elm_win_activate(win);
 
   if (pinentry->timeout > 0)
     timer = ecore_timer_add (pinentry->timeout,
