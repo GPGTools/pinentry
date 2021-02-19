@@ -423,7 +423,24 @@ AC_ARG_ENABLE(pinentry-efl,
             pinentry_efl=$enableval, pinentry_efl=maybe)
 
 if test "$pinentry_efl" != "no"; then
-	PKG_CHECK_MODULES(EFL,[elementary >= 1.18,ecore-x])
+	PKG_CHECK_MODULES(
+		EFL,
+		[elementary >= 1.18,ecore-x],
+		[
+			pinentry_efl=yes
+		],
+		[
+			if test "$pinentry_efl" = "yes"; then
+			        AC_MSG_ERROR([[
+***
+*** efl (elementary >= 1.18, ecore-x) is required for pinentry-efl.
+***]])
+			else
+				AC_MSG_WARN([pkg-config could not find the modules elementary or ecore-x])
+			fi
+                        pinentry_efl=no
+		]
+	)
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_EFL, test "$pinentry_efl" = "yes")
 
