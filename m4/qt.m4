@@ -59,7 +59,9 @@ AC_DEFUN([FIND_QT],
 
     qtlibdir=`"$PKG_CONFIG" --variable libdir Qt5Core`
     if test -n "$qtlibdir"; then
+      if test "$enable_rpath" != "no"; then
         PINENTRY_QT_LDFLAGS="$PINENTRY_QT_LDFLAGS -Wl,-rpath \"$qtlibdir\""
+      fi
     fi
 
     AC_CHECK_TOOL(MOC, moc)
