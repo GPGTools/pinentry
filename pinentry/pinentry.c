@@ -656,6 +656,7 @@ pinentry_inq_genpin (pinentry_t pin)
           if (rc)
             {
               fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
+              free (value);
               return 0;
             }
         }

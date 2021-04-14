@@ -498,7 +498,7 @@ set_labels (pinentry_t pe)
     set_label (pe, "SETOK", pe->default_ok);
   if (pe->cancel)
     set_label (pe, "SETCANCEL", pe->cancel);
-  else if (pe->default_ok)
+  else if (pe->default_cancel)
     set_label (pe, "SETCANCEL", pe->default_cancel);
   if (pe->notok)
     set_label (pe, "SETNOTOK", pe->notok);

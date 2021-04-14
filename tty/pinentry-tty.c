@@ -559,7 +559,7 @@ tty_cmd_handler (pinentry_t pinentry)
         }
     }
 
-  if (terminal_save (fileno (ttyfi)) < 0)
+  if (!rc && terminal_save (fileno (ttyfi)) < 0)
     rc = -1;
 
   if (! rc)

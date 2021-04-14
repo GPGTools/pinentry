@@ -315,6 +315,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
         }								\
       dialog->which = pinentry_utf8_to_local (pinentry->lc_ctype,	\
 					      new ? new : default);	\
+      free (new);							\
       if (!dialog->which)						\
         {								\
 	  err = 1;							\
@@ -873,6 +874,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
         {
           pinentry->specific_err = gpg_error_from_syserror ();
           pinentry->specific_err_loc = "open_tty_for_read";
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
           return confirm_mode? 0 : -1;
         }
       ttyfo = fopen (tty_name, "w");
@@ -883,6 +887,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  errno = err;
           pinentry->specific_err = gpg_error_from_syserror ();
           pinentry->specific_err_loc = "open_tty_for_write";
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
 	  return confirm_mode? 0 : -1;
 	}
       screen = newterm (tty_type, ttyfo, ttyfi);
@@ -897,6 +904,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
               errno = ENOTTY;
               pinentry->specific_err = gpg_error_from_syserror ();
               pinentry->specific_err_loc = "isatty";
+#ifdef HAVE_NCURSESW
+              free (old_ctype);
+#endif
               return confirm_mode? 0 : -1;
             }
 	  init_screen = 1;
