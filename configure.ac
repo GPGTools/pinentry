@@ -24,25 +24,26 @@ min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s pinentry-n.m.k) and run "./autogen.sh --force".  Please
-# bump the version number immediately after the release, do another
-# commit, and a push so that the git magic is able to work.
-m4_define(mym4_version, [1.2.0])
+# bump the version number immediately after the release and do another
+# commit and push so that the git magic is able to work.
+m4_define([mym4_package],[pinentry])
+m4_define([mym4_major], [1])
+m4_define([mym4_minor], [2])
+m4_define([mym4_micro], [0])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
-# flag indicating a development version (mym4_isgit).  Note that the
+# flag indicating a development version (mym4_isbeta).  Note that the
 # m4 processing is done by autoconf and not during the configure run.
-m4_define([mym4_revision], m4_esyscmd([git branch -v 2>/dev/null \
-          | awk '/^\* / {printf "%s",$3}']))
-m4_define([mym4_revision_dec],
-          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
-m4_define([mym4_betastring],
-          m4_esyscmd_s([git describe --match 'pinentry-[0-9].[0-9].*[0-9]' \
-                           --long|  awk -F- '$3!=0{print"-beta"$3}']))
-m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
-m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
+m4_define([mym4_verslist], m4_split(m4_esyscmd([./autogen.sh --find-version] \
+                           mym4_package mym4_major mym4_minor mym4_micro),[:]))
+m4_define([mym4_isbeta],       m4_argn(2, mym4_verslist))
+m4_define([mym4_version],      m4_argn(4, mym4_verslist))
+m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
+m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
+m4_esyscmd([echo ]mym4_version[>VERSION])
 
-AC_INIT([pinentry],[mym4_full_version],[https://bugs.gnupg.org])
+AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_CONFIG_HEADER(config.h)

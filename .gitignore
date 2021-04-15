@@ -10,6 +10,7 @@
 /config.status
 /configure
 /Makefile.in
+/VERSION
 autom4te.cache/
 assuan/Makefile.in
 assuan/Makefile

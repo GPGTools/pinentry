@@ -24,7 +24,7 @@ DISTCHECK_CONFIGURE_FLAGS = --disable-pinentry-qt --enable-pinentry-emacs
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
-EXTRA_DIST = autogen.sh autogen.rc README.GIT ChangeLog-old \
+EXTRA_DIST = autogen.sh autogen.rc README.GIT ChangeLog-old VERSION \
 	     build-aux/gitlog-to-changelog \
 	     build-aux/git-log-fix build-aux/git-log-footer
 
@@ -111,7 +111,6 @@ install-exec-local:
 	$(LN_S) $(PINENTRY_DEFAULT)$(EXEEXT) pinentry)
 
 dist-hook: gen-ChangeLog
-	echo "$(VERSION)" > $(distdir)/VERSION
 
 distcheck-hook:
 	set -e; ( \
