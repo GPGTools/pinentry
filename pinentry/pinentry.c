@@ -1,5 +1,5 @@
 /* pinentry.c - The PIN entry support library
- * Copyright (C) 2002, 2003, 2007, 2008, 2010, 2015, 2016 g10 Code GmbH
+ * Copyright (C) 2002, 2003, 2007, 2008, 2010, 2015, 2016, 2021 g10 Code GmbH
  *
  * This file is part of PINENTRY.
  *
@@ -165,6 +165,9 @@ pinentry_reset (int use_defaults)
   free (pinentry.repeat_error_string);
   free (pinentry.quality_bar);
   free (pinentry.quality_bar_tt);
+  free (pinentry.formatted_passphrase_label);
+  free (pinentry.formatted_passphrase_tt);
+  free (pinentry.formatted_passphrase_hint);
   free (pinentry.keyinfo);
   free (pinentry.specific_err_info);
 
@@ -1265,6 +1268,36 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         free (pinentry.invisible_char);
       pinentry.invisible_char = strdup (value);
       if (!pinentry.invisible_char)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "formatted-passphrase"))
+    {
+      int mode = atoi (value);
+      if (mode >= 0 && mode <= 3)
+        pinentry.formatted_passphrase = mode;
+    }
+  else if (!strcmp (key, "formatted-passphrase-label"))
+    {
+      if (pinentry.formatted_passphrase_label)
+        free (pinentry.formatted_passphrase_label);
+      pinentry.formatted_passphrase_label = strdup (value);
+      if (!pinentry.formatted_passphrase_label)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "formatted-passphrase-tt"))
+    {
+      if (pinentry.formatted_passphrase_tt)
+        free (pinentry.formatted_passphrase_tt);
+      pinentry.formatted_passphrase_tt = strdup (value);
+      if (!pinentry.formatted_passphrase_tt)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "formatted-passphrase-hint"))
+    {
+      if (pinentry.formatted_passphrase_hint)
+        free (pinentry.formatted_passphrase_hint);
+      pinentry.formatted_passphrase_hint = strdup (value);
+      if (!pinentry.formatted_passphrase_hint)
 	return gpg_error_from_syserror ();
     }
   else

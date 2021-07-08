@@ -1,5 +1,5 @@
 /* pinentry.h - The interface for the PIN entry support library.
- * Copyright (C) 2002, 2003, 2010, 2015 g10 Code GmbH
+ * Copyright (C) 2002, 2003, 2010, 2015, 2021 g10 Code GmbH
  *
  * This file is part of PINENTRY.
  *
@@ -170,7 +170,7 @@ struct pinentry
      "SETQUALITYBAR LABEL".)  */
   char *quality_bar;
 
-  /* The tooltip to be show for the qualitybar.  Malloced or NULL.
+  /* The tooltip to be shown for the qualitybar.  Malloced or NULL.
      (Assuan: "SETQUALITYBAR_TT TOOLTIP".)  */
   char *quality_bar_tt;
 
@@ -180,9 +180,36 @@ struct pinentry
      (Assuan: "GENPIN LABEL .)  */
   char *genpin_label;
 
-  /* The tooltip to be show for the generate action.  Malloced or NULL.
+  /* The tooltip to be shown for the generate action.  Malloced or NULL.
      (Assuan: "GENPIN TOOLTIP".)  */
   char *genpin_tt;
+
+  /* Specifies whether the option to enable passphrase formatting should be
+     shown, whether it should be on or off by default, and whether the user
+     is allowed to change it.
+     Possible values are:
+       0 - Option is not shown (and off).
+       1 - Option is shown, off by default, and user can change it.
+       2 - Option is shown, on, and user cannot change it.
+       3 - Option is shown, on by default, and user can change it.
+     Defaults to 0.
+     (Assuan: "OPTION formatted-passphrase=MODE")  */
+  int formatted_passphrase;
+
+  /* The label to be shown for the formatted passphrase option.  Malloced or
+     NULL.
+     (Assuan: "OPTION formatted-passphrase-label=Use password formatting".)  */
+  char *formatted_passphrase_label;
+
+  /* The tooltip to be shown for the formatted passphrase option.  Malloced or
+     NULL.
+     (Assuan: "OPTION formatted-passphrase-tt=TOOLTIP".)  */
+  char *formatted_passphrase_tt;
+
+  /* A hint to be shown near the passphrase input field if passphrase
+     formatting is enabled.  Malloced or NULL.
+     (Assuan: "OPTION formatted-passphrase-hint=HINT".)  */
+  char *formatted_passphrase_hint;
 
   /* For the curses pinentry, the color of error messages.  */
   pinentry_color_t color_fg;

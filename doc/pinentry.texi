@@ -408,6 +408,57 @@ If you want to show a tooltip for the quality bar, you may use
 With STRING being a percent escaped string shown as the tooltip.
 
 
+@item Enable passphrase formatting
+Passphrase formatting will group the characters of the passphrase into
+groups of four characters separated by non-breaking spaces or a similar
+separator.  This is useful in combination with passphrase generation to make
+the generated passphrase easier readable.  There are four different modes
+controlling passphrase formatting.
+@example
+  C: OPTION formatted-passphrase=1
+  S: OK
+@end example
+The different modes are:
+@table @code
+@item 0
+Passphrase formatting is disabled.  The option to change it is not shown,
+so that the user cannot turn it on.
+@item 1
+Passphrase formatting is disabled.  The option to change it is shown, so
+that the user can turn it on.
+@item 2
+Passphrase formatting is enabled. The option to change it is shown, but
+disabled, so that the user cannot turn it off.
+@item 3
+Passphrase formatting is enabled.  The option to change it is shown, so
+that the user can turn it off.
+@end table
+
+Note: If passphrase formatting is enabled, then, depending on the concrete
+pinentry, all occurrences of the character used as separator may be stripped
+from the entered passphrase.
+
+The following options allow setting translated strings used by passphrase
+formatting.
+@table @code
+@item formatted-passphrase-label
+This is used as label for the option.
+@item formatted-passphrase-tt
+This is used as tooltip for the option.
+@item formatted-passphrase-hint
+This is used as hint for the user if passphrase formatting is enabled.
+@end table
+Example:
+@example
+  C: OPTION formatted-passphrase-label=Format the passphrase
+  S: OK
+  C: OPTION formatted-passphrase-tt=Makes the passphrase easier readable.
+  S: OK
+  C: OPTION formatted-passphrase-hint=Blanks are not part of the passphrase.
+  S: OK
+@end example
+
+
 @item Ask for a PIN
 The meat of this tool is to ask for a passphrase of PIN, it is done with
 this command:
@@ -678,6 +729,44 @@ password quality widget correspondingly.
 
 @item @code{quality_bar_tt}
 A tooltip for the quality bar.
+
+@item @code{formatted_passphrase}
+Specifies whether the option to enable passphrase formatting should be
+shown, whether it should be on or off by default, and whether the user
+is allowed to change it.  This option should only be available, if a new
+passphrase is requested, i.e. if @code{repeat_passphrase} is not @code{NULL}.
+Possible values are:
+@table @code
+@item 0
+Passphrase formatting is disabled.  The option to change it is not shown,
+so that the user cannot turn it on.
+@item 1
+Passphrase formatting is disabled.  The option to change it is shown, so
+that the user can turn it on.
+@item 2
+Passphrase formatting is enabled. The option to change it is shown, but
+disabled, so that the user cannot turn it off.
+@item 3
+Passphrase formatting is enabled.  The option to change it is shown, so
+that the user can turn it off.
+@end table
+
+If passphrase formatting is enabled, then the passphrase should be grouped
+into groups of four characters, e.g. separated by non-breaking spaces or a
+similar separator (if the user requested the passphrase to be displayed).
+To simplify the implementation all occurrences of the character used as
+separator can be stripped from the entered passphrase, if formatting is
+enabled.
+
+@item @code{formatted_passphrase_label}
+The label for the formatted passphrase option.
+
+@item @code{formatted_passphrase_tt}
+The tooltip for the formatted passphrase option.
+
+@item @code{formatted_passphrase_hint}
+A hint to be shown if passphrase formatting is enabled.  It should be shown
+near the passphrase input field.
 
 @item @code{default_pwmngr}
 If @code{may_cache_password} and @code{keyinfo} are set and the user
