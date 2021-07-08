@@ -39,6 +39,8 @@ public:
 
 public Q_SLOTS:
     void setFormattedPassphrase(bool on);
+    void copy() const;
+    void cut();
 
 Q_SIGNALS:
     void backspacePressed();

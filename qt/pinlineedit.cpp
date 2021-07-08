@@ -21,6 +21,8 @@
 
 #include "pinlineedit.h"
 
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QKeyEvent>
 
 static const int FormattedPassphraseGroupSize = 4;
@@ -45,6 +47,21 @@ public:
             text.remove(i, 1);
         }
         return text;
+    }
+
+    void copyToClipboard(const PinLineEdit *edit)
+    {
+        if (edit->echoMode() != QLineEdit::Normal) {
+            return;
+        }
+
+        QString text = edit->selectedText();
+        if (mFormattedPassphrase) {
+            text.remove(FormattedPassphraseSeparator);
+        }
+        if (!text.isEmpty()) {
+            QGuiApplication::clipboard()->setText(text);
+        }
     }
 
 public:
@@ -74,6 +91,19 @@ void PinLineEdit::setFormattedPassphrase(bool on)
     }
 }
 
+void PinLineEdit::copy() const
+{
+    d->copyToClipboard(this);
+}
+
+void PinLineEdit::cut()
+{
+    if (hasSelectedText()) {
+        copy();
+        del();
+    }
+}
+
 void PinLineEdit::setPin(const QString &pin)
 {
     setText(d->mFormattedPassphrase ? d->formatted(pin) : pin);
@@ -90,10 +120,39 @@ QString PinLineEdit::pin() const
 
 void PinLineEdit::keyPressEvent(QKeyEvent *e)
 {
+    if (e == QKeySequence::Copy) {
+        copy();
+        return;
+    }
+    else if (e == QKeySequence::Cut) {
+        if (!isReadOnly() && hasSelectedText()) {
+            copy();
+            del();
+        }
+        return;
+    }
+    else if (e == QKeySequence::DeleteEndOfLine) {
+        if (!isReadOnly()) {
+            setSelection(cursorPosition(), text().size());
+            copy();
+            del();
+        }
+        return;
+    }
+    else if (e == QKeySequence::DeleteCompleteLine) {
+        if (!isReadOnly()) {
+            setSelection(0, text().size());
+            copy();
+            del();
+        }
+        return;
+    }
+
     QLineEdit::keyPressEvent(e);
 
-    if ( e->key() == Qt::Key::Key_Backspace )
-	emit backspacePressed();
+    if (e->key() == Qt::Key::Key_Backspace) {
+        emit backspacePressed();
+    }
 }
 
 void PinLineEdit::textEdited()
