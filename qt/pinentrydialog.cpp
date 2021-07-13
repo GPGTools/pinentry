@@ -215,8 +215,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     /* Set up the show password action */
     const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
     const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
-    const QIcon generateIcon = QIcon(); /* Disabled for now
-                                         QIcon::fromTheme(QLatin1String("password-generate")); */
+    const QIcon generateIcon = QIcon::fromTheme(QLatin1String("password-generate"));
 #if QT_VERSION >= 0x050200
     if (!generateIcon.isNull()) {
         mGenerateActionEdit = _edit->addAction(generateIcon,
