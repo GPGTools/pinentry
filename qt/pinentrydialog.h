@@ -143,6 +143,8 @@ private:
               *mGenerateActionEdit;
     QCheckBox *mVisiCB;
     QCheckBox *mFormattedPassphraseCB;
+    QLabel    *mFormattedPassphraseHint;
+    QLabel    *mFormattedPassphraseHintSpacer;
 };
 
 #endif // __PINENTRYDIALOG_H__

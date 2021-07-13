@@ -41,6 +41,8 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QCheckBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 #include <QDebug>
 
@@ -99,7 +101,9 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisiActionEdit(NULL),
       mGenerateActionEdit(NULL),
       mVisiCB(NULL),
-      mFormattedPassphraseCB(NULL)
+      mFormattedPassphraseCB(NULL),
+      mFormattedPassphraseHint(NULL),
+      mFormattedPassphraseHintSpacer(NULL)
 {
     _timed_out = false;
 
@@ -174,13 +178,26 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     connect(_edit, SIGNAL(backspacePressed()),
             this, SLOT(onBackspace()));
 
-    QGridLayout *const grid = new QGridLayout(this);
+    auto *const mainLayout = new QVBoxLayout{this};
+
+    auto *const hbox = new QHBoxLayout;
+
+    hbox->addWidget(_icon, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+    auto *const grid = new QGridLayout;
     int row = 1;
     grid->addWidget(_error, row++, 1, 1, 2);
     grid->addWidget(_desc,  row++, 1, 1, 2);
-    //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
     grid->addWidget(_prompt, row, 1);
     grid->addWidget(_edit, row++, 2);
+
+    mFormattedPassphraseHintSpacer = new QLabel;
+    mFormattedPassphraseHintSpacer->setVisible(false);
+    mFormattedPassphraseHint = new QLabel;
+    mFormattedPassphraseHint->setVisible(false);
+    grid->addWidget(mFormattedPassphraseHintSpacer, row, 1);
+    grid->addWidget(mFormattedPassphraseHint, row++, 2);
+
     if (mRepeat) {
         mRepeat->setMaxLength(256);
         mRepeat->setEchoMode(QLineEdit::Password);
@@ -227,12 +244,11 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     connect(mFormattedPassphraseCB, SIGNAL(toggled(bool)), this, SLOT(toggleFormattedPassphrase()));
     grid->addWidget(mFormattedPassphraseCB, row++, 1, 1, 2);
 
-    grid->addWidget(buttons, ++row, 0, 1, 3);
+    hbox->addLayout(grid, 1);
 
-    grid->addWidget(_icon, 0, 0, row - 1, 1, Qt::AlignVCenter | Qt::AlignLeft);
-
-    grid->setSizeConstraint(QLayout::SetFixedSize);
-
+    mainLayout->addLayout(hbox);
+    mainLayout->addStretch(1);
+    mainLayout->addWidget(buttons);
 
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));
@@ -376,6 +392,7 @@ void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassp
 {
     mFormattedPassphraseCB->setText(options.label);
     mFormattedPassphraseCB->setToolTip(QLatin1String("<html>") + options.tooltip.toHtmlEscaped() + QLatin1String("</html>"));
+    mFormattedPassphraseHint->setText(QLatin1String("<html>") + options.hint.toHtmlEscaped() + QLatin1String("</html>"));
 
     mFormattedPassphraseCB->setVisible(options.mode != FormattedPassphraseHidden);
     mFormattedPassphraseCB->setEnabled(options.mode == FormattedPassphraseOff || options.mode == FormattedPassphraseOn);
@@ -384,9 +401,19 @@ void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassp
 
 void PinEntryDialog::toggleFormattedPassphrase()
 {
-    _edit->setFormattedPassphrase(mFormattedPassphraseCB->isChecked() && _edit->echoMode() == QLineEdit::Normal);
+    const bool enableFormatting = mFormattedPassphraseCB->isChecked() && _edit->echoMode() == QLineEdit::Normal;
+    _edit->setFormattedPassphrase(enableFormatting);
     if (mRepeat) {
-        mRepeat->setFormattedPassphrase(mFormattedPassphraseCB->isChecked() && mRepeat->echoMode() == QLineEdit::Normal);
+        mRepeat->setFormattedPassphrase(enableFormatting);
+        const bool hintAboutToBeHidden = mFormattedPassphraseHint->isVisible() && !enableFormatting;
+        if (hintAboutToBeHidden) {
+            // set hint spacer to current height of hint label before hiding the hint
+            mFormattedPassphraseHintSpacer->setMinimumHeight(mFormattedPassphraseHint->height());
+            mFormattedPassphraseHintSpacer->setVisible(true);
+        } else if (enableFormatting) {
+            mFormattedPassphraseHintSpacer->setVisible(false);
+        }
+        mFormattedPassphraseHint->setVisible(enableFormatting);
     }
 }
 
