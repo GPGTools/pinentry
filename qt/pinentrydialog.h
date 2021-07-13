@@ -2,9 +2,11 @@
  * Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
  * Copyright 2007 Ingo Klöcker
  * Copyright 2016 Intevation GmbH
+ * Copyright (C) 2021 g10 Code GmbH
  *
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  * Modified by Andre Heinecke <aheinecke@intevation.de>
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -52,6 +54,20 @@ class PinEntryDialog : public QDialog
     Q_PROPERTY(QString pin READ pin WRITE setPin)
     Q_PROPERTY(QString prompt READ prompt WRITE setPrompt)
 public:
+    enum FormattedPassphraseMode {
+        FormattedPassphraseHidden = 0,
+        FormattedPassphraseOff = 1,
+        FormattedPassphraseForcedOn = 2,
+        FormattedPassphraseOn = 3,
+    };
+    struct FormattedPassphraseOptions
+    {
+        FormattedPassphraseMode mode;
+        QString label;
+        QString tooltip;
+        QString hint;
+    };
+
     explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0,
                             int timeout = 0, bool modal = false,
                             bool enable_quality_bar = false,
@@ -83,6 +99,8 @@ public:
     void setGenpinLabel(const QString &);
     void setGenpinTT(const QString &);
 
+    void setFormattedPassphrase(const FormattedPassphraseOptions &options);
+
     void setPinentryInfo(pinentry_t);
 
     bool timedOut() const;
@@ -95,6 +113,7 @@ protected slots:
     void toggleVisibility();
     void onBackspace();
     void generatePin();
+    void toggleFormattedPassphrase();
 
 protected:
     /* reimp */ void showEvent(QShowEvent *event);
@@ -107,7 +126,7 @@ private:
     QLabel    *_quality_bar_label;
     QProgressBar *_quality_bar;
     PinLineEdit *_edit;
-    QLineEdit   *mRepeat;
+    PinLineEdit *mRepeat;
     QPushButton *_ok;
     QPushButton *_cancel;
     bool       _grabbed;
@@ -123,6 +142,7 @@ private:
     QAction   *mVisiActionEdit,
               *mGenerateActionEdit;
     QCheckBox *mVisiCB;
+    QCheckBox *mFormattedPassphraseCB;
 };
 
 #endif // __PINENTRYDIALOG_H__

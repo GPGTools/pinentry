@@ -1,11 +1,12 @@
 /* main.cpp - A Qt dialog for PIN entry.
  * Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
- * Copyright (C) 2003 g10 Code GmbH
+ * Copyright (C) 2003, 2021 g10 Code GmbH
  * Copyright 2007 Ingo Klöcker
  *
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  * Modified by Marcus Brinkmann <marcus@g10code.de>.
  * Modified by Marc Mutz <marc@kdab.com>
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -219,6 +220,11 @@ qt_cmd_handler(pinentry_t pe)
         pinentry.setRepeatErrorText(repeatError);
         pinentry.setGenpinLabel(generateLbl);
         pinentry.setGenpinTT(generateTT);
+        pinentry.setFormattedPassphrase({
+            PinEntryDialog::FormattedPassphraseMode(pe->formatted_passphrase),
+            from_utf8(pe->formatted_passphrase_label),
+            from_utf8(pe->formatted_passphrase_tt),
+            from_utf8(pe->formatted_passphrase_hint)});
 
         str = pinentry_get_title (pe);
         if (str) {

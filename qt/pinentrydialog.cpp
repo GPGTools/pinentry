@@ -2,9 +2,11 @@
  * Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
  * Copyright 2007 Ingo Klöcker
  * Copyright 2016 Intevation GmbH
+ * Copyright (C) 2021 g10 Code GmbH
  *
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  * Modified by Andre Heinecke <aheinecke@intevation.de>
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,8 +24,10 @@
  */
 
 #include "pinentrydialog.h"
-#include <QGridLayout>
 
+#include "pinlineedit.h"
+
+#include <QGridLayout>
 #include <QProgressBar>
 #include <QApplication>
 #include <QFontMetrics>
@@ -37,7 +41,6 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QCheckBox>
-#include "pinlineedit.h"
 
 #include <QDebug>
 
@@ -95,7 +98,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
       mGenerateActionEdit(NULL),
-      mVisiCB(NULL)
+      mVisiCB(NULL),
+      mFormattedPassphraseCB(NULL)
 {
     _timed_out = false;
 
@@ -125,6 +129,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     _prompt->setBuddy(_edit);
 
+    if (!repeatString.isNull()) {
+        mRepeat = new PinLineEdit(this);
+    }
+
     if (enable_quality_bar) {
         _quality_bar_label = new QLabel(this);
         _quality_bar_label->setAlignment(Qt::AlignVCenter);
@@ -134,6 +142,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     } else {
         _have_quality_bar = false;
     }
+
+    mFormattedPassphraseCB = new QCheckBox{this};
 
     QDialogButtonBox *const buttons = new QDialogButtonBox(this);
     buttons->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -171,8 +181,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     //grid->addItem( new QSpacerItem( 0, _edit->height() / 10, QSizePolicy::Minimum, QSizePolicy::Fixed ), 1, 1 );
     grid->addWidget(_prompt, row, 1);
     grid->addWidget(_edit, row++, 2);
-    if (!repeatString.isNull()) {
-        mRepeat = new QLineEdit;
+    if (mRepeat) {
         mRepeat->setMaxLength(256);
         mRepeat->setEchoMode(QLineEdit::Password);
         connect(mRepeat, SIGNAL(textChanged(QString)),
@@ -181,8 +190,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         repeatLabel->setBuddy(mRepeat);
         grid->addWidget(repeatLabel, row, 1);
         grid->addWidget(mRepeat, row++, 2);
-        setTabOrder(_edit, mRepeat);
-        setTabOrder(mRepeat, _ok);
     }
     if (enable_quality_bar) {
         grid->addWidget(_quality_bar_label, row, 1);
@@ -214,6 +221,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             grid->addWidget(mVisiCB, row++, 1, 1, 2, Qt::AlignLeft);
         }
     }
+
+    mFormattedPassphraseCB->setVisible(false);
+    mFormattedPassphraseCB->setEnabled(false);
+    connect(mFormattedPassphraseCB, SIGNAL(toggled(bool)), this, SLOT(toggleFormattedPassphrase()));
+    grid->addWidget(mFormattedPassphraseCB, row++, 1, 1, 2);
+
     grid->addWidget(buttons, ++row, 0, 1, 3);
 
     grid->addWidget(_icon, 0, 0, row - 1, 1, Qt::AlignVCenter | Qt::AlignLeft);
@@ -283,12 +296,12 @@ QString PinEntryDialog::error() const
 
 void PinEntryDialog::setPin(const QString &txt)
 {
-    _edit->setText(txt);
+    _edit->setPin(txt);
 }
 
 QString PinEntryDialog::pin() const
 {
-    return _edit->text();
+    return _edit->pin();
 }
 
 void PinEntryDialog::setPrompt(const QString &txt)
@@ -359,6 +372,24 @@ void PinEntryDialog::setGenpinTT(const QString &txt)
     }
 }
 
+void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassphraseOptions &options)
+{
+    mFormattedPassphraseCB->setText(options.label);
+    mFormattedPassphraseCB->setToolTip(QLatin1String("<html>") + options.tooltip.toHtmlEscaped() + QLatin1String("</html>"));
+
+    mFormattedPassphraseCB->setVisible(options.mode != FormattedPassphraseHidden);
+    mFormattedPassphraseCB->setEnabled(options.mode == FormattedPassphraseOff || options.mode == FormattedPassphraseOn);
+    mFormattedPassphraseCB->setChecked(options.mode == FormattedPassphraseOn || options.mode == FormattedPassphraseForcedOn);
+}
+
+void PinEntryDialog::toggleFormattedPassphrase()
+{
+    _edit->setFormattedPassphrase(mFormattedPassphraseCB->isChecked() && _edit->echoMode() == QLineEdit::Normal);
+    if (mRepeat) {
+        mRepeat->setFormattedPassphrase(mFormattedPassphraseCB->isChecked() && mRepeat->echoMode() == QLineEdit::Normal);
+    }
+}
+
 void PinEntryDialog::onBackspace()
 {
     if (_disable_echo_allowed) {
@@ -422,13 +453,12 @@ void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
             _grabbed = true;
         }
     }
-
 }
 
 void PinEntryDialog::textChanged(const QString &text)
 {
     Q_UNUSED(text);
-    if (mRepeat && mRepeat->text() == _edit->text()) {
+    if (mRepeat && mRepeat->pin() == _edit->pin()) {
         _ok->setEnabled(true);
         _ok->setToolTip(QString());
     } else if (mRepeat) {
@@ -437,10 +467,10 @@ void PinEntryDialog::textChanged(const QString &text)
     }
 
     if (mVisiActionEdit && sender() == _edit) {
-        mVisiActionEdit->setVisible(!_edit->text().isEmpty());
+        mVisiActionEdit->setVisible(!_edit->pin().isEmpty());
     }
     if (mGenerateActionEdit) {
-        mGenerateActionEdit->setVisible(_edit->text().isEmpty() &&
+        mGenerateActionEdit->setVisible(_edit->pin().isEmpty() &&
                                         _pinentry_info->genpin_label);
     }
 }
@@ -453,8 +483,8 @@ void PinEntryDialog::generatePin()
             toggleVisibility();
         }
         const auto pinStr = QString::fromUtf8(pin);
-        _edit->setText(pinStr);
-        mRepeat->setText(pinStr);
+        _edit->setPin(pinStr);
+        mRepeat->setPin(pinStr);
     }
 }
 
@@ -489,12 +519,13 @@ void PinEntryDialog::toggleVisibility()
             _edit->setEchoMode(QLineEdit::Password);
         }
     }
+    toggleFormattedPassphrase();
 }
 
 QString PinEntryDialog::repeatedPin() const
 {
     if (mRepeat) {
-        return mRepeat->text();
+        return mRepeat->pin();
     }
     return QString();
 }
@@ -508,4 +539,5 @@ void PinEntryDialog::setRepeatErrorText(const QString &err)
 {
     mRepeatError = err;
 }
+
 #include "pinentrydialog.moc"

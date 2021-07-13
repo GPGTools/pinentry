@@ -1,5 +1,8 @@
 /* pinlineedit.h - Modified QLineEdit widget.
  * Copyright (C) 2018 Damien Goutte-Gattat
+ * Copyright (C) 2021 g10 Code GmbH
+ *
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,18 +24,38 @@
 
 #include <QLineEdit>
 
+#include <memory>
+
 class PinLineEdit : public QLineEdit
 {
     Q_OBJECT
 
 public:
-    PinLineEdit(QWidget *);
+    explicit PinLineEdit(QWidget *parent = nullptr);
+    ~PinLineEdit() override;
 
-signals:
+    void setPin(const QString &pin);
+    QString pin() const;
+
+public Q_SLOTS:
+    void setFormattedPassphrase(bool on);
+
+Q_SIGNALS:
     void backspacePressed();
 
 protected:
-    void keyPressEvent(QKeyEvent *);
+    void keyPressEvent(QKeyEvent *) override;
+
+private:
+    using QLineEdit::setText;
+    using QLineEdit::text;
+
+private Q_SLOTS:
+    void textEdited();
+
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
 
 #endif // _PINLINEEDIT_H_
