@@ -28,6 +28,18 @@
 static const int FormattedPassphraseGroupSize = 4;
 static const QChar FormattedPassphraseSeparator = QChar::Nbsp;
 
+namespace
+{
+struct Selection
+{
+    bool empty() const { return start < 0 || start >= end; }
+    int length() const { return empty() ? 0 : end - start; }
+
+    int start;
+    int end;
+};
+}
+
 class PinLineEdit::Private
 {
 public:
@@ -41,12 +53,34 @@ public:
         return text;
     }
 
+    Selection formattedSelection(Selection selection) const
+    {
+        if (selection.empty()) {
+            return selection;
+        }
+        return {
+            selection.start + selection.start / FormattedPassphraseGroupSize,
+            selection.end + selection.end / FormattedPassphraseGroupSize
+        };
+    }
+
     QString unformatted(QString text) const
     {
         for (int i = FormattedPassphraseGroupSize; i < text.size(); i += FormattedPassphraseGroupSize) {
             text.remove(i, 1);
         }
         return text;
+    }
+
+    Selection unformattedSelection(Selection selection) const
+    {
+        if (selection.empty()) {
+            return selection;
+        }
+        return {
+            selection.start - selection.start / (FormattedPassphraseGroupSize + 1),
+            selection.end + selection.end / (FormattedPassphraseGroupSize + 1)
+        };
     }
 
     void copyToClipboard(const PinLineEdit *edit)
@@ -84,10 +118,16 @@ void PinLineEdit::setFormattedPassphrase(bool on)
         return;
     }
     d->mFormattedPassphrase = on;
+    Selection selection{selectionStart(), selectionEnd()};
     if (d->mFormattedPassphrase) {
         setText(d->formatted(text()));
+        selection = d->formattedSelection(selection);
     } else {
         setText(d->unformatted(text()));
+        selection = d->unformattedSelection(selection);
+    }
+    if (!selection.empty()) {
+        setSelection(selection.start, selection.length());
     }
 }
 
