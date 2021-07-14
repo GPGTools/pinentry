@@ -512,6 +512,9 @@ void PinEntryDialog::generatePin()
         _edit->setPin(pinStr);
         _edit->selectAll();
         mRepeat->setPin(pinStr);
+        if (mFormattedPassphraseCB->isEnabled() && !mFormattedPassphraseCB->isChecked()) {
+            mFormattedPassphraseCB->setChecked(true);
+        }
     }
 }
 
