@@ -510,6 +510,7 @@ void PinEntryDialog::generatePin()
         }
         const auto pinStr = QString::fromUtf8(pin);
         _edit->setPin(pinStr);
+        _edit->selectAll();
         mRepeat->setPin(pinStr);
     }
 }
