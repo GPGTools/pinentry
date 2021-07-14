@@ -177,11 +177,11 @@ struct pinentry
   /* If this is not NULL, a generate action should be shown.
      There will be an inquiry back to the caller to get such a
      PIN. generate action.  Malloced or NULL.
-     (Assuan: "GENPIN LABEL .)  */
+     (Assuan: "SETGENPIN LABEL" .)  */
   char *genpin_label;
 
   /* The tooltip to be shown for the generate action.  Malloced or NULL.
-     (Assuan: "GENPIN TOOLTIP".)  */
+     (Assuan: "SETGENPIN_TT TOOLTIP".)  */
   char *genpin_tt;
 
   /* Specifies whether the option to enable passphrase formatting should be
