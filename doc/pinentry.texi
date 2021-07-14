@@ -408,6 +408,22 @@ If you want to show a tooltip for the quality bar, you may use
 With STRING being a percent escaped string shown as the tooltip.
 
 
+@item Enable an action for generating a passphrase
+Adds an action for generating a random passphrase to the GETPIN window.
+The action is only available when asking for a new passphrase, i.e. if
+SETREPEAT has been called.
+@example
+  C: SETGENPIN Suggest
+  S: OK
+@end example
+
+If you want to provide a tooltip for the action, you may use
+@example
+  C: SETGENPIN_TT Suggest a random passphrase
+  S: OK
+@end example
+
+
 @item Enable passphrase formatting
 Passphrase formatting will group the characters of the passphrase into
 groups of four characters separated by non-breaking spaces or a similar
@@ -729,6 +745,16 @@ password quality widget correspondingly.
 
 @item @code{quality_bar_tt}
 A tooltip for the quality bar.
+
+@item @code{genpin_label}
+If this is set, a generate action should be shown.  The value of this
+field is a label for the action.
+
+Note: Call the @code{pinentry_inq_genpin} function to request a randomly
+generated passphrase.
+
+@item @code{genpin_tt}
+The tooltip for the generate action.
 
 @item @code{formatted_passphrase}
 Specifies whether the option to enable passphrase formatting should be
