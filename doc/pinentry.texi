@@ -214,7 +214,7 @@ options using Assuan protocol options.
 @chapter Front Ends
 
 There are several different flavors of @pinentry{}.  Concretely, there
-are Gtk+2, Qt@tie{}4, TQt, EFL, FLTK, Gnome@tie{}3, Emacs, curses and
+are Gtk+2, Qt@tie{}4/5, TQt, EFL, FLTK, Gnome@tie{}3, Emacs, curses and
 tty variants.  These different implementations provide higher levels
 of integration with a specific environment.  For instance, the
 Gnome@tie{}3 @pinentry{} uses Gnome@tie{}3 widgets to display the
