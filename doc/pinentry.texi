@@ -814,6 +814,9 @@ Tooltip for an action that would reveal the entered password.
 Tooltip for an action that would hide the password revealed
 by the action labeld with @code{default-tt-visi}
 
+@item @code{default-capshint}
+A hint to be shown if Caps Lock is on.
+
 @end table
 
 When the handler is done, it should store the passphrase in

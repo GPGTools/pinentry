@@ -111,6 +111,7 @@ pinentry_reset (int use_defaults)
   char *default_cf_visi = pinentry.default_cf_visi;
   char *default_tt_visi = pinentry.default_tt_visi;
   char *default_tt_hide = pinentry.default_tt_hide;
+  char *default_capshint = pinentry.default_capshint;
   char *touch_file = pinentry.touch_file;
   unsigned long owner_pid = pinentry.owner_pid;
   int owner_uid = pinentry.owner_uid;
@@ -148,6 +149,7 @@ pinentry_reset (int use_defaults)
       free (pinentry.default_cf_visi);
       free (pinentry.default_tt_visi);
       free (pinentry.default_tt_hide);
+      free (pinentry.default_capshint);
       free (pinentry.touch_file);
       free (pinentry.owner_host);
       free (pinentry.display);
@@ -211,6 +213,7 @@ pinentry_reset (int use_defaults)
       pinentry.default_cf_visi = default_cf_visi;
       pinentry.default_tt_visi = default_tt_visi;
       pinentry.default_tt_hide = default_tt_hide;
+      pinentry.default_capshint = default_capshint;
       pinentry.touch_file = touch_file;
       pinentry.owner_pid = owner_pid;
       pinentry.owner_uid = owner_uid;
@@ -1249,6 +1252,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       pinentry.default_tt_hide = strdup (value);
       if (!pinentry.default_tt_hide)
+	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "default-capshint"))
+    {
+      pinentry.default_capshint = strdup (value);
+      if (!pinentry.default_capshint)
 	return gpg_error_from_syserror ();
     }
   else if (!strcmp (key, "allow-external-password-cache") && !*value)

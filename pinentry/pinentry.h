@@ -239,6 +239,9 @@ struct pinentry
   /* (Assuan: "OPTION default-tt-hide
      Hide passphrase").  */
   char *default_tt_hide;
+  /* (Assuan: "OPTION default-capshint
+     Caps Lock is on").  */
+  char *default_capshint;
 
   /* Whether we are allowed to read the password from an external
      cache.  (Assuan: "OPTION allow-external-password-cache")  */
