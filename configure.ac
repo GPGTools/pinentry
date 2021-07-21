@@ -520,6 +520,27 @@ if test "$libsecret" = "yes"; then
 fi
 
 dnl
+dnl Check for libX11 library
+dnl
+have_x11=no
+if test "$have_w32_system" != "yes"; then
+	PKG_CHECK_MODULES(
+		LIBX11,
+		[x11],
+		[have_x11=yes],
+		[
+			AC_MSG_WARN([pkg-config could not find the module x11])
+			have_x11=no
+		]
+	)
+
+	if test "$have_x11" = "yes"; then
+		AC_DEFINE(HAVE_X11, 1,
+			[The pinentries can optionally use x11.])
+	fi
+fi
+
+dnl
 dnl Check for Qt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
@@ -562,6 +583,9 @@ if test "$pinentry_qt" = "yes"; then
   else
     pinentry_qt_lib_version="(Qt5)"
   fi
+fi
+if test "$have_qt5_x11extras" = "yes"; then
+  AC_DEFINE(PINENTRY_QT_X11, 1, [pinentry-qt should use x11.])
 fi
 
 dnl

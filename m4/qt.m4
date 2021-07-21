@@ -64,6 +64,21 @@ AC_DEFUN([FIND_QT],
       fi
     fi
 
+    if test "$have_x11" = "yes"; then
+      PKG_CHECK_MODULES(
+        PINENTRY_QT_X11_EXTRAS,
+        Qt5X11Extras >= 5.1.0,
+        [have_qt5_x11extras="yes"],
+        [
+          AC_MSG_WARN([pinentry-qt will be built without Caps Lock warning on X11])
+          have_qt5_x11extras="no"
+        ])
+      if test "$have_qt5_x11extras" = "yes"; then
+        PINENTRY_QT_CFLAGS="$LIBX11_CFLAGS $PINENTRY_QT_CFLAGS $PINENTRY_QT_X11_EXTRAS_CFLAGS"
+        PINENTRY_QT_LIBS="$LIBX11_LIBS $PINENTRY_QT_LIBS $PINENTRY_QT_X11_EXTRAS_LIBS"
+      fi
+    fi
+
     AC_CHECK_TOOL(MOC, moc)
     AC_MSG_CHECKING([moc version])
     mocversion=`$MOC -v 2>&1`

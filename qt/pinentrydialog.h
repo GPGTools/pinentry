@@ -99,13 +99,15 @@ public:
     void setGenpinLabel(const QString &);
     void setGenpinTT(const QString &);
 
+    void setCapsLockHint(const QString &);
+
     void setFormattedPassphrase(const FormattedPassphraseOptions &options);
 
     void setPinentryInfo(pinentry_t);
 
     bool timedOut() const;
 
-protected slots:
+protected Q_SLOTS:
     void updateQuality(const QString &);
     void slotTimeout();
     void textChanged(const QString &);
@@ -116,7 +118,11 @@ protected slots:
     void toggleFormattedPassphrase();
 
 protected:
+    void keyReleaseEvent(QKeyEvent *event) override;
     /* reimp */ void showEvent(QShowEvent *event);
+
+private Q_SLOTS:
+    void checkCapsLock();
 
 private:
     QLabel    *_icon;
@@ -145,6 +151,7 @@ private:
     QCheckBox *mFormattedPassphraseCB;
     QLabel    *mFormattedPassphraseHint;
     QLabel    *mFormattedPassphraseHintSpacer;
+    QLabel    *mCapsLockHint;
 };
 
 #endif // __PINENTRYDIALOG_H__

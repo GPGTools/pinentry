@@ -25,6 +25,7 @@
 
 #include "pinentrydialog.h"
 
+#include "capslock.h"
 #include "pinlineedit.h"
 
 #include <QGridLayout>
@@ -103,7 +104,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisiCB(NULL),
       mFormattedPassphraseCB(NULL),
       mFormattedPassphraseHint(NULL),
-      mFormattedPassphraseHintSpacer(NULL)
+      mFormattedPassphraseHintSpacer(NULL),
+      mCapsLockHint(NULL)
 {
     _timed_out = false;
 
@@ -119,6 +121,11 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     pal.setColor(QPalette::WindowText, Qt::red);
     _error->setPalette(pal);
     _error->hide();
+
+    mCapsLockHint = new QLabel(this);
+    mCapsLockHint->setPalette(pal);
+    mCapsLockHint->setAlignment(Qt::AlignCenter);
+    mCapsLockHint->setVisible(false);
 
     _desc = new QLabel(this);
     _desc->hide();
@@ -188,6 +195,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     int row = 1;
     grid->addWidget(_error, row++, 1, 1, 2);
     grid->addWidget(_desc,  row++, 1, 1, 2);
+    grid->addWidget(mCapsLockHint, row++, 1, 1, 2);
     grid->addWidget(_prompt, row, 1);
     grid->addWidget(_edit, row++, 2);
 
@@ -251,6 +259,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));
+    connect(qApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)),
+            this, SLOT(checkCapsLock()));
+
+    checkCapsLock();
 
 #if QT_VERSION >= 0x050000
     /* This is mostly an issue on Windows where this results
@@ -268,6 +280,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     activateWindow();
     raise();
 #endif
+}
+
+void PinEntryDialog::keyReleaseEvent(QKeyEvent *event)
+{
+    QDialog::keyReleaseEvent(event);
+    checkCapsLock();
 }
 
 void PinEntryDialog::showEvent(QShowEvent *event)
@@ -385,6 +403,11 @@ void PinEntryDialog::setGenpinTT(const QString &txt)
     if (mGenerateActionEdit) {
         mGenerateActionEdit->setToolTip(txt);
     }
+}
+
+void PinEntryDialog::setCapsLockHint(const QString &txt)
+{
+    mCapsLockHint->setText(txt);
 }
 
 void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassphraseOptions &options)
@@ -568,6 +591,11 @@ bool PinEntryDialog::timedOut() const
 void PinEntryDialog::setRepeatErrorText(const QString &err)
 {
     mRepeatError = err;
+}
+
+void PinEntryDialog::checkCapsLock()
+{
+    mCapsLockHint->setVisible(capsLockIsOn());
 }
 
 #include "pinentrydialog.moc"

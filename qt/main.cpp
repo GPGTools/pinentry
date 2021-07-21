@@ -202,6 +202,10 @@ qt_cmd_handler(pinentry_t pe)
         pe->default_tt_hide ? from_utf8(pe->default_tt_hide) :
                               QLatin1String("Hide passphrase");
 
+    const QString capsLockHint =
+        pe->default_capshint ? from_utf8(pe->default_capshint) :
+                              QLatin1String("Caps Lock is on");
+
     const QString generateLbl = pe->genpin_label ? from_utf8(pe->genpin_label) :
                                 QString();
     const QString generateTT = pe->genpin_tt ? from_utf8(pe->genpin_tt) :
@@ -220,6 +224,7 @@ qt_cmd_handler(pinentry_t pe)
         pinentry.setRepeatErrorText(repeatError);
         pinentry.setGenpinLabel(generateLbl);
         pinentry.setGenpinTT(generateTT);
+        pinentry.setCapsLockHint(capsLockHint);
         pinentry.setFormattedPassphrase({
             PinEntryDialog::FormattedPassphraseMode(pe->formatted_passphrase),
             from_utf8(pe->formatted_passphrase_label),

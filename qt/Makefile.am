@@ -51,9 +51,16 @@ endif
 CLEANFILES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
+if HAVE_W32_SYSTEM
+pinentry_qt_platform_SOURCES = capslock_win.cpp
+else
+pinentry_qt_platform_SOURCES = capslock_unix.cpp
+endif
+
 pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
-	pinlineedit.h pinlineedit.cpp
+	pinlineedit.h pinlineedit.cpp \
+	$(pinentry_qt_platform_SOURCES)
 
 nodist_pinentry_qt_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
