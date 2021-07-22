@@ -272,10 +272,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
        result in an animation when the pinentry is shown and
        not just popping it up.
     */
-    setWindowState(Qt::WindowMinimized);
-    QTimer::singleShot(0, this, [this] () {
-        raiseWindow (this);
-    });
+    if (qApp->platformName() != QLatin1String("wayland")) {
+        setWindowState(Qt::WindowMinimized);
+        QTimer::singleShot(0, this, [this] () {
+            raiseWindow(this);
+        });
+    }
 #else
     activateWindow();
     raise();
