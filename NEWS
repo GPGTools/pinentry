@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.2.0 (unreleased)
 ------------------------------------------------
 
+ * Qt pinentry shows a warning if Caps Lock is on on Windows, X11 (requires
+   libX11 and Qt5X11Extras), and Wayland (requires KF5WaylandClient).
+
 
 Noteworthy changes in version 1.1.1 (2021-01-21)
 ------------------------------------------------
