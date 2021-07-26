@@ -1,4 +1,4 @@
-/* capslock.h - Helper to check whether Caps Lock is on
+/* capslock.cpp - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,35 +18,36 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __PINENTRY_QT_CAPSLOCK_H__
-#define __PINENTRY_QT_CAPSLOCK_H__
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
-#include <QObject>
+#include "capslock.h"
+#include "capslock_p.h"
 
-#include <memory>
+#include <QGuiApplication>
 
-enum class LockState
+#include <QDebug>
+
+CapsLockWatcher::Private::Private(CapsLockWatcher *q)
+    : q{q}
 {
-    Unknown = -1,
-    Off,
-    On
-};
+#ifdef PINENTRY_QT_WAYLAND
+    if (qApp->platformName() == QLatin1String("wayland")) {
+        watchWayland();
+    }
+#endif
+}
 
-LockState capsLockState();
-
-class CapsLockWatcher : public QObject
+CapsLockWatcher::CapsLockWatcher(QObject *parent)
+    : QObject{parent}
+    , d{new Private{this}}
 {
-    Q_OBJECT
+    if (qApp->platformName() == QLatin1String("wayland")) {
+#ifndef PINENTRY_QT_WAYLAND
+        qWarning() << "CapsLockWatcher was compiled without support for Wayland";
+#endif
+    }
+}
 
-public:
-    explicit CapsLockWatcher(QObject *parent = nullptr);
-
-Q_SIGNALS:
-    void stateChanged(bool locked);
-
-private:
-    class Private;
-    std::unique_ptr<Private> d;
-};
-
-#endif // __PINENTRY_QT_CAPSLOCK_H__
+#include "capslock.moc"

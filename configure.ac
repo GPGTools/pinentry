@@ -541,6 +541,22 @@ if test "$have_w32_system" != "yes"; then
 fi
 
 dnl
+dnl Check for KF5WaylandClient library
+dnl
+have_kf5waylandclient=no
+if test "$have_w32_system" != "yes"; then
+	PKG_CHECK_MODULES(
+		KF5WAYLANDCLIENT,
+		[KF5WaylandClient >= 5.60],
+		[have_kf5waylandclient=yes],
+		[
+			AC_MSG_WARN([pkg-config could not find the module KF5WaylandClient])
+			have_kf5waylandclient=no
+		]
+	)
+fi
+
+dnl
 dnl Check for Qt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
@@ -586,6 +602,15 @@ if test "$pinentry_qt" = "yes"; then
 fi
 if test "$have_qt5_x11extras" = "yes"; then
   AC_DEFINE(PINENTRY_QT_X11, 1, [pinentry-qt should use x11.])
+fi
+if test "$have_kf5waylandclient" = "yes"; then
+  PINENTRY_QT_CFLAGS="$KF5WAYLANDCLIENT_CFLAGS $PINENTRY_QT_CFLAGS -fpic"
+  PINENTRY_QT_LIBS="$KF5WAYLANDCLIENT_LIBS $PINENTRY_QT_LIBS"
+  AC_DEFINE(PINENTRY_QT_WAYLAND, 1, [pinentry-qt should use KF5WaylandClient.])
+else
+  if test "$have_w32_system" != "yes"; then
+    AC_MSG_WARN([pinentry-qt will be built without Caps Lock warning on Wayland])
+  fi
 fi
 
 dnl

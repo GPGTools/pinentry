@@ -23,6 +23,10 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "pinentrydialog.h"
 
 #include "capslock.h"
@@ -256,6 +260,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     mainLayout->addLayout(hbox);
     mainLayout->addStretch(1);
     mainLayout->addWidget(buttons);
+
+    auto capsLockWatcher = new CapsLockWatcher{this};
+    connect(capsLockWatcher, &CapsLockWatcher::stateChanged,
+            this, [this] (bool locked) {
+                mCapsLockHint->setVisible(locked);
+            });
 
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
             this, SLOT(focusChanged(QWidget *, QWidget *)));

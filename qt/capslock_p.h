@@ -1,4 +1,4 @@
-/* capslock.h - Helper to check whether Caps Lock is on
+/* capslock_p.h - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,35 +18,44 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __PINENTRY_QT_CAPSLOCK_H__
-#define __PINENTRY_QT_CAPSLOCK_H__
+#ifndef __PINENTRY_QT_CAPSLOCK_P_H__
+#define __PINENTRY_QT_CAPSLOCK_P_H__
 
-#include <QObject>
+#include "capslock.h"
 
-#include <memory>
-
-enum class LockState
+#ifdef PINENTRY_QT_WAYLAND
+namespace KWayland
 {
-    Unknown = -1,
-    Off,
-    On
-};
-
-LockState capsLockState();
-
-class CapsLockWatcher : public QObject
+namespace Client
 {
-    Q_OBJECT
+class Registry;
+class Seat;
+}
+}
+#endif
 
+class CapsLockWatcher::Private
+{
 public:
-    explicit CapsLockWatcher(QObject *parent = nullptr);
-
-Q_SIGNALS:
-    void stateChanged(bool locked);
+    explicit Private(CapsLockWatcher *);
+#ifdef PINENTRY_QT_WAYLAND
+    void watchWayland();
+#endif
 
 private:
-    class Private;
-    std::unique_ptr<Private> d;
+#ifdef PINENTRY_QT_WAYLAND
+    void registry_seatAnnounced(quint32, quint32);
+    void seat_hasKeyboardChanged(bool);
+    void keyboard_modifiersChanged(quint32);
+#endif
+
+private:
+    CapsLockWatcher *const q;
+
+#ifdef PINENTRY_QT_WAYLAND
+    KWayland::Client::Registry *registry = nullptr;
+    KWayland::Client::Seat *seat = nullptr;
+#endif
 };
 
-#endif // __PINENTRY_QT_CAPSLOCK_H__
+#endif // __PINENTRY_QT_CAPSLOCK_P_H__

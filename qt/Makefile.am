@@ -45,11 +45,11 @@ pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
 
 if BUILD_PINENTRY_QT
 BUILT_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc
 endif
 
 CLEANFILES = \
-	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc
 
 if HAVE_W32_SYSTEM
 pinentry_qt_platform_SOURCES = capslock_win.cpp
@@ -59,11 +59,11 @@ endif
 
 pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
-	pinlineedit.h pinlineedit.cpp \
+	pinlineedit.h pinlineedit.cpp capslock.cpp \
 	$(pinentry_qt_platform_SOURCES)
 
 nodist_pinentry_qt_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
+	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
