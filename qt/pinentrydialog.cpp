@@ -597,7 +597,10 @@ void PinEntryDialog::setRepeatErrorText(const QString &err)
 
 void PinEntryDialog::checkCapsLock()
 {
-    mCapsLockHint->setVisible(capsLockIsOn());
+    auto state = capsLockState();
+    if (state != LockState::Unknown) {
+        mCapsLockHint->setVisible(state == LockState::On);
+    }
 }
 
 #include "pinentrydialog.moc"

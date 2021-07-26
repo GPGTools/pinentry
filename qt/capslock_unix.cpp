@@ -1,4 +1,4 @@
-/* capslock.h - Helper to check whether Caps Lock is on
+/* capslock_unix.cpp - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -22,6 +22,8 @@
 # include "config.h"
 #endif
 
+#include "capslock.h"
+
 #include <QGuiApplication>
 
 #ifdef PINENTRY_QT_X11
@@ -32,21 +34,19 @@
 
 #include <QDebug>
 
-bool capsLockIsOn()
+LockState capsLockState()
 {
     static bool reportUnsupportedPlatform = true;
-    if (qApp) {
 #ifdef PINENTRY_QT_X11
-        if (qApp->platformName() == QLatin1String("xcb")) {
-            unsigned int state;
-            XkbGetIndicatorState(QX11Info::display(), XkbUseCoreKbd, &state);
-            return (state & 0x01) == 1;
-        }
-#endif
-        if (reportUnsupportedPlatform) {
-            qWarning() << "Checking for Caps Lock not possible on unsupported platform:" << qApp->platformName();
-            reportUnsupportedPlatform = false;
-        }
+    if (qApp->platformName() == QLatin1String("xcb")) {
+        unsigned int state;
+        XkbGetIndicatorState(QX11Info::display(), XkbUseCoreKbd, &state);
+        return (state & 0x01) == 1 ? LockState::On : LockState::Off;
     }
-    return false;
+#endif
+    if (reportUnsupportedPlatform) {
+        qWarning() << "Checking for Caps Lock not possible on unsupported platform:" << qApp->platformName();
+    }
+    reportUnsupportedPlatform = false;
+    return LockState::Unknown;
 }

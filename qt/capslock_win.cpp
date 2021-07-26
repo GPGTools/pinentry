@@ -1,4 +1,4 @@
-/* capslock.h - Helper to check whether Caps Lock is on
+/* capslock_win.cpp - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -22,7 +22,7 @@
 
 #include <windows.h>
 
-bool capsLockIsOn()
+LockState capsLockState()
 {
-    return GetKeyState(VK_CAPITAL) == 1;
+    return GetKeyState(VK_CAPITAL) == 1 ? LockState::On : LockState::Off;
 }

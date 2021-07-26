@@ -21,6 +21,13 @@
 #ifndef __PINENTRY_QT_CAPSLOCK_H__
 #define __PINENTRY_QT_CAPSLOCK_H__
 
-bool capsLockIsOn();
+enum class LockState
+{
+    Unknown = -1,
+    Off,
+    On
+};
+
+LockState capsLockState();
 
 #endif // __PINENTRY_QT_CAPSLOCK_H__
