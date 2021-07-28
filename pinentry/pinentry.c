@@ -116,6 +116,10 @@ pinentry_reset (int use_defaults)
   unsigned long owner_pid = pinentry.owner_pid;
   int owner_uid = pinentry.owner_uid;
   char *owner_host = pinentry.owner_host;
+  int constraints_enforce = pinentry.constraints_enforce;
+  char *constraints_hint_short = pinentry.constraints_hint_short;
+  char *constraints_hint_long = pinentry.constraints_hint_long;
+  char *constraints_error_title = pinentry.constraints_error_title;
 
   /* These options are set from the command line.  Don't reset
      them.  */
@@ -153,6 +157,9 @@ pinentry_reset (int use_defaults)
       free (pinentry.touch_file);
       free (pinentry.owner_host);
       free (pinentry.display);
+      free (pinentry.constraints_hint_short);
+      free (pinentry.constraints_hint_long);
+      free (pinentry.constraints_error_title);
     }
 
   free (pinentry.title);
@@ -218,6 +225,10 @@ pinentry_reset (int use_defaults)
       pinentry.owner_pid = owner_pid;
       pinentry.owner_uid = owner_uid;
       pinentry.owner_host = owner_host;
+      pinentry.constraints_enforce = constraints_enforce;
+      pinentry.constraints_hint_short = constraints_hint_short;
+      pinentry.constraints_hint_long = constraints_hint_long;
+      pinentry.constraints_error_title = constraints_error_title;
 
       pinentry.debug = debug;
       pinentry.display = display;
@@ -416,6 +427,32 @@ copy_and_escape (char *buffer, const void *text, size_t textlen)
   return p;
 }
 
+
+/* Perform percent unescaping in STRING and return the new valid length
+   of the string.  A terminating Nul character is inserted at the end of
+   the unescaped string.
+ */
+static size_t
+do_unescape_inplace (char *s)
+{
+  unsigned char *p, *p0;
+
+  p = p0 = s;
+  while (*s)
+    {
+      if (*s == '%' && s[1] && s[2])
+        {
+          s++;
+          *p++ = xtoi_2 (s);
+          s += 2;
+        }
+      else
+        *p++ = *s++;
+    }
+  *p = 0;
+
+  return (p - p0);
+}
 
 
 /* Return a malloced copy of the commandline for PID.  If this is not
@@ -631,6 +668,71 @@ pinentry_inq_quality (pinentry_t pin, const char *passphrase, size_t length)
 
   return value;
 }
+
+
+/* Run a checkpin inquiry */
+char *
+pinentry_inq_checkpin (pinentry_t pin, const char *passphrase, size_t length)
+{
+  assuan_context_t ctx = pin->ctx_assuan;
+  const char prefix[] = "INQUIRE CHECKPIN ";
+  char *command;
+  char *line;
+  size_t linelen;
+  int gotvalue = 0;
+  char *value = NULL;
+  int rc;
+
+  if (!ctx)
+    return 0; /* Can't run the callback.  */
+
+  if (length > 300)
+    length = 300;  /* Limit so that it definitely fits into an Assuan
+                      line.  */
+
+  command = secmem_malloc (strlen (prefix) + 3*length + 1);
+  if (!command)
+    return 0;
+  strcpy (command, prefix);
+  copy_and_escape (command + strlen(command), passphrase, length);
+  rc = assuan_write_line (ctx, command);
+  secmem_free (command);
+  if (rc)
+    {
+      fprintf (stderr, "ASSUAN WRITE LINE failed: rc=%d\n", rc);
+      return 0;
+    }
+
+  for (;;)
+    {
+      do
+        {
+          rc = assuan_read_line (ctx, &line, &linelen);
+          if (rc)
+            {
+              fprintf (stderr, "ASSUAN READ LINE failed: rc=%d\n", rc);
+              return 0;
+            }
+        }
+      while (*line == '#' || !linelen);
+      if (line[0] == 'E' && line[1] == 'N' && line[2] == 'D'
+          && (!line[3] || line[3] == ' '))
+        break; /* END command received*/
+      if (line[0] == 'C' && line[1] == 'A' && line[2] == 'N'
+          && (!line[3] || line[3] == ' '))
+        break; /* CAN command received*/
+      if (line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+          && (!line[3] || line[3] == ' '))
+        break; /* ERR command received*/
+      if (line[0] != 'D' || line[1] != ' ' || linelen < 3 || gotvalue)
+        continue;
+      gotvalue = 1;
+      value = strdup (line + 2);
+    }
+
+  return value;
+}
+
 
 /* Run a genpin inquiry */
 char *
@@ -1308,6 +1410,35 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       pinentry.formatted_passphrase_hint = strdup (value);
       if (!pinentry.formatted_passphrase_hint)
 	return gpg_error_from_syserror ();
+    }
+  else if (!strcmp (key, "constraints-enforce") && !*value)
+    pinentry.constraints_enforce = 1;
+  else if (!strcmp (key, "constraints-hint-short"))
+    {
+      if (pinentry.constraints_hint_short)
+        free (pinentry.constraints_hint_short);
+      pinentry.constraints_hint_short = strdup (value);
+      if (!pinentry.constraints_hint_short)
+	return gpg_error_from_syserror ();
+      do_unescape_inplace(pinentry.constraints_hint_short);
+    }
+  else if (!strcmp (key, "constraints-hint-long"))
+    {
+      if (pinentry.constraints_hint_long)
+        free (pinentry.constraints_hint_long);
+      pinentry.constraints_hint_long = strdup (value);
+      if (!pinentry.constraints_hint_long)
+	return gpg_error_from_syserror ();
+      do_unescape_inplace(pinentry.constraints_hint_long);
+    }
+  else if (!strcmp (key, "constraints-error-title"))
+    {
+      if (pinentry.constraints_error_title)
+        free (pinentry.constraints_error_title);
+      pinentry.constraints_error_title = strdup (value);
+      if (!pinentry.constraints_error_title)
+	return gpg_error_from_syserror ();
+      do_unescape_inplace(pinentry.constraints_error_title);
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);

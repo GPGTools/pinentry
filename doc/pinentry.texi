@@ -408,6 +408,36 @@ If you want to show a tooltip for the quality bar, you may use
 With STRING being a percent escaped string shown as the tooltip.
 
 
+@item Enable enforcement of passphrase constraints
+This will make the pinentry check whether the new passphrase entered by
+the user satisfies the passphrase constraints before passing the passphrase
+to gpg-agent and closing the pinentry.  This gives the user the chance to
+modify the passphrase until the constraints are satisfied without retyping
+the passphrase.
+@example
+  C: OPTION constraints-enforce
+  S: OK
+@end example
+
+To inform the user about the constraints a short hint and a longer hint
+can be set using
+@example
+  C: OPTION constraints-hint-short=At least 8 characters
+  S: OK
+  C: OPTION constraints-hint-long=The passphrase must ...
+  S: OK
+@end example
+
+Additionally, a title for the dialog showing details in case of unsatisfied
+constraints can be set using
+@example
+  C: OPTION constraints-error-title=Passphrase Not Allowed
+  S: OK
+@end example
+
+All strings have to be percent escaped.
+
+
 @item Enable an action for generating a passphrase
 Adds an action for generating a random passphrase to the GETPIN window.
 The action is only available when asking for a new passphrase, i.e. if
@@ -745,6 +775,24 @@ password quality widget correspondingly.
 
 @item @code{quality_bar_tt}
 A tooltip for the quality bar.
+
+@item @code{constraints_enforce}
+If this is not 0, then passphrase constraints are enforced by gpg-agent.
+In this case pinentry can use the @code{pinentry_inq_checkpin} function
+for checking whether the new passphrase satisfies the constraints before
+passing it to gpg-agent.
+
+@item @code{constraints_hint_short}
+A short translated hint for the user with the constraints for new
+passphrases to be displayed near the passphrase input field.
+
+@item @code{constraints_hint_short}
+A longer translated hint for the user with the constraints for new
+passphrases to be displayed for example as tooltip.
+
+@item @code{constraints_error_title}
+A short translated title for an error dialog informing the user about
+unsatisfied passphrase constraints.
 
 @item @code{genpin_label}
 If this is set, a generate action should be shown.  The value of this

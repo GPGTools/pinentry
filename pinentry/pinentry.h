@@ -269,6 +269,26 @@ struct pinentry
      used.  */
   char *invisible_char;
 
+  /* Whether the passphrase constraints are enforced by gpg-agent.
+     (Assuan: "OPTION constraints-enforce")  */
+  int constraints_enforce;
+
+  /* A short translated hint for the user with the constraints for new
+     passphrases to be displayed near the passphrase input field.
+     Malloced or NULL.
+     (Assuan: "OPTION constraints-hint-short=At least 8 characters".)  */
+  char *constraints_hint_short;
+
+  /* A longer translated hint for the user with the constraints for new
+     passphrases to be displayed for example as tooltip.  Malloced or NULL.
+     (Assuan: "OPTION constraints-hint-long=The passphrase must ...".)  */
+  char *constraints_hint_long;
+
+  /* A short translated title for an error dialog informing the user about
+     unsatisfied passphrase constraints.  Malloced or NULL.
+     (Assuan: "OPTION constraints-error-title=Passphrase Not Allowed".)  */
+  char *constraints_error_title;
+
 };
 typedef struct pinentry *pinentry_t;
 
@@ -308,6 +328,12 @@ char *pinentry_get_title (pinentry_t pe);
 /* Run a quality inquiry for PASSPHRASE of LENGTH. */
 int pinentry_inq_quality (pinentry_t pin,
                           const char *passphrase, size_t length);
+
+/* Run a checkpin inquiry for PASSPHRASE of LENGTH.  Returns NULL, if the
+   passphrase satisfies the constraints.  Otherwise, returns a malloced error
+   string. */
+char *pinentry_inq_checkpin (pinentry_t pin,
+                             const char *passphrase, size_t length);
 
 /* Run a genpin iquriry. Returns a malloced string or NULL */
 char *pinentry_inq_genpin (pinentry_t pin);
