@@ -230,6 +230,12 @@ qt_cmd_handler(pinentry_t pe)
             from_utf8(pe->formatted_passphrase_label),
             from_utf8(pe->formatted_passphrase_tt),
             from_utf8(pe->formatted_passphrase_hint)});
+        pinentry.setConstraintsOptions({
+            bool(pe->constraints_enforce),
+            from_utf8(pe->constraints_hint_short),
+            from_utf8(pe->constraints_hint_long),
+            from_utf8(pe->constraints_error_title)
+        });
 
         str = pinentry_get_title (pe);
         if (str) {

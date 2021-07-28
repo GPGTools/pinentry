@@ -48,6 +48,7 @@
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <QDebug>
 
@@ -101,6 +102,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mRepeat(NULL),
       _grabbed(false),
       _disable_echo_allowed(true),
+      mEnforceConstraints(false),
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
@@ -109,7 +111,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mFormattedPassphraseCB(NULL),
       mFormattedPassphraseHint(NULL),
       mFormattedPassphraseHintSpacer(NULL),
-      mCapsLockHint(NULL)
+      mCapsLockHint(NULL),
+      mConstraintsHint(NULL)
 {
     _timed_out = false;
 
@@ -180,7 +183,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         _timer = NULL;
     }
 
-    connect(buttons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(buttons, SIGNAL(accepted()), this, SLOT(onAccept()));
     connect(buttons, SIGNAL(rejected()), this, SLOT(reject()));
     connect(_edit, SIGNAL(textChanged(QString)),
             this, SLOT(updateQuality(QString)));
@@ -202,6 +205,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     grid->addWidget(mCapsLockHint, row++, 1, 1, 2);
     grid->addWidget(_prompt, row, 1);
     grid->addWidget(_edit, row++, 2);
+
+    mConstraintsHint = new QLabel;
+    mConstraintsHint->setVisible(false);
+    grid->addWidget(mConstraintsHint, row++, 2);
 
     mFormattedPassphraseHintSpacer = new QLabel;
     mFormattedPassphraseHintSpacer->setVisible(false);
@@ -433,6 +440,18 @@ void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassp
     mFormattedPassphraseCB->setChecked(options.mode == FormattedPassphraseOn || options.mode == FormattedPassphraseForcedOn);
 }
 
+void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
+{
+    mEnforceConstraints = options.enforce;
+    mConstraintsHint->setText(options.shortHint);
+    mConstraintsHint->setToolTip(QLatin1String("<html>") +
+                                 options.longHint.toHtmlEscaped().replace(QLatin1String("\n\n"), QLatin1String("<br>")) +
+                                 QLatin1String("</html>"));
+    mConstraintsErrorTitle = options.errorTitle;
+
+    mConstraintsHint->setVisible(mEnforceConstraints && !options.shortHint.isEmpty());
+}
+
 void PinEntryDialog::toggleFormattedPassphrase()
 {
     const bool enableFormatting = mFormattedPassphraseCB->isChecked() && _edit->echoMode() == QLineEdit::Normal;
@@ -607,10 +626,38 @@ void PinEntryDialog::setRepeatErrorText(const QString &err)
 
 void PinEntryDialog::checkCapsLock()
 {
-    auto state = capsLockState();
+    const auto state = capsLockState();
     if (state != LockState::Unknown) {
         mCapsLockHint->setVisible(state == LockState::On);
     }
+}
+
+void PinEntryDialog::onAccept()
+{
+    const auto result = checkConstraints();
+    if (result != PassphraseNotOk) {
+        accept();
+    }
+}
+
+PinEntryDialog::PassphraseCheckResult PinEntryDialog::checkConstraints()
+{
+    if (!mEnforceConstraints) {
+        return PassphraseNotChecked;
+    }
+
+    const auto passphrase = _edit->pin().toUtf8();
+    const auto error = pinentry_inq_checkpin(
+        _pinentry_info, passphrase.constData(), passphrase.size());
+
+    if (!error) {
+        return PassphraseOk;
+    }
+
+    const auto message = QString::fromUtf8(QByteArray::fromPercentEncoding(error));
+    free(error);
+    QMessageBox::warning(this, mConstraintsErrorTitle, message);
+    return PassphraseNotOk;
 }
 
 #include "pinentrydialog.moc"

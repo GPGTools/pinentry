@@ -67,6 +67,13 @@ public:
         QString tooltip;
         QString hint;
     };
+    struct ConstraintsOptions
+    {
+        bool enforce;
+        QString shortHint;
+        QString longHint;
+        QString errorTitle;
+    };
 
     explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0,
                             int timeout = 0, bool modal = false,
@@ -103,6 +110,8 @@ public:
 
     void setFormattedPassphrase(const FormattedPassphraseOptions &options);
 
+    void setConstraintsOptions(const ConstraintsOptions &options);
+
     void setPinentryInfo(pinentry_t);
 
     bool timedOut() const;
@@ -123,6 +132,15 @@ protected:
 
 private Q_SLOTS:
     void checkCapsLock();
+    void onAccept();
+
+private:
+    enum PassphraseCheckResult {
+        PassphraseNotChecked = -1,
+        PassphraseNotOk = 0,
+        PassphraseOk
+    };
+    PassphraseCheckResult checkConstraints();
 
 private:
     QLabel    *_icon;
@@ -139,6 +157,7 @@ private:
     bool       _have_quality_bar;
     bool       _timed_out;
     bool       _disable_echo_allowed;
+    bool       mEnforceConstraints;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mRepeatError,
@@ -152,6 +171,8 @@ private:
     QLabel    *mFormattedPassphraseHint;
     QLabel    *mFormattedPassphraseHintSpacer;
     QLabel    *mCapsLockHint;
+    QLabel    *mConstraintsHint;
+    QString   mConstraintsErrorTitle;
 };
 
 #endif // __PINENTRYDIALOG_H__
