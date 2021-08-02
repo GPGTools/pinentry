@@ -81,7 +81,7 @@ static const char *flavor_flag;
 /* Because gtk_init removes the --display arg from the command lines
  * and our command line parser is called after gtk_init (so that it
  * does not see gtk specific options) we don't have a way to get hold
- * of the --display option.  Our solution is to remember --disable in
+ * of the --display option.  Our solution is to remember --display in
  * the call to pinentry_have_display and set it then in our
  * parser.  */
 static char *remember_display;
