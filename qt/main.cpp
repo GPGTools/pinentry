@@ -354,7 +354,22 @@ main(int argc, char *argv[])
     int new_argc = 0;
 
 #ifdef FALLBACK_CURSES
-    if (!pinentry_have_display(argc, argv)) {
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    // check a few environment variables that are usually set on X11 or Wayland sessions
+    const bool hasWaylandDisplay = qEnvironmentVariableIsSet("WAYLAND_DISPLAY");
+    const bool isWaylandSessionType = qgetenv("XDG_SESSION_TYPE") == "wayland";
+    const bool hasX11Display = pinentry_have_display(argc, argv);
+    const bool isX11SessionType = qgetenv("XDG_SESSION_TYPE") == "x11";
+    const bool isGUISession = hasWaylandDisplay || isWaylandSessionType || hasX11Display || isX11SessionType;
+    qDebug() << "hasWaylandDisplay:" << hasWaylandDisplay;
+    qDebug() << "isWaylandSessionType:" << isWaylandSessionType;
+    qDebug() << "hasX11Display:" << hasX11Display;
+    qDebug() << "isX11SessionType:" << isX11SessionType;
+    qDebug() << "isGUISession:" << isGUISession;
+#else
+    const bool isGUISession = pinentry_have_display(argc, argv);
+#endif
+    if (!isGUISession) {
         pinentry_cmd_handler = curses_cmd_handler;
         pinentry_set_flavor_flag ("curses");
     } else
