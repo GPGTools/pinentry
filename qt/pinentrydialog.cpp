@@ -50,6 +50,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 #include <QDebug>
 
@@ -665,8 +666,21 @@ PinEntryDialog::PassphraseCheckResult PinEntryDialog::checkConstraints()
         return PassphraseOk;
     }
 
-    const auto message = QString::fromUtf8(QByteArray::fromPercentEncoding(error));
-    QMessageBox::warning(this, mConstraintsErrorTitle, message);
+    const auto messageLines = QString::fromUtf8(QByteArray::fromPercentEncoding(error.get())).split(QChar{'\n'});
+    if (messageLines.isEmpty()) {
+        // shouldn't happen because pinentry_inq_checkpin() either returns NULL or a non-empty string
+        return PassphraseOk;
+    }
+    const auto firstLine = messageLines.first();
+    const auto indexOfFirstNonEmptyAdditionalLine = messageLines.indexOf(QRegularExpression{QStringLiteral(".*\\S.*")}, 1);
+    const auto additionalLines = indexOfFirstNonEmptyAdditionalLine > 0 ? messageLines.mid(indexOfFirstNonEmptyAdditionalLine).join(QChar{'\n'}) : QString{};
+    QMessageBox messageBox;
+    messageBox.setIcon(QMessageBox::Information);
+    messageBox.setWindowTitle(mConstraintsErrorTitle);
+    messageBox.setText(firstLine);
+    messageBox.setInformativeText(additionalLines);
+    messageBox.setStandardButtons(QMessageBox::Ok);
+    messageBox.exec();
     return PassphraseNotOk;
 }
 
