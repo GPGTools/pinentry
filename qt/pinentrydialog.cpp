@@ -31,6 +31,7 @@
 
 #include "capslock.h"
 #include "pinlineedit.h"
+#include "util.h"
 
 #include <QGridLayout>
 #include <QProgressBar>
@@ -558,12 +559,12 @@ void PinEntryDialog::textChanged(const QString &text)
 
 void PinEntryDialog::generatePin()
 {
-    const char *pin = pinentry_inq_genpin(_pinentry_info);
+    unique_malloced_ptr<char> pin{pinentry_inq_genpin(_pinentry_info)};
     if (pin) {
         if (_edit->echoMode() == QLineEdit::Password) {
             toggleVisibility();
         }
-        const auto pinStr = QString::fromUtf8(pin);
+        const auto pinStr = QString::fromUtf8(pin.get());
         _edit->setPin(pinStr);
         _edit->selectAll();
         mRepeat->setPin(pinStr);
@@ -657,15 +658,14 @@ PinEntryDialog::PassphraseCheckResult PinEntryDialog::checkConstraints()
     }
 
     const auto passphrase = _edit->pin().toUtf8();
-    const auto error = pinentry_inq_checkpin(
-        _pinentry_info, passphrase.constData(), passphrase.size());
+    unique_malloced_ptr<char> error{pinentry_inq_checkpin(
+        _pinentry_info, passphrase.constData(), passphrase.size())};
 
     if (!error) {
         return PassphraseOk;
     }
 
     const auto message = QString::fromUtf8(QByteArray::fromPercentEncoding(error));
-    free(error);
     QMessageBox::warning(this, mConstraintsErrorTitle, message);
     return PassphraseNotOk;
 }

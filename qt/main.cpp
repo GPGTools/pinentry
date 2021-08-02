@@ -30,6 +30,7 @@
 #include "pinentryconfirm.h"
 #include "pinentrydialog.h"
 #include "pinentry.h"
+#include "util.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -43,7 +44,6 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 
 #include <stdexcept>
@@ -170,8 +170,6 @@ setup_foreground_window(QWidget *widget, WId parentWid)
 static int
 qt_cmd_handler(pinentry_t pe)
 {
-    char *str;
-
     int want_pass = !!pe->pin;
 
     const QString ok =
@@ -183,11 +181,10 @@ qt_cmd_handler(pinentry_t pe)
         pe->default_cancel ? escape_accel(from_utf8(pe->default_cancel)) :
         /* else */           QLatin1String("&Cancel") ;
 
-    str = pinentry_get_title (pe);
+    unique_malloced_ptr<char> str{pinentry_get_title(pe)};
     const QString title =
-        str       ? from_utf8(str) :
+        str       ? from_utf8(str.get()) :
         /* else */  QLatin1String("pinentry-qt") ;
-    free (str);
 
     const QString repeatError =
         pe->repeat_error_string ? from_utf8(pe->repeat_error_string) :
@@ -213,8 +210,6 @@ qt_cmd_handler(pinentry_t pe)
 
 
     if (want_pass) {
-        char *str;
-
         PinEntryDialog pinentry(nullptr, 0, pe->timeout, true, !!pe->quality_bar,
                                 repeatString, visibilityTT, hideTT);
         setup_foreground_window(&pinentry, pe->parent_wid);
@@ -237,10 +232,8 @@ qt_cmd_handler(pinentry_t pe)
             from_utf8(pe->constraints_error_title)
         });
 
-        str = pinentry_get_title (pe);
-        if (str) {
-            pinentry.setWindowTitle(from_utf8(str));
-            free (str);
+        if (!title.isEmpty()) {
+            pinentry.setWindowTitle(title);
         }
 
         /* If we reuse the same dialog window.  */
