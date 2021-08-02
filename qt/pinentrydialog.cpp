@@ -472,6 +472,8 @@ void PinEntryDialog::toggleFormattedPassphrase()
 
 void PinEntryDialog::onBackspace()
 {
+    cancelTimeout();
+
     if (_disable_echo_allowed) {
         _edit->setEchoMode(QLineEdit::NoEcho);
         if (mRepeat) {
@@ -485,10 +487,6 @@ void PinEntryDialog::updateQuality(const QString &txt)
     int length;
     int percent;
     QPalette pal;
-
-    if (_timer) {
-        _timer->stop();
-    }
 
     _disable_echo_allowed = false;
 
@@ -538,6 +536,9 @@ void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
 void PinEntryDialog::textChanged(const QString &text)
 {
     Q_UNUSED(text);
+
+    cancelTimeout();
+
     if (mRepeat && mRepeat->pin() == _edit->pin()) {
         _ok->setEnabled(true);
         _ok->setToolTip(QString());
@@ -624,6 +625,13 @@ void PinEntryDialog::setRepeatErrorText(const QString &err)
     mRepeatError = err;
 }
 
+void PinEntryDialog::cancelTimeout()
+{
+    if (_timer) {
+        _timer->stop();
+    }
+}
+
 void PinEntryDialog::checkCapsLock()
 {
     const auto state = capsLockState();
@@ -634,6 +642,8 @@ void PinEntryDialog::checkCapsLock()
 
 void PinEntryDialog::onAccept()
 {
+    cancelTimeout();
+
     const auto result = checkConstraints();
     if (result != PassphraseNotOk) {
         accept();

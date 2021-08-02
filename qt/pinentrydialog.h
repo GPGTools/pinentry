@@ -131,6 +131,7 @@ protected:
     /* reimp */ void showEvent(QShowEvent *event);
 
 private Q_SLOTS:
+    void cancelTimeout();
     void checkCapsLock();
     void onAccept();
 
