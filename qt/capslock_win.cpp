@@ -24,5 +24,5 @@
 
 LockState capsLockState()
 {
-    return GetKeyState(VK_CAPITAL) == 1 ? LockState::On : LockState::Off;
+    return (GetKeyState(VK_CAPITAL) & 1) ? LockState::On : LockState::Off;
 }
