@@ -152,6 +152,7 @@ private:
     QProgressBar *_quality_bar;
     PinLineEdit *_edit;
     PinLineEdit *mRepeat;
+    QLabel      *mRepeatError;
     QPushButton *_ok;
     QPushButton *_cancel;
     bool       _grabbed;
@@ -161,8 +162,7 @@ private:
     bool       mEnforceConstraints;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
-    QString    mRepeatError,
-               mVisibilityTT,
+    QString    mVisibilityTT,
                mGenerateTT,
                mHideTT;
     QAction   *mVisiActionEdit,

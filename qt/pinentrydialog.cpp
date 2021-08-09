@@ -51,6 +51,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <QAccessible>
 
 #include <QDebug>
 
@@ -102,6 +103,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                                const QString &hideTT)
     : QDialog(parent),
       mRepeat(NULL),
+      mRepeatError{nullptr},
       _grabbed(false),
       _disable_echo_allowed(true),
       mEnforceConstraints(false),
@@ -125,14 +127,15 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _icon = new QLabel(this);
     _icon->setPixmap(icon());
 
+    QPalette redTextPalette;
+    redTextPalette.setColor(QPalette::WindowText, Qt::red);
+
     _error = new QLabel(this);
-    QPalette pal;
-    pal.setColor(QPalette::WindowText, Qt::red);
-    _error->setPalette(pal);
+    _error->setPalette(redTextPalette);
     _error->hide();
 
     mCapsLockHint = new QLabel(this);
-    mCapsLockHint->setPalette(pal);
+    mCapsLockHint->setPalette(redTextPalette);
     mCapsLockHint->setAlignment(Qt::AlignCenter);
     mCapsLockHint->setVisible(false);
 
@@ -151,6 +154,9 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     if (!repeatString.isNull()) {
         mRepeat = new PinLineEdit(this);
+        mRepeatError = new QLabel{this};
+        mRepeatError->setPalette(redTextPalette);
+        mRepeatError->hide();
     }
 
     if (enable_quality_bar) {
@@ -169,8 +175,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     buttons->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     _ok = buttons->button(QDialogButtonBox::Ok);
     _cancel = buttons->button(QDialogButtonBox::Cancel);
-
-    _ok->setDefault(true);
 
     if (style()->styleHint(QStyle::SH_DialogButtonBox_ButtonsHaveIcons)) {
         _ok->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
@@ -193,6 +197,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             this, SLOT(textChanged(QString)));
     connect(_edit, SIGNAL(backspacePressed()),
             this, SLOT(onBackspace()));
+    if (mRepeat) {
+        connect(_edit, &QLineEdit::returnPressed,
+                this, [this] { mRepeat->setFocus(); });
+    }
 
     auto *const mainLayout = new QVBoxLayout{this};
 
@@ -228,6 +236,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         repeatLabel->setBuddy(mRepeat);
         grid->addWidget(repeatLabel, row, 1);
         grid->addWidget(mRepeat, row++, 2);
+        grid->addWidget(mRepeatError, row++, 2);
     }
     if (enable_quality_bar) {
         grid->addWidget(_quality_bar_label, row, 1);
@@ -533,6 +542,12 @@ void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
             _grabbed = true;
         }
     }
+    // make Ok the default button unless we have a repeat input field and
+    // the first input field has focus now; this allows us to move the focus
+    // to the repeat input field when the user presses Return in the first
+    // input field; otherwise, the dialog would "press" Ok when it receives
+    // the Return key press
+    _ok->setDefault(!mRepeat || now != _edit);
 }
 
 void PinEntryDialog::textChanged(const QString &text)
@@ -540,14 +555,6 @@ void PinEntryDialog::textChanged(const QString &text)
     Q_UNUSED(text);
 
     cancelTimeout();
-
-    if (mRepeat && mRepeat->pin() == _edit->pin()) {
-        _ok->setEnabled(true);
-        _ok->setToolTip(QString());
-    } else if (mRepeat) {
-        _ok->setEnabled(false);
-        _ok->setToolTip(mRepeatError);
-    }
 
     if (mVisiActionEdit && sender() == _edit) {
         mVisiActionEdit->setVisible(!_edit->pin().isEmpty());
@@ -624,7 +631,7 @@ bool PinEntryDialog::timedOut() const
 
 void PinEntryDialog::setRepeatErrorText(const QString &err)
 {
-    mRepeatError = err;
+    mRepeatError->setText(err);
 }
 
 void PinEntryDialog::cancelTimeout()
@@ -645,6 +652,15 @@ void PinEntryDialog::checkCapsLock()
 void PinEntryDialog::onAccept()
 {
     cancelTimeout();
+
+    if (mRepeat && mRepeat->pin() != _edit->pin()) {
+        if (QAccessible::isActive()) {
+            QMessageBox::warning(this, QStringLiteral("Sorry"), mRepeatError->text());
+        } else {
+            mRepeatError->setVisible(true);
+        }
+        return;
+    }
 
     const auto result = checkConstraints();
     if (result != PassphraseNotOk) {
