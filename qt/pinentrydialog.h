@@ -163,10 +163,9 @@ private:
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mVisibilityTT,
-               mGenerateTT,
                mHideTT;
-    QAction   *mVisiActionEdit,
-              *mGenerateActionEdit;
+    QAction   *mVisiActionEdit;
+    QPushButton *mGenerateButton;
     QCheckBox *mVisiCB;
     QCheckBox *mFormattedPassphraseCB;
     QLabel    *mFormattedPassphraseHint;

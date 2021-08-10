@@ -110,7 +110,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
-      mGenerateActionEdit(NULL),
+      mGenerateButton{nullptr},
       mVisiCB(NULL),
       mFormattedPassphraseCB(NULL),
       mFormattedPassphraseHint(NULL),
@@ -151,6 +151,13 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     _edit->setEchoMode(QLineEdit::Password);
 
     _prompt->setBuddy(_edit);
+
+    if (!repeatString.isNull()) {
+        mGenerateButton = new QPushButton{this};
+        mGenerateButton->setIcon(QIcon::fromTheme(QLatin1String("password-generate")));
+        mGenerateButton->setVisible(false);
+        connect(mGenerateButton, &QPushButton::clicked, this, &PinEntryDialog::generatePin);
+    }
 
     if (!repeatString.isNull()) {
         mRepeat = new PinLineEdit(this);
@@ -213,8 +220,16 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     grid->addWidget(_error, row++, 1, 1, 2);
     grid->addWidget(_desc,  row++, 1, 1, 2);
     grid->addWidget(mCapsLockHint, row++, 1, 1, 2);
+
     grid->addWidget(_prompt, row, 1);
-    grid->addWidget(_edit, row++, 2);
+    {
+        const auto l = new QHBoxLayout;
+        l->addWidget(_edit, 1);
+        if (mGenerateButton) {
+            l->addWidget(mGenerateButton);
+        }
+        grid->addLayout(l, row++, 2);
+    }
 
     mConstraintsHint = new QLabel;
     mConstraintsHint->setVisible(false);
@@ -245,14 +260,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     /* Set up the show password action */
     const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
     const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
-    const QIcon generateIcon = QIcon::fromTheme(QLatin1String("password-generate"));
 #if QT_VERSION >= 0x050200
-    if (!generateIcon.isNull()) {
-        mGenerateActionEdit = _edit->addAction(generateIcon,
-                                               QLineEdit::LeadingPosition);
-        mGenerateActionEdit->setToolTip(mGenerateTT);
-        connect(mGenerateActionEdit, SIGNAL(triggered()), this, SLOT(generatePin()));
-    }
     if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
         mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
         mVisiActionEdit->setVisible(false);
@@ -417,21 +425,19 @@ void PinEntryDialog::setQualityBarTT(const QString &txt)
 
 void PinEntryDialog::setGenpinLabel(const QString &txt)
 {
-    if (!mGenerateActionEdit) {
+    if (!mGenerateButton) {
         return;
     }
-    if (txt.isEmpty()) {
-        mGenerateActionEdit->setVisible(false);
-    } else {
-        mGenerateActionEdit->setText(txt);
-        mGenerateActionEdit->setVisible(true);
+    mGenerateButton->setVisible(!txt.isEmpty());
+    if (!txt.isEmpty()) {
+        mGenerateButton->setAccessibleName(txt);
     }
 }
 
 void PinEntryDialog::setGenpinTT(const QString &txt)
 {
-    if (mGenerateActionEdit) {
-        mGenerateActionEdit->setToolTip(txt);
+    if (mGenerateButton) {
+        mGenerateButton->setToolTip(txt);
     }
 }
 
@@ -559,9 +565,9 @@ void PinEntryDialog::textChanged(const QString &text)
     if (mVisiActionEdit && sender() == _edit) {
         mVisiActionEdit->setVisible(!_edit->pin().isEmpty());
     }
-    if (mGenerateActionEdit) {
-        mGenerateActionEdit->setVisible(_edit->pin().isEmpty() &&
-                                        _pinentry_info->genpin_label);
+    if (mGenerateButton) {
+        mGenerateButton->setVisible(_edit->pin().isEmpty() &&
+                                    !mGenerateButton->accessibleName().isEmpty());
     }
 }
 
@@ -574,11 +580,12 @@ void PinEntryDialog::generatePin()
         }
         const auto pinStr = QString::fromUtf8(pin.get());
         _edit->setPin(pinStr);
-        _edit->selectAll();
         mRepeat->setPin(pinStr);
         if (mFormattedPassphraseCB->isEnabled() && !mFormattedPassphraseCB->isChecked()) {
             mFormattedPassphraseCB->setChecked(true);
         }
+        // explicitly focus the first input field; this also selects the generated password
+        _edit->setFocus();
     }
 }
 
