@@ -666,7 +666,7 @@ void PinEntryDialog::onAccept()
 
     if (mRepeat && mRepeat->pin() != _edit->pin()) {
         if (QAccessible::isActive()) {
-            QMessageBox::warning(this, QStringLiteral("Sorry"), mRepeatError->text());
+            QMessageBox::information(this, mRepeatError->text(), mRepeatError->text());
         } else {
             mRepeatError->setVisible(true);
         }
