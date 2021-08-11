@@ -450,7 +450,9 @@ void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassp
 {
     mFormattedPassphraseCB->setText(options.label);
     mFormattedPassphraseCB->setToolTip(QLatin1String("<html>") + options.tooltip.toHtmlEscaped() + QLatin1String("</html>"));
+    mFormattedPassphraseCB->setAccessibleDescription(options.tooltip);
     mFormattedPassphraseHint->setText(QLatin1String("<html>") + options.hint.toHtmlEscaped() + QLatin1String("</html>"));
+    mFormattedPassphraseHint->setAccessibleName(options.hint);
 
     mFormattedPassphraseCB->setVisible(options.mode != FormattedPassphraseHidden);
     mFormattedPassphraseCB->setEnabled(options.mode == FormattedPassphraseOff || options.mode == FormattedPassphraseOn);
@@ -464,6 +466,7 @@ void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
     mConstraintsHint->setToolTip(QLatin1String("<html>") +
                                  options.longHint.toHtmlEscaped().replace(QLatin1String("\n\n"), QLatin1String("<br>")) +
                                  QLatin1String("</html>"));
+    mConstraintsHint->setAccessibleDescription(options.longHint);
     mConstraintsErrorTitle = options.errorTitle;
 
     mConstraintsHint->setVisible(mEnforceConstraints && !options.shortHint.isEmpty());
