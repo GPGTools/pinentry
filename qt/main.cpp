@@ -70,6 +70,8 @@
 #include <windows.h>
 #endif
 
+#include "pinentry_debug.h"
+
 static QString escape_accel(const QString &s)
 {
 
@@ -361,11 +363,11 @@ main(int argc, char *argv[])
     const bool hasX11Display = pinentry_have_display(argc, argv);
     const bool isX11SessionType = qgetenv("XDG_SESSION_TYPE") == "x11";
     const bool isGUISession = hasWaylandDisplay || isWaylandSessionType || hasX11Display || isX11SessionType;
-    qDebug() << "hasWaylandDisplay:" << hasWaylandDisplay;
-    qDebug() << "isWaylandSessionType:" << isWaylandSessionType;
-    qDebug() << "hasX11Display:" << hasX11Display;
-    qDebug() << "isX11SessionType:" << isX11SessionType;
-    qDebug() << "isGUISession:" << isGUISession;
+    qCDebug(PINENTRY_LOG) << "hasWaylandDisplay:" << hasWaylandDisplay;
+    qCDebug(PINENTRY_LOG) << "isWaylandSessionType:" << isWaylandSessionType;
+    qCDebug(PINENTRY_LOG) << "hasX11Display:" << hasX11Display;
+    qCDebug(PINENTRY_LOG) << "isX11SessionType:" << isX11SessionType;
+    qCDebug(PINENTRY_LOG) << "isGUISession:" << isGUISession;
 #else
     const bool isGUISession = pinentry_have_display(argc, argv);
 #endif
