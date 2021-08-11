@@ -642,7 +642,9 @@ bool PinEntryDialog::timedOut() const
 
 void PinEntryDialog::setRepeatErrorText(const QString &err)
 {
-    mRepeatError->setText(err);
+    if (mRepeatError) {
+        mRepeatError->setText(err);
+    }
 }
 
 void PinEntryDialog::cancelTimeout()
