@@ -584,8 +584,9 @@ void PinEntryDialog::generatePin()
         if (mFormattedPassphraseCB->isEnabled() && !mFormattedPassphraseCB->isChecked()) {
             mFormattedPassphraseCB->setChecked(true);
         }
-        // explicitly focus the first input field; this also selects the generated password
+        // explicitly focus the first input field and select the generated password
         _edit->setFocus();
+        _edit->selectAll();
     }
 }
 
