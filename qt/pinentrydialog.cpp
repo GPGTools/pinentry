@@ -582,15 +582,19 @@ void PinEntryDialog::toggleVisibility()
 {
     if (sender() != mVisiCB) {
         if (_edit->echoMode() == QLineEdit::Password) {
-            mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
-            mVisiActionEdit->setToolTip(mHideTT);
+            if (mVisiActionEdit) {
+                mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
+                mVisiActionEdit->setToolTip(mHideTT);
+            }
             _edit->setEchoMode(QLineEdit::Normal);
             if (mRepeat) {
                 mRepeat->setEchoMode(QLineEdit::Normal);
             }
         } else {
-            mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
-            mVisiActionEdit->setToolTip(mVisibilityTT);
+            if (mVisiActionEdit) {
+                mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
+                mVisiActionEdit->setToolTip(mVisibilityTT);
+            }
             _edit->setEchoMode(QLineEdit::Password);
             if (mRepeat) {
                 mRepeat->setEchoMode(QLineEdit::Password);
