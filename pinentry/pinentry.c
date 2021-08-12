@@ -174,8 +174,6 @@ pinentry_reset (int use_defaults)
   free (pinentry.repeat_error_string);
   free (pinentry.quality_bar);
   free (pinentry.quality_bar_tt);
-  free (pinentry.formatted_passphrase_label);
-  free (pinentry.formatted_passphrase_tt);
   free (pinentry.formatted_passphrase_hint);
   free (pinentry.keyinfo);
   free (pinentry.specific_err_info);
@@ -1381,27 +1379,9 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (!pinentry.invisible_char)
 	return gpg_error_from_syserror ();
     }
-  else if (!strcmp (key, "formatted-passphrase"))
+  else if (!strcmp (key, "formatted-passphrase") && !*value)
     {
-      int mode = atoi (value);
-      if (mode >= 0 && mode <= 3)
-        pinentry.formatted_passphrase = mode;
-    }
-  else if (!strcmp (key, "formatted-passphrase-label"))
-    {
-      if (pinentry.formatted_passphrase_label)
-        free (pinentry.formatted_passphrase_label);
-      pinentry.formatted_passphrase_label = strdup (value);
-      if (!pinentry.formatted_passphrase_label)
-	return gpg_error_from_syserror ();
-    }
-  else if (!strcmp (key, "formatted-passphrase-tt"))
-    {
-      if (pinentry.formatted_passphrase_tt)
-        free (pinentry.formatted_passphrase_tt);
-      pinentry.formatted_passphrase_tt = strdup (value);
-      if (!pinentry.formatted_passphrase_tt)
-	return gpg_error_from_syserror ();
+      pinentry.formatted_passphrase = 1;
     }
   else if (!strcmp (key, "formatted-passphrase-hint"))
     {
