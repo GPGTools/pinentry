@@ -60,7 +60,7 @@ public:
         }
         return {
             selection.start + selection.start / FormattedPassphraseGroupSize,
-            selection.end + selection.end / FormattedPassphraseGroupSize
+            selection.end + (selection.end - 1) / FormattedPassphraseGroupSize
         };
     }
 
