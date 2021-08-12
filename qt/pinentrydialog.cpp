@@ -567,7 +567,12 @@ void PinEntryDialog::generatePin()
     unique_malloced_ptr<char> pin{pinentry_inq_genpin(_pinentry_info)};
     if (pin) {
         if (_edit->echoMode() == QLineEdit::Password) {
-            toggleVisibility();
+            if (mVisiActionEdit) {
+                mVisiActionEdit->trigger();
+            }
+            if (mVisiCB) {
+                mVisiCB->setChecked(true);
+            }
         }
         const auto pinStr = QString::fromUtf8(pin.get());
         _edit->setPin(pinStr);
