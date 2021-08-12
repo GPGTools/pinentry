@@ -79,7 +79,7 @@ public:
         }
         return {
             selection.start - selection.start / (FormattedPassphraseGroupSize + 1),
-            selection.end + selection.end / (FormattedPassphraseGroupSize + 1)
+            selection.end - selection.end / (FormattedPassphraseGroupSize + 1)
         };
     }
 
