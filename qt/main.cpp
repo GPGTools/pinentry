@@ -223,9 +223,7 @@ qt_cmd_handler(pinentry_t pe)
         pinentry.setGenpinTT(generateTT);
         pinentry.setCapsLockHint(capsLockHint);
         pinentry.setFormattedPassphrase({
-            PinEntryDialog::FormattedPassphraseMode(pe->formatted_passphrase),
-            from_utf8(pe->formatted_passphrase_label),
-            from_utf8(pe->formatted_passphrase_tt),
+            bool(pe->formatted_passphrase),
             from_utf8(pe->formatted_passphrase_hint)});
         pinentry.setConstraintsOptions({
             bool(pe->constraints_enforce),

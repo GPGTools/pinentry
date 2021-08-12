@@ -107,12 +107,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       _grabbed(false),
       _disable_echo_allowed(true),
       mEnforceConstraints(false),
+      mFormatPassphrase{false},
       mVisibilityTT(visibilityTT),
       mHideTT(hideTT),
       mVisiActionEdit(NULL),
       mGenerateButton{nullptr},
       mVisiCB(NULL),
-      mFormattedPassphraseCB(NULL),
       mFormattedPassphraseHint(NULL),
       mFormattedPassphraseHintSpacer(NULL),
       mCapsLockHint(NULL),
@@ -175,8 +175,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     } else {
         _have_quality_bar = false;
     }
-
-    mFormattedPassphraseCB = new QCheckBox{this};
 
     QDialogButtonBox *const buttons = new QDialogButtonBox(this);
     buttons->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -275,11 +273,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             grid->addWidget(mVisiCB, row++, 1, 1, 2, Qt::AlignLeft);
         }
     }
-
-    mFormattedPassphraseCB->setVisible(false);
-    mFormattedPassphraseCB->setEnabled(false);
-    connect(mFormattedPassphraseCB, SIGNAL(toggled(bool)), this, SLOT(toggleFormattedPassphrase()));
-    grid->addWidget(mFormattedPassphraseCB, row++, 1, 1, 2);
 
     hbox->addLayout(grid, 1);
 
@@ -448,15 +441,10 @@ void PinEntryDialog::setCapsLockHint(const QString &txt)
 
 void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassphraseOptions &options)
 {
-    mFormattedPassphraseCB->setText(options.label);
-    mFormattedPassphraseCB->setToolTip(QLatin1String("<html>") + options.tooltip.toHtmlEscaped() + QLatin1String("</html>"));
-    mFormattedPassphraseCB->setAccessibleDescription(options.tooltip);
+    mFormatPassphrase = options.formatPassphrase;
     mFormattedPassphraseHint->setText(QLatin1String("<html>") + options.hint.toHtmlEscaped() + QLatin1String("</html>"));
     mFormattedPassphraseHint->setAccessibleName(options.hint);
-
-    mFormattedPassphraseCB->setVisible(options.mode != FormattedPassphraseHidden);
-    mFormattedPassphraseCB->setEnabled(options.mode == FormattedPassphraseOff || options.mode == FormattedPassphraseOn);
-    mFormattedPassphraseCB->setChecked(options.mode == FormattedPassphraseOn || options.mode == FormattedPassphraseForcedOn);
+    toggleFormattedPassphrase();
 }
 
 void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
@@ -474,7 +462,7 @@ void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
 
 void PinEntryDialog::toggleFormattedPassphrase()
 {
-    const bool enableFormatting = mFormattedPassphraseCB->isChecked() && _edit->echoMode() == QLineEdit::Normal;
+    const bool enableFormatting = mFormatPassphrase && _edit->echoMode() == QLineEdit::Normal;
     _edit->setFormattedPassphrase(enableFormatting);
     if (mRepeat) {
         mRepeat->setFormattedPassphrase(enableFormatting);
@@ -584,9 +572,6 @@ void PinEntryDialog::generatePin()
         const auto pinStr = QString::fromUtf8(pin.get());
         _edit->setPin(pinStr);
         mRepeat->setPin(pinStr);
-        if (mFormattedPassphraseCB->isEnabled() && !mFormattedPassphraseCB->isChecked()) {
-            mFormattedPassphraseCB->setChecked(true);
-        }
         // explicitly focus the first input field and select the generated password
         _edit->setFocus();
         _edit->selectAll();

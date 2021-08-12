@@ -54,17 +54,9 @@ class PinEntryDialog : public QDialog
     Q_PROPERTY(QString pin READ pin WRITE setPin)
     Q_PROPERTY(QString prompt READ prompt WRITE setPrompt)
 public:
-    enum FormattedPassphraseMode {
-        FormattedPassphraseHidden = 0,
-        FormattedPassphraseOff = 1,
-        FormattedPassphraseForcedOn = 2,
-        FormattedPassphraseOn = 3,
-    };
     struct FormattedPassphraseOptions
     {
-        FormattedPassphraseMode mode;
-        QString label;
-        QString tooltip;
+        bool formatPassphrase;
         QString hint;
     };
     struct ConstraintsOptions
@@ -160,6 +152,7 @@ private:
     bool       _timed_out;
     bool       _disable_echo_allowed;
     bool       mEnforceConstraints;
+    bool       mFormatPassphrase;
     pinentry_t _pinentry_info;
     QTimer    *_timer;
     QString    mVisibilityTT,
@@ -167,7 +160,6 @@ private:
     QAction   *mVisiActionEdit;
     QPushButton *mGenerateButton;
     QCheckBox *mVisiCB;
-    QCheckBox *mFormattedPassphraseCB;
     QLabel    *mFormattedPassphraseHint;
     QLabel    *mFormattedPassphraseHintSpacer;
     QLabel    *mCapsLockHint;
