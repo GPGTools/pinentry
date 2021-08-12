@@ -29,6 +29,7 @@
 
 #include "pinentrydialog.h"
 
+#include "accessibility.h"
 #include "capslock.h"
 #include "pinlineedit.h"
 #include "util.h"
@@ -329,9 +330,7 @@ void PinEntryDialog::setDescription(const QString &txt)
 {
     _desc->setVisible(!txt.isEmpty());
     _desc->setText(txt);
-#ifndef QT_NO_ACCESSIBILITY
-    _desc->setAccessibleDescription(txt);
-#endif
+    Accessibility::setDescription(_desc, txt);
     _icon->setPixmap(icon());
     setError(QString());
 }
@@ -347,9 +346,7 @@ void PinEntryDialog::setError(const QString &txt)
         _icon->setPixmap(icon(QStyle::SP_MessageBoxCritical));
     }
     _error->setText(txt);
-#ifndef QT_NO_ACCESSIBILITY
-    _error->setAccessibleDescription(txt);
-#endif
+    Accessibility::setDescription(_error, txt);
     _error->setVisible(!txt.isEmpty());
 }
 
@@ -384,18 +381,14 @@ QString PinEntryDialog::prompt() const
 void PinEntryDialog::setOkText(const QString &txt)
 {
     _ok->setText(txt);
-#ifndef QT_NO_ACCESSIBILITY
-    _ok->setAccessibleDescription(txt);
-#endif
+    Accessibility::setDescription(_ok, txt);
     _ok->setVisible(!txt.isEmpty());
 }
 
 void PinEntryDialog::setCancelText(const QString &txt)
 {
     _cancel->setText(txt);
-#ifndef QT_NO_ACCESSIBILITY
-    _cancel->setAccessibleDescription(txt);
-#endif
+    Accessibility::setDescription(_cancel, txt);
     _cancel->setVisible(!txt.isEmpty());
 }
 
@@ -403,9 +396,7 @@ void PinEntryDialog::setQualityBar(const QString &txt)
 {
     if (_have_quality_bar) {
         _quality_bar_label->setText(txt);
-#ifndef QT_NO_ACCESSIBILITY
-        _quality_bar_label->setAccessibleDescription(txt);
-#endif
+        Accessibility::setDescription(_quality_bar_label, txt);
     }
 }
 
@@ -423,7 +414,7 @@ void PinEntryDialog::setGenpinLabel(const QString &txt)
     }
     mGenerateButton->setVisible(!txt.isEmpty());
     if (!txt.isEmpty()) {
-        mGenerateButton->setAccessibleName(txt);
+        Accessibility::setName(mGenerateButton, txt);
     }
 }
 
@@ -443,7 +434,7 @@ void PinEntryDialog::setFormattedPassphrase(const PinEntryDialog::FormattedPassp
 {
     mFormatPassphrase = options.formatPassphrase;
     mFormattedPassphraseHint->setText(QLatin1String("<html>") + options.hint.toHtmlEscaped() + QLatin1String("</html>"));
-    mFormattedPassphraseHint->setAccessibleName(options.hint);
+    Accessibility::setName(mFormattedPassphraseHint, options.hint);
     toggleFormattedPassphrase();
 }
 
@@ -454,7 +445,7 @@ void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
     mConstraintsHint->setToolTip(QLatin1String("<html>") +
                                  options.longHint.toHtmlEscaped().replace(QLatin1String("\n\n"), QLatin1String("<br>")) +
                                  QLatin1String("</html>"));
-    mConstraintsHint->setAccessibleDescription(options.longHint);
+    Accessibility::setDescription(mConstraintsHint, options.longHint);
     mConstraintsErrorTitle = options.errorTitle;
 
     mConstraintsHint->setVisible(mEnforceConstraints && !options.shortHint.isEmpty());
@@ -557,8 +548,12 @@ void PinEntryDialog::textChanged(const QString &text)
         mVisiActionEdit->setVisible(!_edit->pin().isEmpty());
     }
     if (mGenerateButton) {
-        mGenerateButton->setVisible(_edit->pin().isEmpty() &&
-                                    !mGenerateButton->accessibleName().isEmpty());
+        mGenerateButton->setVisible(
+            _edit->pin().isEmpty()
+#ifndef QT_NO_ACCESSIBILITY
+            && !mGenerateButton->accessibleName().isEmpty()
+#endif
+        );
     }
 }
 
@@ -661,9 +656,12 @@ void PinEntryDialog::onAccept()
     cancelTimeout();
 
     if (mRepeat && mRepeat->pin() != _edit->pin()) {
+#ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
             QMessageBox::information(this, mRepeatError->text(), mRepeatError->text());
-        } else {
+        } else
+#endif
+        {
             mRepeatError->setVisible(true);
         }
         return;

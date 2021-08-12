@@ -18,7 +18,10 @@
  */
 
 #include "pinentryconfirm.h"
+
+#include "accessibility.h"
 #include "pinentrydialog.h"
+
 #include <QAbstractButton>
 #include <QGridLayout>
 #include <QSpacerItem>
@@ -34,10 +37,8 @@ PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
         connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
         _timer->start(timeout * 1000);
     }
-#ifndef QT_NO_ACCESSIBILITY
-    setAccessibleDescription(desc);
-    setAccessibleName(title);
-#endif
+    Accessibility::setDescription(this, desc);
+    Accessibility::setName(this, title);
     raiseWindow(this);
 }
 

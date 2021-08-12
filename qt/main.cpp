@@ -27,6 +27,7 @@
 #include "config.h"
 #endif
 
+#include "accessibility.h"
 #include "pinentryconfirm.h"
 #include "pinentrydialog.h"
 #include "pinentry.h"
@@ -301,9 +302,8 @@ qt_cmd_handler(pinentry_t pe)
         for (size_t i = 0 ; i < sizeof buttonLabels / sizeof * buttonLabels ; ++i)
             if ((buttons & buttonLabels[i].button) && !buttonLabels[i].label.isEmpty()) {
                 box.button(buttonLabels[i].button)->setText(buttonLabels[i].label);
-#ifndef QT_NO_ACCESSIBILITY
-                box.button(buttonLabels[i].button)->setAccessibleDescription(buttonLabels[i].label);
-#endif
+                Accessibility::setDescription(box.button(buttonLabels[i].button),
+                                              buttonLabels[i].label);
             }
 
         box.setIconPixmap(icon());
