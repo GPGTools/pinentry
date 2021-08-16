@@ -695,7 +695,7 @@ PinEntryDialog::PassphraseCheckResult PinEntryDialog::checkConstraints()
     const auto firstLine = messageLines.first();
     const auto indexOfFirstNonEmptyAdditionalLine = messageLines.indexOf(QRegularExpression{QStringLiteral(".*\\S.*")}, 1);
     const auto additionalLines = indexOfFirstNonEmptyAdditionalLine > 0 ? messageLines.mid(indexOfFirstNonEmptyAdditionalLine).join(QChar{'\n'}) : QString{};
-    QMessageBox messageBox;
+    QMessageBox messageBox{this};
     messageBox.setIcon(QMessageBox::Information);
     messageBox.setWindowTitle(mConstraintsErrorTitle);
     messageBox.setText(firstLine);
