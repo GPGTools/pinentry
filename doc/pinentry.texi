@@ -456,7 +456,7 @@ If you want to provide a tooltip for the action, you may use
 
 @item Enable passphrase formatting
 Passphrase formatting will group the characters of the passphrase into
-groups of four characters separated by non-breaking spaces or a similar
+groups of five characters separated by non-breaking spaces or a similar
 separator.  This is useful in combination with passphrase generation to make
 the generated passphrase easier readable.
 @example
@@ -777,7 +777,7 @@ The tooltip for the generate action.
 
 @item @code{formatted_passphrase}
 If this is not 0, then passphrase formatting should be enabled.  If it is
-enabled, then the unmasked passphrase should be grouped into groups of four
+enabled, then the unmasked passphrase should be grouped into groups of five
 characters separated by non-breaking spaces or a similar separator.
 
 To simplify the implementation all occurrences of the character used as
