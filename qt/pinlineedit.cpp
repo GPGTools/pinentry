@@ -25,7 +25,7 @@
 #include <QGuiApplication>
 #include <QKeyEvent>
 
-static const int FormattedPassphraseGroupSize = 4;
+static const int FormattedPassphraseGroupSize = 5;
 static const QChar FormattedPassphraseSeparator = QChar::Nbsp;
 
 namespace
