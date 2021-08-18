@@ -1390,6 +1390,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       pinentry.formatted_passphrase_hint = strdup (value);
       if (!pinentry.formatted_passphrase_hint)
 	return gpg_error_from_syserror ();
+      do_unescape_inplace(pinentry.formatted_passphrase_hint);
     }
   else if (!strcmp (key, "constraints-enforce") && !*value)
     pinentry.constraints_enforce = 1;
