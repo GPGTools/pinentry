@@ -1,8 +1,23 @@
-Noteworthy changes in version 1.2.0 (unreleased)
+Noteworthy changes in version 1.2.0 (2021-08-25)
 ------------------------------------------------
 
- * Qt pinentry shows a warning if Caps Lock is on on Windows, X11 (requires
+ * qt: Show a warning if Caps Lock is on on Windows, X11 (requires
    libX11 and Qt5X11Extras), and Wayland (requires KF5WaylandClient).
+   [T4950]
+
+ * qt: Support password formatting.  This makes generated passwords
+   easier to transcript. [T5517]
+
+ * qt: Fix showing of pinentry window on Wayland.  [T5528]
+
+ * qt: Check passphrase constraints before accepting passphrase if
+   passphrase constraints are requested to be enforced.  [T5532]
+
+ * qt: Improve detection of running in a GUI session.  [T3659]
+
+ * qt: Improve accessibility when entering new password.  [T5543]
+
+ Release-info: https://dev.gnupg.org/T5566
 
 
 Noteworthy changes in version 1.1.1 (2021-01-21)
