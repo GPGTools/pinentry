@@ -42,7 +42,13 @@ struct Selection
 
 class PinLineEdit::Private
 {
+    PinLineEdit *const q;
+
 public:
+    Private(PinLineEdit *q)
+        : q{q}
+    {}
+
     QString formatted(QString text) const
     {
         const int dashCount = text.size() / FormattedPassphraseGroupSize;
@@ -83,13 +89,13 @@ public:
         };
     }
 
-    void copyToClipboard(const PinLineEdit *edit)
+    void copyToClipboard()
     {
-        if (edit->echoMode() != QLineEdit::Normal) {
+        if (q->echoMode() != QLineEdit::Normal) {
             return;
         }
 
-        QString text = edit->selectedText();
+        QString text = q->selectedText();
         if (mFormattedPassphrase) {
             text.remove(FormattedPassphraseSeparator);
         }
@@ -98,13 +104,22 @@ public:
         }
     }
 
+    int selectionEnd()
+    {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+        return q->selectionEnd();
+#else
+        return q->selectionStart() + q->selectedText().size();
+#endif
+    }
+
 public:
     bool mFormattedPassphrase = false;
 };
 
 PinLineEdit::PinLineEdit(QWidget *parent)
     : QLineEdit(parent)
-    , d{new Private}
+    , d{new Private{this}}
 {
     connect(this, SIGNAL(textEdited(QString)),
             this, SLOT(textEdited()));
@@ -118,7 +133,7 @@ void PinLineEdit::setFormattedPassphrase(bool on)
         return;
     }
     d->mFormattedPassphrase = on;
-    Selection selection{selectionStart(), selectionEnd()};
+    Selection selection{selectionStart(), d->selectionEnd()};
     if (d->mFormattedPassphrase) {
         setText(d->formatted(text()));
         selection = d->formattedSelection(selection);
@@ -133,7 +148,7 @@ void PinLineEdit::setFormattedPassphrase(bool on)
 
 void PinLineEdit::copy() const
 {
-    d->copyToClipboard(this);
+    d->copyToClipboard();
 }
 
 void PinLineEdit::cut()
