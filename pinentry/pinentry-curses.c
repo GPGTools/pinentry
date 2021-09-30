@@ -893,6 +893,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  return confirm_mode? 0 : -1;
 	}
       screen = newterm (tty_type, ttyfo, ttyfi);
+      if (!screen)
+        {
+          pinentry->specific_err = gpg_error (GPG_ERR_WINDOW_TOO_SMALL);
+          pinentry->specific_err_loc = "curses_init";
+          fclose (ttyfo);
+          fclose (ttyfi);
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
+          return confirm_mode? 0 : -1;
+        }
       set_term (screen);
     }
   else
