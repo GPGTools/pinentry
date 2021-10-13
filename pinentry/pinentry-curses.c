@@ -943,8 +943,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (has_colors ())
     {
       start_color ();
+
+      /* Ncurses has use_default_colors, an extentions to the curses
+         library, which allows use of -1 to select default color.  */
 #ifdef NCURSES_VERSION
       use_default_colors ();
+#else
+      /* With no extention, we need to specify color explicitly.  */
+      if (pinentry->color_fg == PINENTRY_COLOR_DEFAULT)
+        pinentry->color_fg = PINENTRY_COLOR_WHITE;
+      if (pinentry->color_bg == PINENTRY_COLOR_DEFAULT)
+        pinentry->color_fg = PINENTRY_COLOR_BLACK;
 #endif
 
       if (pinentry->color_so == PINENTRY_COLOR_DEFAULT)
