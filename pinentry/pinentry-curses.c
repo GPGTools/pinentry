@@ -953,7 +953,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
       if (pinentry->color_fg == PINENTRY_COLOR_DEFAULT)
         pinentry->color_fg = PINENTRY_COLOR_WHITE;
       if (pinentry->color_bg == PINENTRY_COLOR_DEFAULT)
-        pinentry->color_fg = PINENTRY_COLOR_BLACK;
+        pinentry->color_bg = PINENTRY_COLOR_BLACK;
 #endif
 
       if (pinentry->color_so == PINENTRY_COLOR_DEFAULT)
