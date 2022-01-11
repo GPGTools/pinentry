@@ -203,7 +203,7 @@ if [ "$myhost" = "git-build" ]; then
     die_p
     make || fatal "error running make"
     die_p
-    make check || fatal "error running male check"
+    make check || fatal "error running make check"
     die_p
     exit 0
 fi
