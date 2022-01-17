@@ -61,7 +61,7 @@ pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
 	pinlineedit.h pinlineedit.cpp capslock.cpp capslock.h capslock_p.h \
 	pinentry_debug.cpp pinentry_debug.h util.h accessibility.cpp \
-	accessibility.h \
+	accessibility.h qti18n.cpp \
 	$(pinentry_qt_platform_SOURCES)
 
 nodist_pinentry_qt_SOURCES = \
