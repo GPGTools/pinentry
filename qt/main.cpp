@@ -415,7 +415,7 @@ main(int argc, char *argv[])
         new_argc = argc;
         Q_ASSERT (new_argc);
         app = new QApplication(new_argc, new_argv);
-        app->setWindowIcon(QIcon(QLatin1String(":/document-encrypt.png")));
+        app->setWindowIcon(QIcon(QLatin1String(":/icons/document-encrypt.png")));
     }
 
     pinentry_parse_opts(argc, argv);

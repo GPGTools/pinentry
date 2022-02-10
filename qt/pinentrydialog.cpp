@@ -155,7 +155,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     if (!repeatString.isNull()) {
         mGenerateButton = new QPushButton{this};
-        mGenerateButton->setIcon(QIcon::fromTheme(QLatin1String("password-generate")));
+        mGenerateButton->setIcon(QIcon(QLatin1String(":/icons/password-generate")));
         mGenerateButton->setVisible(false);
         connect(mGenerateButton, &QPushButton::clicked, this, &PinEntryDialog::generatePin);
     }
@@ -257,8 +257,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         grid->addWidget(_quality_bar, row++, 2);
     }
     /* Set up the show password action */
-    const QIcon visibilityIcon = QIcon::fromTheme(QLatin1String("visibility"));
-    const QIcon hideIcon = QIcon::fromTheme(QLatin1String("hint"));
+    const QIcon visibilityIcon = QIcon(QLatin1String(":/icons/visibility.svg"));
+    const QIcon hideIcon = QIcon(QLatin1String(":/icons/hint.svg"));
 #if QT_VERSION >= 0x050200
     if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
         mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
@@ -583,7 +583,7 @@ void PinEntryDialog::toggleVisibility()
     if (sender() != mVisiCB) {
         if (_edit->echoMode() == QLineEdit::Password) {
             if (mVisiActionEdit) {
-                mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("hint")));
+                mVisiActionEdit->setIcon(QIcon(QLatin1String(":/icons/hint.svg")));
                 mVisiActionEdit->setToolTip(mHideTT);
             }
             _edit->setEchoMode(QLineEdit::Normal);
@@ -592,7 +592,7 @@ void PinEntryDialog::toggleVisibility()
             }
         } else {
             if (mVisiActionEdit) {
-                mVisiActionEdit->setIcon(QIcon::fromTheme(QLatin1String("visibility")));
+                mVisiActionEdit->setIcon(QIcon(QLatin1String(":/icons/visibility.svg")));
                 mVisiActionEdit->setToolTip(mVisibilityTT);
             }
             _edit->setEchoMode(QLineEdit::Password);

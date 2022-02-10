@@ -104,6 +104,33 @@ AC_DEFUN([FIND_QT],
         MOC=$MOC2
       fi
     fi
+
+    AC_CHECK_TOOL(RCC, rcc)
+    AC_MSG_CHECKING([rcc version])
+    rccversion=`$RCC -v 2>&1`
+    rccversiongrep=`echo $rccversion | grep -E "Qt 5|rcc 5"`
+    if test x"$rccversiongrep" != x"$rccversion"; then
+      AC_MSG_RESULT([no])
+      # rcc was not the qt5 one, try with rcc-qt5
+      AC_CHECK_TOOL(RCC2, rcc-qt5)
+      rccversion=`$RCC2 -v 2>&1`
+      rccversiongrep=`echo $rccversion | grep -E "Qt 5|rcc-qt5 5|rcc 5"`
+      if test x"$rccversiongrep" != x"$rccversion"; then
+        AC_CHECK_TOOL(QTCHOOSER, qtchooser)
+        qt5tooldir=`QT_SELECT=qt5 qtchooser -print-env | grep QTTOOLDIR | cut -d '=' -f 2 | cut -d \" -f 2`
+        rccversion=`$qt5tooldir/rcc -v 2>&1`
+        rccversiongrep=`echo $rccversion | grep -E "Qt 5|rcc 5"`
+        if test x"$rccversiongrep" != x"$rccversion"; then
+          # no valid rcc found
+          have_qt5_libs="no";
+        else
+          RCC=$qt5tooldir/rcc
+        fi
+      else
+        RCC=$RCC2
+      fi
+    fi
+
   fi
   if test "$have_qt5_libs" != "yes"; then
     PKG_CHECK_MODULES(PINENTRY_QT,

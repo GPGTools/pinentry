@@ -812,6 +812,7 @@ emacs/Makefile
 gtk+-2/Makefile
 gnome3/Makefile
 qt/Makefile
+qt/icons/Makefile
 tqt/Makefile
 w32/Makefile
 fltk/Makefile
