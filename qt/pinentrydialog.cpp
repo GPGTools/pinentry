@@ -106,6 +106,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
       mRepeat(NULL),
       mRepeatError{nullptr},
       _grabbed(false),
+      _have_quality_bar{enable_quality_bar},
       _disable_echo_allowed(true),
       mEnforceConstraints(false),
       mFormatPassphrase{false},
@@ -125,57 +126,124 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         setWindowModality(Qt::ApplicationModal);
     }
 
-    _icon = new QLabel(this);
-    _icon->setPixmap(icon());
-
     QPalette redTextPalette;
     redTextPalette.setColor(QPalette::WindowText, Qt::red);
+
+    auto *const mainLayout = new QVBoxLayout{this};
+
+    auto *const hbox = new QHBoxLayout;
+
+    _icon = new QLabel(this);
+    _icon->setPixmap(icon());
+    hbox->addWidget(_icon, 0, Qt::AlignVCenter | Qt::AlignLeft);
+
+    auto *const grid = new QGridLayout;
+    int row = 1;
 
     _error = new QLabel(this);
     _error->setPalette(redTextPalette);
     _error->hide();
+    grid->addWidget(_error, row, 1, 1, 2);
 
+    row++;
+    _desc = new QLabel(this);
+    _desc->hide();
+    grid->addWidget(_desc,  row, 1, 1, 2);
+
+    row++;
     mCapsLockHint = new QLabel(this);
     mCapsLockHint->setPalette(redTextPalette);
     mCapsLockHint->setAlignment(Qt::AlignCenter);
     mCapsLockHint->setVisible(false);
+    grid->addWidget(mCapsLockHint, row, 1, 1, 2);
 
-    _desc = new QLabel(this);
-    _desc->hide();
+    row++;
+    {
+        _prompt = new QLabel(this);
+        _prompt->hide();
+        grid->addWidget(_prompt, row, 1);
 
-    _prompt = new QLabel(this);
-    _prompt->hide();
+        const auto l = new QHBoxLayout;
+        _edit = new PinLineEdit(this);
+        _edit->setMaxLength(256);
+        _edit->setMinimumWidth(_edit->fontMetrics().averageCharWidth()*20 + 48);
+        _edit->setEchoMode(QLineEdit::Password);
+        _prompt->setBuddy(_edit);
+        l->addWidget(_edit, 1);
 
-    _edit = new PinLineEdit(this);
-    _edit->setMaxLength(256);
-    _edit->setMinimumWidth(_edit->fontMetrics().averageCharWidth()*20 + 48);
-    _edit->setEchoMode(QLineEdit::Password);
-
-    _prompt->setBuddy(_edit);
-
-    if (!repeatString.isNull()) {
-        mGenerateButton = new QPushButton{this};
-        mGenerateButton->setIcon(QIcon(QLatin1String(":/icons/password-generate")));
-        mGenerateButton->setVisible(false);
-        connect(mGenerateButton, &QPushButton::clicked, this, &PinEntryDialog::generatePin);
+        if (!repeatString.isNull()) {
+            mGenerateButton = new QPushButton{this};
+            mGenerateButton->setIcon(QIcon(QLatin1String(":/icons/password-generate")));
+            mGenerateButton->setVisible(false);
+            l->addWidget(mGenerateButton);
+        }
+        grid->addLayout(l, row, 2);
     }
 
+    /* Set up the show password action */
+    const QIcon visibilityIcon = QIcon(QLatin1String(":/icons/visibility.svg"));
+    const QIcon hideIcon = QIcon(QLatin1String(":/icons/hint.svg"));
+#if QT_VERSION >= 0x050200
+    if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
+        mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
+        mVisiActionEdit->setVisible(false);
+        mVisiActionEdit->setToolTip(mVisibilityTT);
+    } else
+#endif
+    {
+        if (!mVisibilityTT.isNull()) {
+            row++;
+            mVisiCB = new QCheckBox{mVisibilityTT, this};
+            grid->addWidget(mVisiCB, row, 1, 1, 2, Qt::AlignLeft);
+        }
+    }
+
+    row++;
+    mConstraintsHint = new QLabel{this};
+    mConstraintsHint->setVisible(false);
+    grid->addWidget(mConstraintsHint, row, 2);
+
+    row++;
+    mFormattedPassphraseHintSpacer = new QLabel{this};
+    mFormattedPassphraseHintSpacer->setVisible(false);
+    mFormattedPassphraseHint = new QLabel{this};
+    mFormattedPassphraseHint->setVisible(false);
+    grid->addWidget(mFormattedPassphraseHintSpacer, row, 1);
+    grid->addWidget(mFormattedPassphraseHint, row, 2);
+
     if (!repeatString.isNull()) {
+        row++;
+        auto repeatLabel = new QLabel{this};
+        repeatLabel->setText(repeatString);
+        grid->addWidget(repeatLabel, row, 1);
+
         mRepeat = new PinLineEdit(this);
+        mRepeat->setMaxLength(256);
+        mRepeat->setEchoMode(QLineEdit::Password);
+        repeatLabel->setBuddy(mRepeat);
+        grid->addWidget(mRepeat, row, 2);
+
+        row++;
         mRepeatError = new QLabel{this};
         mRepeatError->setPalette(redTextPalette);
         mRepeatError->hide();
+        grid->addWidget(mRepeatError, row, 2);
     }
 
     if (enable_quality_bar) {
+        row++;
         _quality_bar_label = new QLabel(this);
         _quality_bar_label->setAlignment(Qt::AlignVCenter);
+        grid->addWidget(_quality_bar_label, row, 1);
+
         _quality_bar = new QProgressBar(this);
         _quality_bar->setAlignment(Qt::AlignCenter);
-        _have_quality_bar = true;
-    } else {
-        _have_quality_bar = false;
+        _quality_bar_label->setBuddy(_quality_bar);
+        grid->addWidget(_quality_bar, row, 2);
     }
+
+    hbox->addLayout(grid, 1);
+    mainLayout->addLayout(hbox);
 
     QDialogButtonBox *const buttons = new QDialogButtonBox(this);
     buttons->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -186,6 +254,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         _ok->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
         _cancel->setIcon(style()->standardIcon(QStyle::SP_DialogCancelButton));
     }
+
+    mainLayout->addStretch(1);
+    mainLayout->addWidget(buttons);
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     if (timeout > 0) {
         _timer = new QTimer(this);
@@ -203,83 +275,24 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
             this, SLOT(textChanged(QString)));
     connect(_edit, SIGNAL(backspacePressed()),
             this, SLOT(onBackspace()));
+    if (mGenerateButton) {
+        connect(mGenerateButton, &QPushButton::clicked,
+                this, &PinEntryDialog::generatePin);
+    }
+    if (mVisiActionEdit) {
+        connect(mVisiActionEdit, SIGNAL(triggered()),
+                this, SLOT(toggleVisibility()));
+    }
+    if (mVisiCB) {
+        connect(mVisiCB, SIGNAL(toggled(bool)),
+                this, SLOT(toggleVisibility()));
+    }
     if (mRepeat) {
+        connect(mRepeat, SIGNAL(textChanged(QString)),
+                this, SLOT(textChanged(QString)));
         connect(_edit, &QLineEdit::returnPressed,
                 this, [this] { mRepeat->setFocus(); });
     }
-
-    auto *const mainLayout = new QVBoxLayout{this};
-
-    auto *const hbox = new QHBoxLayout;
-
-    hbox->addWidget(_icon, 0, Qt::AlignVCenter | Qt::AlignLeft);
-
-    auto *const grid = new QGridLayout;
-    int row = 1;
-    grid->addWidget(_error, row++, 1, 1, 2);
-    grid->addWidget(_desc,  row++, 1, 1, 2);
-    grid->addWidget(mCapsLockHint, row++, 1, 1, 2);
-
-    grid->addWidget(_prompt, row, 1);
-    {
-        const auto l = new QHBoxLayout;
-        l->addWidget(_edit, 1);
-        if (mGenerateButton) {
-            l->addWidget(mGenerateButton);
-        }
-        grid->addLayout(l, row++, 2);
-    }
-
-    mConstraintsHint = new QLabel;
-    mConstraintsHint->setVisible(false);
-    grid->addWidget(mConstraintsHint, row++, 2);
-
-    mFormattedPassphraseHintSpacer = new QLabel;
-    mFormattedPassphraseHintSpacer->setVisible(false);
-    mFormattedPassphraseHint = new QLabel;
-    mFormattedPassphraseHint->setVisible(false);
-    grid->addWidget(mFormattedPassphraseHintSpacer, row, 1);
-    grid->addWidget(mFormattedPassphraseHint, row++, 2);
-
-    if (mRepeat) {
-        mRepeat->setMaxLength(256);
-        mRepeat->setEchoMode(QLineEdit::Password);
-        connect(mRepeat, SIGNAL(textChanged(QString)),
-                this, SLOT(textChanged(QString)));
-        QLabel *repeatLabel = new QLabel(repeatString);
-        repeatLabel->setBuddy(mRepeat);
-        grid->addWidget(repeatLabel, row, 1);
-        grid->addWidget(mRepeat, row++, 2);
-        grid->addWidget(mRepeatError, row++, 2);
-    }
-    if (enable_quality_bar) {
-        grid->addWidget(_quality_bar_label, row, 1);
-        grid->addWidget(_quality_bar, row++, 2);
-    }
-    /* Set up the show password action */
-    const QIcon visibilityIcon = QIcon(QLatin1String(":/icons/visibility.svg"));
-    const QIcon hideIcon = QIcon(QLatin1String(":/icons/hint.svg"));
-#if QT_VERSION >= 0x050200
-    if (!visibilityIcon.isNull() && !hideIcon.isNull()) {
-        mVisiActionEdit = _edit->addAction(visibilityIcon, QLineEdit::TrailingPosition);
-        mVisiActionEdit->setVisible(false);
-        mVisiActionEdit->setToolTip(mVisibilityTT);
-        connect(mVisiActionEdit, SIGNAL(triggered()), this, SLOT(toggleVisibility()));
-    } else
-#endif
-    {
-        if (!mVisibilityTT.isNull()) {
-            mVisiCB = new QCheckBox(mVisibilityTT);
-            connect(mVisiCB, SIGNAL(toggled(bool)), this, SLOT(toggleVisibility()));
-            grid->addWidget(mVisiCB, row++, 1, 1, 2, Qt::AlignLeft);
-        }
-    }
-
-    hbox->addLayout(grid, 1);
-
-    mainLayout->addLayout(hbox);
-    mainLayout->addStretch(1);
-    mainLayout->addWidget(buttons);
 
     auto capsLockWatcher = new CapsLockWatcher{this};
     connect(capsLockWatcher, &CapsLockWatcher::stateChanged,
