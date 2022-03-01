@@ -349,8 +349,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     if (mRepeat) {
         connect(mRepeat, SIGNAL(textChanged(QString)),
                 this, SLOT(textChanged(QString)));
-        connect(_edit, &QLineEdit::returnPressed,
-                this, [this] { mRepeat->setFocus(); });
     }
 
     auto capsLockWatcher = new CapsLockWatcher{this};
@@ -396,6 +394,23 @@ PinEntryDialog::~PinEntryDialog()
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
 #endif
+}
+
+void PinEntryDialog::keyPressEvent(QKeyEvent *e)
+{
+    const auto returnPressed =
+        (!e->modifiers() && (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return))
+        || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter);
+    if (returnPressed && _edit->hasFocus() && mRepeat) {
+        // if the user pressed Return in the first input field, then move the
+        // focus to the repeat input field and prevent further event processing
+        // by QDialog (which would trigger the default button)
+        mRepeat->setFocus();
+        e->ignore();
+        return;
+    }
+
+    QDialog::keyPressEvent(e);
 }
 
 void PinEntryDialog::keyReleaseEvent(QKeyEvent *event)
@@ -617,12 +632,6 @@ void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
             _grabbed = true;
         }
     }
-    // make Ok the default button unless we have a repeat input field and
-    // the first input field has focus now; this allows us to move the focus
-    // to the repeat input field when the user presses Return in the first
-    // input field; otherwise, the dialog would "press" Ok when it receives
-    // the Return key press
-    _ok->setDefault(!mRepeat || now != _edit);
 }
 
 void PinEntryDialog::textChanged(const QString &text)
