@@ -2,7 +2,7 @@
  * Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
  * Copyright 2007 Ingo Klöcker
  * Copyright 2016 Intevation GmbH
- * Copyright (C) 2021 g10 Code GmbH
+ * Copyright (C) 2021, 2022 g10 Code GmbH
  *
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  * Modified by Andre Heinecke <aheinecke@intevation.de>
@@ -26,6 +26,7 @@
 #ifndef __PINENTRYDIALOG_H__
 #define __PINENTRYDIALOG_H__
 
+#include <QAccessible>
 #include <QDialog>
 #include <QStyle>
 #include <QTimer>
@@ -46,6 +47,9 @@ QPixmap icon(QStyle::StandardPixmap which = QStyle::SP_CustomBase);
 void raiseWindow(QWidget *w);
 
 class PinEntryDialog : public QDialog
+#ifndef QT_NO_ACCESSIBILITY
+    , public QAccessible::ActivationObserver
+#endif
 {
     Q_OBJECT
 
@@ -73,6 +77,7 @@ public:
                             const QString &repeatString = QString(),
                             const QString &visibiltyTT = QString(),
                             const QString &hideTT = QString());
+    ~PinEntryDialog() override;
 
     void setDescription(const QString &);
     QString description() const;
@@ -128,6 +133,10 @@ private Q_SLOTS:
     void onAccept();
 
 private:
+#ifndef QT_NO_ACCESSIBILITY
+    void accessibilityActiveChanged(bool active) override;
+#endif
+
     enum PassphraseCheckResult {
         PassphraseNotChecked = -1,
         PassphraseNotOk = 0,

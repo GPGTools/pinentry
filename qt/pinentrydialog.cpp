@@ -2,7 +2,7 @@
  * Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
  * Copyright 2007 Ingo Klöcker
  * Copyright 2016 Intevation GmbH
- * Copyright (C) 2021 g10 Code GmbH
+ * Copyright (C) 2021, 2022 g10 Code GmbH
  *
  * Written by Steffen Hansen <steffen@klaralvdalens-datakonsult.se>.
  * Modified by Andre Heinecke <aheinecke@intevation.de>
@@ -307,6 +307,11 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     checkCapsLock();
 
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::installActivationObserver(this);
+    accessibilityActiveChanged(QAccessible::isActive());
+#endif
+
 #if QT_VERSION >= 0x050000
     /* This is mostly an issue on Windows where this results
        in the pinentry popping up nicely with an animation and
@@ -324,6 +329,13 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 #else
     activateWindow();
     raise();
+#endif
+}
+
+PinEntryDialog::~PinEntryDialog()
+{
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::removeActivationObserver(this);
 #endif
 }
 
@@ -685,6 +697,22 @@ void PinEntryDialog::onAccept()
         accept();
     }
 }
+
+#ifndef QT_NO_ACCESSIBILITY
+void PinEntryDialog::accessibilityActiveChanged(bool active)
+{
+    // Allow text labels to get focus if accessibility is active
+    const auto focusPolicy = active ? Qt::TabFocus : Qt::NoFocus;
+    _error->setFocusPolicy(focusPolicy);
+    _desc->setFocusPolicy(focusPolicy);
+    mCapsLockHint->setFocusPolicy(focusPolicy);
+    mConstraintsHint->setFocusPolicy(focusPolicy);
+    mFormattedPassphraseHint->setFocusPolicy(focusPolicy);
+    if (mRepeatError) {
+        mRepeatError->setFocusPolicy(focusPolicy);
+    }
+}
+#endif
 
 PinEntryDialog::PassphraseCheckResult PinEntryDialog::checkConstraints()
 {
