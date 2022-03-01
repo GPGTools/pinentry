@@ -320,35 +320,37 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
 
     if (timeout > 0) {
         _timer = new QTimer(this);
-        connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+        connect(_timer, &QTimer::timeout, this, &PinEntryDialog::slotTimeout);
         _timer->start(timeout * 1000);
     } else {
         _timer = NULL;
     }
 
-    connect(buttons, SIGNAL(accepted()), this, SLOT(onAccept()));
-    connect(buttons, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(_edit, SIGNAL(textChanged(QString)),
-            this, SLOT(updateQuality(QString)));
-    connect(_edit, SIGNAL(textChanged(QString)),
-            this, SLOT(textChanged(QString)));
-    connect(_edit, SIGNAL(backspacePressed()),
-            this, SLOT(onBackspace()));
+    connect(buttons, &QDialogButtonBox::accepted,
+            this, &PinEntryDialog::onAccept);
+    connect(buttons, &QDialogButtonBox::rejected,
+            this, &QDialog::reject);
+    connect(_edit, &QLineEdit::textChanged,
+            this, &PinEntryDialog::updateQuality);
+    connect(_edit, &QLineEdit::textChanged,
+            this, &PinEntryDialog::textChanged);
+    connect(_edit, &PinLineEdit::backspacePressed,
+            this, &PinEntryDialog::onBackspace);
     if (mGenerateButton) {
         connect(mGenerateButton, &QPushButton::clicked,
                 this, &PinEntryDialog::generatePin);
     }
     if (mVisiActionEdit) {
-        connect(mVisiActionEdit, SIGNAL(triggered()),
-                this, SLOT(toggleVisibility()));
+        connect(mVisiActionEdit, &QAction::triggered,
+                this, &PinEntryDialog::toggleVisibility);
     }
     if (mVisiCB) {
-        connect(mVisiCB, SIGNAL(toggled(bool)),
-                this, SLOT(toggleVisibility()));
+        connect(mVisiCB, &QCheckBox::toggled,
+                this, &PinEntryDialog::toggleVisibility);
     }
     if (mRepeat) {
-        connect(mRepeat, SIGNAL(textChanged(QString)),
-                this, SLOT(textChanged(QString)));
+        connect(mRepeat, &QLineEdit::textChanged,
+                this, &PinEntryDialog::textChanged);
     }
 
     auto capsLockWatcher = new CapsLockWatcher{this};
@@ -357,11 +359,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                 mCapsLockHint->setVisible(locked);
             });
 
-    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)),
-            this, SLOT(focusChanged(QWidget *, QWidget *)));
-    connect(qApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)),
-            this, SLOT(checkCapsLock()));
-
+    connect(qApp, &QApplication::focusChanged,
+            this, &PinEntryDialog::focusChanged);
+    connect(qApp, &QApplication::applicationStateChanged,
+            this, &PinEntryDialog::checkCapsLock);
     checkCapsLock();
 
 #ifndef QT_NO_ACCESSIBILITY
