@@ -125,7 +125,7 @@ protected Q_SLOTS:
 
 protected:
     void keyReleaseEvent(QKeyEvent *event) override;
-    /* reimp */ void showEvent(QShowEvent *event);
+    void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
     void cancelTimeout();
