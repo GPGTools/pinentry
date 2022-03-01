@@ -143,25 +143,12 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
                                const QString &repeatString,
                                const QString &visibilityTT,
                                const QString &hideTT)
-    : QDialog(parent),
-      mRepeat(NULL),
-      mRepeatError{nullptr},
-      _grabbed(false),
-      _have_quality_bar{enable_quality_bar},
-      _disable_echo_allowed(true),
-      mEnforceConstraints(false),
-      mFormatPassphrase{false},
-      mVisibilityTT(visibilityTT),
-      mHideTT(hideTT),
-      mVisiActionEdit(NULL),
-      mGenerateButton{nullptr},
-      mVisiCB(NULL),
-      mFormattedPassphraseHint(NULL),
-      mFormattedPassphraseHintSpacer(NULL),
-      mCapsLockHint(NULL),
-      mConstraintsHint(NULL)
+    : QDialog{parent}
+    , _have_quality_bar{enable_quality_bar}
+    , mVisibilityTT{visibilityTT}
+    , mHideTT{hideTT}
 {
-    _timed_out = false;
+    Q_UNUSED(name)
 
     if (modal) {
         setWindowModality(Qt::ApplicationModal);
@@ -322,8 +309,6 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         _timer = new QTimer(this);
         connect(_timer, &QTimer::timeout, this, &PinEntryDialog::slotTimeout);
         _timer->start(timeout * 1000);
-    } else {
-        _timer = NULL;
     }
 
     connect(buttons, &QDialogButtonBox::accepted,
