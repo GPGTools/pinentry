@@ -518,10 +518,12 @@ void PinEntryDialog::setConstraintsOptions(const ConstraintsOptions &options)
 {
     mEnforceConstraints = options.enforce;
     mConstraintsHint->setText(options.shortHint);
-    mConstraintsHint->setToolTip(QLatin1String("<html>") +
-                                 options.longHint.toHtmlEscaped().replace(QLatin1String("\n\n"), QLatin1String("<br>")) +
-                                 QLatin1String("</html>"));
-    Accessibility::setDescription(mConstraintsHint, options.longHint);
+    if (!options.longHint.isEmpty()) {
+        mConstraintsHint->setToolTip(QLatin1String("<html>") +
+                                    options.longHint.toHtmlEscaped().replace(QLatin1String("\n\n"), QLatin1String("<br>")) +
+                                    QLatin1String("</html>"));
+        Accessibility::setDescription(mConstraintsHint, options.longHint);
+    }
     mConstraintsErrorTitle = options.errorTitle;
 
     mConstraintsHint->setVisible(mEnforceConstraints && !options.shortHint.isEmpty());
