@@ -1,6 +1,20 @@
 Noteworthy changes in version 1.2.1 (unreleased)
 ------------------------------------------------
 
+ * qt: Support building with Qt 5.9.  [T5592]
+
+ * curses: Handle an error at curses initialization.  [T5623]
+
+ * curses: Specify fg/bg when an extention of Ncurses is not available.
+   [T5631]
+
+ * qt: Fix translation of context menu entries.  [T5786]
+
+ * qt: Further improve the accessibility.  [T5863]
+
+ * qt: Fix moving focus to second input field when pressing Enter in
+   first input field.  [T5866]
+
 
 Noteworthy changes in version 1.2.0 (2021-08-25)
 ------------------------------------------------
