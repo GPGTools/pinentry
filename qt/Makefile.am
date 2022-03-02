@@ -51,9 +51,7 @@ BUILT_SOURCES = \
 	pinentryrc.cpp
 endif
 
-CLEANFILES = \
-	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc \
-	pinentryrc.cpp
+CLEANFILES = $(BUILT_SOURCES)
 
 if HAVE_W32_SYSTEM
 pinentry_qt_platform_SOURCES = capslock_win.cpp
@@ -68,9 +66,7 @@ pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	accessibility.h qti18n.cpp pinentryrc.qrc \
 	$(pinentry_qt_platform_SOURCES)
 
-nodist_pinentry_qt_SOURCES = \
-	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc \
-	pinentryrc.cpp
+nodist_pinentry_qt_SOURCES = $(BUILT_SOURCES)
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
