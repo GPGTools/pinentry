@@ -1,6 +1,9 @@
 /* pinentryconfirm.cpp - A QMessageBox with a timeout
  *
  * Copyright (C) 2011 Ben Kibbey <bjk@luxsci.net>
+ * Copyright (C) 2022 g10 Code GmbH
+ *
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -24,8 +27,17 @@
 
 #include <QAbstractButton>
 #include <QGridLayout>
+#include <QLabel>
 #include <QSpacerItem>
 #include <QFontMetrics>
+
+namespace
+{
+QLabel *messageBoxLabel(QMessageBox *messageBox)
+{
+    return messageBox->findChild<QLabel *>(QStringLiteral("qt_msgbox_label"));
+}
+}
 
 PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString &text,
                                  StandardButtons buttons, QWidget *parent, Qt::WindowFlags flags)
@@ -35,6 +47,18 @@ PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString 
     Accessibility::setDescription(this, text);
     Accessibility::setName(this, title);
     raiseWindow(this);
+
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::installActivationObserver(this);
+    accessibilityActiveChanged(QAccessible::isActive());
+#endif
+}
+
+PinentryConfirm::~PinentryConfirm()
+{
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::removeActivationObserver(this);
+#endif
 }
 
 void PinentryConfirm::setTimeout(std::chrono::seconds timeout)
@@ -75,6 +99,15 @@ void PinentryConfirm::showEvent(QShowEvent *event)
     }
 }
 
+bool PinentryConfirm::focusNextPrevChild(bool next)
+{
+    auto ret = QMessageBox::focusNextPrevChild(next);
+    if (ret && (focusWidget() == messageBoxLabel(this))) {
+        Accessibility::selectLabelText(messageBoxLabel(this));
+    }
+    return ret;
+}
+
 void PinentryConfirm::slotTimeout()
 {
     QAbstractButton *b = button(QMessageBox::Cancel);
@@ -84,5 +117,16 @@ void PinentryConfirm::slotTimeout()
         b->animateClick(0);
     }
 }
+
+#ifndef QT_NO_ACCESSIBILITY
+void PinentryConfirm::accessibilityActiveChanged(bool active)
+{
+    // Allow text label to get focus if accessibility is active
+    const auto focusPolicy = active ? Qt::StrongFocus : Qt::ClickFocus;
+    if (auto label = messageBoxLabel(this)) {
+        label->setFocusPolicy(focusPolicy);
+    }
+}
+#endif
 
 #include "pinentryconfirm.moc"

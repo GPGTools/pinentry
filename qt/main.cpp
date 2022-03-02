@@ -287,6 +287,8 @@ qt_cmd_handler(pinentry_t pe)
             /* else */       QMessageBox::Ok | QMessageBox::Cancel ;
 
         PinentryConfirm box{QMessageBox::Information, title, desc, buttons};
+        box.setTextFormat(Qt::PlainText);
+        box.setTextInteractionFlags(Qt::TextSelectableByMouse);
         box.setTimeout(std::chrono::seconds{pe->timeout});
         setup_foreground_window(&box, pe->parent_wid);
 
