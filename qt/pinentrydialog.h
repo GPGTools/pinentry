@@ -33,6 +33,7 @@
 
 #include "pinentry.h"
 
+class QIcon;
 class QLabel;
 class QPushButton;
 class QLineEdit;
@@ -42,7 +43,7 @@ class QProgressBar;
 class QCheckBox;
 class QAction;
 
-QPixmap icon(QStyle::StandardPixmap which = QStyle::SP_CustomBase);
+QPixmap applicationIconPixmap(const QIcon &overlayIcon = {});
 
 void raiseWindow(QWidget *w);
 

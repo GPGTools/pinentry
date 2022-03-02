@@ -77,16 +77,15 @@ void raiseWindow(QWidget *w)
     w->raise();
 }
 
-QPixmap icon(QStyle::StandardPixmap which)
+QPixmap applicationIconPixmap(const QIcon &overlayIcon)
 {
     QPixmap pm = qApp->windowIcon().pixmap(48, 48);
 
-    if (which != QStyle::SP_CustomBase) {
-        const QIcon ic = qApp->style()->standardIcon(which);
+    if (!overlayIcon.isNull()) {
         QPainter painter(&pm);
         const int emblemSize = 22;
         painter.drawPixmap(pm.width() - emblemSize, 0,
-                           ic.pixmap(emblemSize, emblemSize));
+                           overlayIcon.pixmap(emblemSize, emblemSize));
     }
 
     return pm;
@@ -162,7 +161,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     auto *const hbox = new QHBoxLayout;
 
     _icon = new QLabel(this);
-    _icon->setPixmap(icon());
+    _icon->setPixmap(applicationIconPixmap());
     hbox->addWidget(_icon, 0, Qt::AlignVCenter | Qt::AlignLeft);
 
     auto *const grid = new QGridLayout;
@@ -416,7 +415,7 @@ void PinEntryDialog::setDescription(const QString &txt)
     _desc->setVisible(!txt.isEmpty());
     _desc->setText(txt);
     Accessibility::setDescription(_desc, txt);
-    _icon->setPixmap(icon());
+    _icon->setPixmap(applicationIconPixmap());
     setError(QString());
 }
 
@@ -428,7 +427,7 @@ QString PinEntryDialog::description() const
 void PinEntryDialog::setError(const QString &txt)
 {
     if (!txt.isNull()) {
-        _icon->setPixmap(icon(QStyle::SP_MessageBoxCritical));
+        _icon->setPixmap(applicationIconPixmap(QIcon{QStringLiteral(":/icons/data-error.svg")}));
     }
     _error->setText(txt);
     Accessibility::setDescription(_error, txt);

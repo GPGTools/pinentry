@@ -19,5 +19,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = document-encrypt.png hint.svg password-generate.svg \
+EXTRA_DIST = data-error.svg \
+	     document-encrypt.png \
+	     hint.svg \
+	     password-generate.svg \
              visibility.svg

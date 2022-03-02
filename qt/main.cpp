@@ -306,7 +306,7 @@ qt_cmd_handler(pinentry_t pe)
                                               buttonLabels[i].label);
             }
 
-        box.setIconPixmap(icon());
+        box.setIconPixmap(applicationIconPixmap());
 
         if (!pe->one_button) {
             box.setDefaultButton(QMessageBox::Cancel);
