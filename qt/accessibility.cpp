@@ -20,8 +20,12 @@
 
 #include "accessibility.h"
 
+#include <QLabel>
 #include <QString>
+#include <QTextDocument>
 #include <QWidget>
+
+#include "pinentry_debug.h"
 
 namespace Accessibility
 {
@@ -41,6 +45,25 @@ void setName(QWidget *w, const QString &text)
 #ifndef QT_NO_ACCESSIBILITY
         w->setAccessibleName(text);
 #endif
+    }
+}
+
+void selectLabelText(QLabel *label)
+{
+    if (!label || label->text().isEmpty()) {
+        return;
+    }
+    if (label->textFormat() == Qt::PlainText) {
+        label->setSelection(0, label->text().size());
+    } else if (label->textFormat() == Qt::RichText) {
+        // unfortunately, there is no selectAll(); therefore, we need
+        // to determine the "visual" length of the text by stripping
+        // the label's text of all formatting information
+        QTextDocument temp;
+        temp.setHtml(label->text());
+        label->setSelection(0, temp.toRawText().size());
+    } else {
+        qDebug(PINENTRY_LOG) << "Label with unsupported text format" << label->textFormat() << "got focus";
     }
 }
 

@@ -53,7 +53,6 @@
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QAccessible>
-#include <QTextDocument>
 
 #include <QDebug>
 
@@ -114,18 +113,7 @@ void TextLabel::focusInEvent(QFocusEvent *ev)
                                    || reason == Qt::BacktabFocusReason
                                    || reason == Qt::ShortcutFocusReason;
     if (!text().isEmpty() && isKeyboardFocusEvent) {
-        if (textFormat() == Qt::PlainText) {
-            setSelection(0, text().size());
-        } else if (textFormat() == Qt::RichText) {
-            // unfortunately, there is no selectAll(); therefore, we need
-            // to determine the "visual" length of the text by stripping
-            // the label's text of all formatting information
-            QTextDocument temp;
-            temp.setHtml(text());
-            setSelection(0, temp.toRawText().size());
-        } else {
-            qDebug() << "Label with unsupported text format" << textFormat() << "got focus";
-        }
+        Accessibility::selectLabelText(this);
     }
 }
 

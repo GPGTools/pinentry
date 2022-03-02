@@ -21,6 +21,7 @@
 #ifndef __PINENTRY_QT_ACCESSIBILITY_H__
 #define __PINENTRY_QT_ACCESSIBILITY_H__
 
+class QLabel;
 class QString;
 class QWidget;
 
@@ -34,6 +35,10 @@ void setDescription(QWidget *w, const QString &text);
 /* Wrapper for QWidget::setAccessibleName which does nothing if
    QT_NO_ACCESSIBILITY is defined. */
 void setName(QWidget *w, const QString &text);
+
+/* Selects the text displayed by the label. Only QLabel with text format
+   Qt::PlainText or Qt::RichText are supported. */
+void selectLabelText(QLabel *label);
 
 } // namespace Accessibility
 
