@@ -286,7 +286,8 @@ qt_cmd_handler(pinentry_t pe)
             pe->notok      ? QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel :
             /* else */       QMessageBox::Ok | QMessageBox::Cancel ;
 
-        PinentryConfirm box(QMessageBox::Information, pe->timeout, title, desc, buttons, nullptr);
+        PinentryConfirm box{QMessageBox::Information, title, desc, buttons};
+        box.setTimeout(std::chrono::seconds{pe->timeout});
         setup_foreground_window(&box, pe->parent_wid);
 
         const struct {

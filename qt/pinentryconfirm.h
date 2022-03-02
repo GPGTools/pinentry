@@ -27,20 +27,25 @@ class PinentryConfirm : public QMessageBox
 {
     Q_OBJECT
 public:
-    PinentryConfirm(Icon, int timeout, const QString &title,
-                    const QString &desc, StandardButtons buttons,
-                    QWidget *parent);
+    PinentryConfirm(Icon icon, const QString &title, const QString &text,
+                    StandardButtons buttons = NoButton, QWidget *parent = nullptr,
+                    Qt::WindowFlags flags = Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+
+    void setTimeout(std::chrono::seconds timeout);
+    std::chrono::seconds timeout() const;
+
     bool timedOut() const;
 
-private slots:
+protected:
+    void showEvent(QShowEvent *event) override;
+
+private Q_SLOTS:
     void slotTimeout();
 
 private:
-    QTimer *_timer;
-    bool _timed_out;
-
-protected:
-    /* reimp */ void showEvent(QShowEvent *event);
+private:
+    QTimer _timer;
+    bool _timed_out = false;
 };
 
 #endif

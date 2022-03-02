@@ -27,19 +27,24 @@
 #include <QSpacerItem>
 #include <QFontMetrics>
 
-PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
-                                 const QString &desc, StandardButtons buttons, QWidget *parent) :
-    QMessageBox(icon, title, desc, buttons, parent)
+PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString &text,
+                                 StandardButtons buttons, QWidget *parent, Qt::WindowFlags flags)
+    : QMessageBox{icon, title, text, buttons, parent, flags}
 {
-    _timed_out = false;
-    if (timeout > 0) {
-        _timer = new QTimer(this);
-        connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
-        _timer->start(timeout * 1000);
-    }
-    Accessibility::setDescription(this, desc);
+    _timer.callOnTimeout(this, &PinentryConfirm::slotTimeout);
+    Accessibility::setDescription(this, text);
     Accessibility::setName(this, title);
     raiseWindow(this);
+}
+
+void PinentryConfirm::setTimeout(std::chrono::seconds timeout)
+{
+    _timer.setInterval(timeout);
+}
+
+std::chrono::seconds PinentryConfirm::timeout() const
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(_timer.intervalAsDuration());
 }
 
 bool PinentryConfirm::timedOut() const
@@ -63,6 +68,11 @@ void PinentryConfirm::showEvent(QShowEvent *event)
 
     QMessageBox::showEvent(event);
     raiseWindow(this);
+
+    if (timeout() > std::chrono::milliseconds::zero()) {
+        _timer.setSingleShot(true);
+        _timer.start();
+    }
 }
 
 void PinentryConfirm::slotTimeout()
