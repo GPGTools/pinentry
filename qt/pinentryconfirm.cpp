@@ -61,7 +61,7 @@ void PinentryConfirm::showEvent(QShowEvent *event)
         resized = true;
     }
 
-    QDialog::showEvent(event);
+    QMessageBox::showEvent(event);
     raiseWindow(this);
 }
 
