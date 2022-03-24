@@ -103,7 +103,9 @@ struct memblock_struct {
 
 static void  *pool;
 static volatile int pool_okay; /* may be checked in an atexit function */
+#if HAVE_MMAP
 static int   pool_is_mmapped;
+#endif
 static size_t poolsize; /* allocated length */
 static size_t poollen;	/* used length */
 static MEMBLOCK *unused_blocks;
@@ -185,6 +187,8 @@ lock_pool( void *p, size_t n )
     }
 
 #else
+    (void)p;
+    (void)n;
     log_info("Please note that you don't have secure memory on this system\n");
 #endif
 }
@@ -193,20 +197,22 @@ lock_pool( void *p, size_t n )
 static void
 init_pool( size_t n)
 {
+#if HAVE_MMAP
     size_t pgsize;
+#endif
 
     poolsize = n;
 
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
+#if HAVE_MMAP
 #ifdef HAVE_GETPAGESIZE
     pgsize = getpagesize();
 #else
     pgsize = 4096;
 #endif
 
-#if HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
 # ifdef MAP_ANONYMOUS
        pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,

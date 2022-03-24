@@ -107,8 +107,8 @@ install-exec-local:
 	done
 
 	(cd $(DESTDIR)$(bindir); \
-	rm -f pinentry; \
-	$(LN_S) $(PINENTRY_DEFAULT)$(EXEEXT) pinentry)
+	rm -f pinentry$(EXEEXT); \
+	$(LN_S) $(PINENTRY_DEFAULT)$(EXEEXT) pinentry$(EXEEXT))
 
 dist-hook: gen-ChangeLog
 
