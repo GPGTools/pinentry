@@ -295,15 +295,7 @@ int pinentry_loop (void);
  */
 int pinentry_loop2 (int infd, int outfd);
 
-
-/* Convert the UTF-8 encoded string TEXT to the encoding given in
-   LC_CTYPE.  Return NULL on error. */
-char *pinentry_utf8_to_local (const char *lc_ctype, const char *text);
-
-/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
-   SECURE set to true, use secure memory for the returned buffer.
-   Return NULL on error. */
-char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
+const char *pinentry_get_pgmname (void);
 
 char *pinentry_get_title (pinentry_t pe);
 

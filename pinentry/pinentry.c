@@ -37,18 +37,9 @@
 #ifndef HAVE_W32CE_SYSTEM
 # include <locale.h>
 #endif
-#ifdef HAVE_LANGINFO_H
-#include <langinfo.h>
-#endif
 #include <limits.h>
 #ifdef HAVE_W32CE_SYSTEM
 # include <windows.h>
-#endif
-
-#undef WITH_UTF8_CONVERSION
-#if defined FALLBACK_CURSES || defined PINENTRY_CURSES || defined PINENTRY_GTK
-# include <iconv.h>
-# define WITH_UTF8_CONVERSION 1
 #endif
 
 #include <assuan.h>
@@ -85,12 +76,6 @@ static const char *flavor_flag;
  * the call to pinentry_have_display and set it then in our
  * parser.  */
 static char *remember_display;
-
-/* Flag to remember whether a warning has been printed.  */
-#ifdef WITH_UTF8_CONVERSION
-static int lc_ctype_unknown_warning;
-#endif
-
 
 static void
 pinentry_reset (int use_defaults)
@@ -255,150 +240,6 @@ pinentry_assuan_reset_handler (assuan_context_t ctx, char *line)
 
 
 
-#ifdef WITH_UTF8_CONVERSION
-char *
-pinentry_utf8_to_local (const char *lc_ctype, const char *text)
-{
-  iconv_t cd;
-  const char *input = text;
-  size_t input_len = strlen (text) + 1;
-  char *output;
-  size_t output_len;
-  char *output_buf;
-  size_t processed;
-  char *old_ctype;
-  char *target_encoding;
-
-  /* If no locale setting could be determined, simply copy the
-     string.  */
-  if (!lc_ctype)
-    {
-      if (! lc_ctype_unknown_warning)
-	{
-	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
-		   this_pgmname);
-	  lc_ctype_unknown_warning = 1;
-	}
-      return strdup (text);
-    }
-
-  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
-  if (!old_ctype)
-    return NULL;
-  setlocale (LC_CTYPE, lc_ctype);
-  target_encoding = nl_langinfo (CODESET);
-  if (!target_encoding)
-    target_encoding = "?";
-  setlocale (LC_CTYPE, old_ctype);
-  free (old_ctype);
-
-  /* This is overkill, but simplifies the iconv invocation greatly.  */
-  output_len = input_len * MB_LEN_MAX;
-  output_buf = output = malloc (output_len);
-  if (!output)
-    return NULL;
-
-  cd = iconv_open (target_encoding, "UTF-8");
-  if (cd == (iconv_t) -1)
-    {
-      fprintf (stderr, "%s: can't convert from UTF-8 to %s: %s\n",
-               this_pgmname, target_encoding, strerror (errno));
-      free (output_buf);
-      return NULL;
-    }
-  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
-                     &output, &output_len);
-  iconv_close (cd);
-  if (processed == (size_t) -1 || input_len)
-    {
-      fprintf (stderr, "%s: error converting from UTF-8 to %s: %s\n",
-               this_pgmname, target_encoding, strerror (errno));
-      free (output_buf);
-      return NULL;
-    }
-  return output_buf;
-}
-#endif /*WITH_UTF8_CONVERSION*/
-
-
-/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
-   SECURE set to true, use secure memory for the returned buffer.
-   Return NULL on error. */
-#ifdef WITH_UTF8_CONVERSION
-char *
-pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
-{
-  char *old_ctype;
-  char *source_encoding;
-  iconv_t cd;
-  const char *input = text;
-  size_t input_len = strlen (text) + 1;
-  char *output;
-  size_t output_len;
-  char *output_buf;
-  size_t processed;
-
-  /* If no locale setting could be determined, simply copy the
-     string.  */
-  if (!lc_ctype)
-    {
-      if (! lc_ctype_unknown_warning)
-	{
-	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
-		   this_pgmname);
-	  lc_ctype_unknown_warning = 1;
-	}
-      output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
-      if (output_buf)
-        strcpy (output_buf, input);
-      return output_buf;
-    }
-
-  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
-  if (!old_ctype)
-    return NULL;
-  setlocale (LC_CTYPE, lc_ctype);
-  source_encoding = nl_langinfo (CODESET);
-  setlocale (LC_CTYPE, old_ctype);
-  free (old_ctype);
-
-  /* This is overkill, but simplifies the iconv invocation greatly.  */
-  output_len = input_len * MB_LEN_MAX;
-  output_buf = output = secure? secmem_malloc (output_len):malloc (output_len);
-  if (!output)
-    return NULL;
-
-  cd = iconv_open ("UTF-8", source_encoding);
-  if (cd == (iconv_t) -1)
-    {
-      fprintf (stderr, "%s: can't convert from %s to UTF-8: %s\n",
-               this_pgmname, source_encoding? source_encoding : "?",
-               strerror (errno));
-      if (secure)
-        secmem_free (output_buf);
-      else
-        free (output_buf);
-      return NULL;
-    }
-  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
-                     &output, &output_len);
-  iconv_close (cd);
-  if (processed == (size_t) -1 || input_len)
-    {
-      fprintf (stderr, "%s: error converting from %s to UTF-8: %s\n",
-               this_pgmname, source_encoding? source_encoding : "?",
-               strerror (errno));
-      if (secure)
-        secmem_free (output_buf);
-      else
-        free (output_buf);
-      return NULL;
-    }
-  return output_buf;
-}
-#endif /*WITH_UTF8_CONVERSION*/
-
-
 /* Copy TEXT or TEXTLEN to BUFFER and escape as required.  Return a
    pointer to the end of the new buffer.  Note that BUFFER must be
    large enough to keep the entire text; allocataing it 3 times of
@@ -542,6 +383,13 @@ get_pid_name_for_uid (unsigned long pid, int uid)
   return strdup (buffer + 6);
 }
 #endif /*!HAVE_W32_SYSTEM*/
+
+
+const char *
+pinentry_get_pgmname (void)
+{
+  return this_pgmname;
+}
 
 
 /* Return a malloced string with the title.  The caller mus free the

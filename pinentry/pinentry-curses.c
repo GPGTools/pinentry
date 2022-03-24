@@ -110,7 +110,149 @@ struct dialog
   pinentry_t pinentry;
 };
 typedef struct dialog *dialog_t;
+
+/* Flag to remember whether a warning has been printed.  */
+static int lc_ctype_unknown_warning;
 
+static char *
+pinentry_utf8_to_local (const char *lc_ctype, const char *text)
+{
+  iconv_t cd;
+  const char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+  char *old_ctype;
+  char *target_encoding;
+  const char *pgmname = pinentry_get_pgmname ();
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    {
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
+      return strdup (text);
+    }
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  target_encoding = nl_langinfo (CODESET);
+  if (!target_encoding)
+    target_encoding = "?";
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open (target_encoding, "UTF-8");
+  if (cd == (iconv_t) -1)
+    {
+      fprintf (stderr, "%s: can't convert from UTF-8 to %s: %s\n",
+               pgmname, target_encoding, strerror (errno));
+      free (output_buf);
+      return NULL;
+    }
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      fprintf (stderr, "%s: error converting from UTF-8 to %s: %s\n",
+               pgmname, target_encoding, strerror (errno));
+      free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
+
+/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
+   SECURE set to true, use secure memory for the returned buffer.
+   Return NULL on error. */
+static char *
+pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
+{
+  char *old_ctype;
+  char *source_encoding;
+  iconv_t cd;
+  const char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+  const char *pgmname = pinentry_get_pgmname ();
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    {
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
+      output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
+      if (output_buf)
+        strcpy (output_buf, input);
+      return output_buf;
+    }
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  source_encoding = nl_langinfo (CODESET);
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = secure? secmem_malloc (output_len):malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open ("UTF-8", source_encoding);
+  if (cd == (iconv_t) -1)
+    {
+      fprintf (stderr, "%s: can't convert from %s to UTF-8: %s\n",
+               pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
+      if (secure)
+        secmem_free (output_buf);
+      else
+        free (output_buf);
+      return NULL;
+    }
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      fprintf (stderr, "%s: error converting from %s to UTF-8: %s\n",
+               pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
+      if (secure)
+        secmem_free (output_buf);
+      else
+        free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
 
 #ifdef HAVE_NCURSESW
 typedef wchar_t CH;
