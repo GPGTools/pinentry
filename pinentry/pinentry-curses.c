@@ -29,7 +29,29 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <iconv.h>
-#include <langinfo.h>
+#if defined(HAVE_LANGINFO_H)
+# include <langinfo.h>
+#elif defined(HAVE_W32_SYSTEM)
+# include <stdio.h>
+# ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
+/* A simple replacement for nl_langinfo that only understands
+   CODESET.  */
+# define CODESET 1
+char *
+nl_langinfo (int ignore)
+{
+  static char codepage[20];
+  UINT cp = GetACP ();
+
+  (void)ignore;
+
+  sprintf (codepage, "CP%u", cp);
+  return codepage;
+}
+#endif
 #include <limits.h>
 #include <string.h>
 #include <errno.h>
