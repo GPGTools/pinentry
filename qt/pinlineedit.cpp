@@ -215,7 +215,18 @@ void PinLineEdit::textEdited()
     if (!d->mFormattedPassphrase) {
         return;
     }
-    setText(d->formatted(text().remove(FormattedPassphraseSeparator)));
+    auto currentText = text();
+    // first calculate the cursor position in the reformatted text; the cursor
+    // is put left of the separators, so that backspace works as expected
+    auto cursorPos = cursorPosition();
+    cursorPos -= QStringView{currentText}.left(cursorPos).count(FormattedPassphraseSeparator);
+    cursorPos += std::max(cursorPos - 1, 0) / FormattedPassphraseGroupSize;
+    // then reformat the text
+    currentText.remove(FormattedPassphraseSeparator);
+    currentText = d->formatted(currentText);
+    // finally, set reformatted text and updated cursor position
+    setText(currentText);
+    setCursorPosition(cursorPos);
 }
 
 #include "pinlineedit.moc"
