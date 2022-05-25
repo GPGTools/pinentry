@@ -1731,9 +1731,11 @@ cmd_getpin (assuan_context_t ctx, char *line)
     {
       if (pinentry.repeat_okay)
         assuan_write_status (ctx, "PIN_REPEATED", "");
+      assuan_begin_confidential (ctx);
       result = assuan_send_data (ctx, pinentry.pin, strlen(pinentry.pin));
       if (!result)
 	result = assuan_send_data (ctx, NULL, 0);
+      assuan_end_confidential (ctx);
 
       if (/* GPG Agent says it's okay.  */
 	  pinentry.allow_external_password_cache && pinentry.keyinfo
