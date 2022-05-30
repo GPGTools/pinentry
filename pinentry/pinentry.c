@@ -411,7 +411,7 @@ pinentry_get_title (pinentry_t pe)
       char *cmdline = NULL;
 
       if (pe->owner_host &&
-          !uname (&utsbuf) && utsbuf.nodename &&
+          !uname (&utsbuf) &&
           !strcmp (utsbuf.nodename, pe->owner_host))
         {
           pidname = get_pid_name_for_uid (pe->owner_pid, pe->owner_uid);
