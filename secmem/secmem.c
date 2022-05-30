@@ -145,7 +145,7 @@ lock_pool( void *p, size_t n )
 	    && errno != EAGAIN
 	  #endif
 	  )
-	    log_error("can't lock memory: %s\n", strerror(err));
+	    log_error("can't lock memory: %s\n", strerror(errno));
 	show_warning = 1;
     }
 
@@ -182,7 +182,7 @@ lock_pool( void *p, size_t n )
 	    && errno != EAGAIN
 #endif
 	  )
-	    log_error("can't lock memory: %s\n", strerror(err));
+	    log_error("can't lock memory: %s\n", strerror(errno));
 	show_warning = 1;
     }
 
