@@ -351,7 +351,6 @@ get_pid_name_for_uid (unsigned long pid, int uid)
   char *uidstr;
 
   snprintf (buffer, sizeof buffer, "/proc/%lu/status", pid);
-  buffer[sizeof buffer - 1] = 0;
 
   fp = fopen (buffer, "rb");
   if (!fp)
@@ -366,6 +365,7 @@ get_pid_name_for_uid (unsigned long pid, int uid)
   fclose (fp);
   if (n == 0)
     return NULL;
+  buffer[n] = 0;
   /* Fixme: Is it specified that "Name" is always the first line?  For
    * robustness I would prefer to have a real parser here. -wk  */
   if (strncmp (buffer, "Name:\t", 6))
