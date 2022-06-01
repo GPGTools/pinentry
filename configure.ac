@@ -275,19 +275,6 @@ dnl Checks for libsecmem.
 GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
 GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
 
-dnl Check for libcap
-AC_ARG_WITH([libcap], AS_HELP_STRING([--without-libcap],
-            [Disable support for capabilities library]))
-
-if test "x$with_libcap" != "xno"; then
-  AC_PATH_PROG(SETCAP, setcap, :, "$PATH:/sbin:/usr/sbin")
-  AC_CHECK_LIB(cap, cap_set_proc, [
-    AC_DEFINE(USE_CAPABILITIES,1,[The capabilities support library is installed])
-    LIBCAP=-lcap
-  ])
-fi
-AC_SUBST(LIBCAP)
-
 dnl
 dnl Check for curses pinentry program.
 dnl

@@ -32,6 +32,6 @@ endif
 AM_CPPFLAGS = $(COMMON_CFLAGS) $(GNOME3_CFLAGS) \
 	$(ncurses_include) -I$(top_srcdir)/secmem -I$(top_srcdir)/pinentry
 LDADD = ../pinentry/libpinentry.a ../secmem/libsecmem.a \
-	$(COMMON_LIBS) $(LIBCAP) $(GNOME3_LIBS) $(libcurses)
+	$(COMMON_LIBS) $(GNOME3_LIBS) $(libcurses)
 
 pinentry_gnome3_SOURCES = pinentry-gnome3.c

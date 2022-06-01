@@ -42,7 +42,7 @@ AM_CPPFLAGS = $(COMMON_CFLAGS) \
 AM_CXXFLAGS = $(PINENTRY_QT_CFLAGS)
 pinentry_qt_LDADD = \
 	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
-	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
+	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses)
 pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
 
 if BUILD_PINENTRY_QT
