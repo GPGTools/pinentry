@@ -83,7 +83,6 @@ w32_strerror (int ec)
   /* There is only a wchar_t FormatMessage.  It does not make much
      sense to play the conversion game; we print only the code.  */
   snprintf (strerr, sizeof strerr, "ec=%d", ec);
-  strerr[sizeof strerr -1] = 0;
 #else
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),

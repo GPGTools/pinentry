@@ -305,7 +305,6 @@ get_cmdline (unsigned long pid)
   size_t i, n;
 
   snprintf (buffer, sizeof buffer, "/proc/%lu/cmdline", pid);
-  buffer[sizeof buffer - 1] = 0;
 
   fp = fopen (buffer, "rb");
   if (!fp)
@@ -428,7 +427,6 @@ pinentry_get_title (pinentry_t pe)
       else
         snprintf (buf, sizeof buf, "[%lu] <unknown host>",
                   pe->owner_pid);
-      buf[sizeof buf - 1] = 0;
       free (pidname);
       free (cmdline);
       title = strdup (buf);
@@ -826,7 +824,6 @@ my_strusage( int level )
               {
                 snprintf (str, n, "Usage: %s [options] (-h for help)",
                           this_pgmname);
-                str[n-1] = 0;
               }
           }
         p = str;
@@ -1312,7 +1309,6 @@ write_status_error (assuan_context_t ctx, pinentry_t pe)
             pe->specific_err_loc? pe->specific_err_loc : "?",
             pe->specific_err,
             pe->specific_err_info? pe->specific_err_info : "");
-  buf[sizeof buf -1] = 0;
   assuan_write_status (ctx, "ERROR", buf);
 }
 
@@ -1871,7 +1867,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
 
       snprintf (buffer, sizeof buffer, "%lu", (unsigned long)getpid ());
-      buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
   else if (!strcmp (line, "flavor"))
@@ -1885,7 +1880,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 s,
                 flavor_flag? ":":"",
                 flavor_flag? flavor_flag : "");
-      buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
       /* if (!rc) */
       /*   rc = assuan_write_status (ctx, "FEATURES", "tabbing foo bar"); */
@@ -1911,7 +1905,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 #endif
                 emacs_status
                 );
-      buffer[sizeof buffer -1] = 0;
       rc = assuan_send_data (ctx, buffer, strlen (buffer));
     }
   else

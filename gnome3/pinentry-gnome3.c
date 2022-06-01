@@ -214,7 +214,6 @@ create_prompt (pinentry_t pe, int confirm)
      ui/frob-system-prompt.c for example conversion using %lu */
   snprintf (window_id, sizeof (window_id), "%lu",
             (long unsigned int)pe->parent_wid);
-  window_id[sizeof (window_id) - 1] = '\0';
   gcr_prompt_set_caller_window (prompt, window_id);
 
 #ifdef HAVE_LIBSECRET
