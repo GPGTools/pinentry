@@ -31,9 +31,6 @@
 # include <sys/mman.h>
 # include <sys/types.h>
 # include <fcntl.h>
-# ifdef USE_CAPABILITIES
-#  include <sys/capability.h>
-# endif
 #endif
 #include <string.h>
 
@@ -130,26 +127,7 @@ print_warn(void)
 static void
 lock_pool( void *p, size_t n )
 {
-#if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
-    int err;
-
-    cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-    err = mlock( p, n );
-    if( err && errno )
-	err = errno;
-    cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-
-    if( err ) {
-	if( errno != EPERM
-	  #ifdef EAGAIN  /* OpenBSD returns this */
-	    && errno != EAGAIN
-	  #endif
-	  )
-	    log_error("can't lock memory: %s\n", strerror(errno));
-	show_warning = 1;
-    }
-
-#elif defined(HAVE_MLOCK)
+#if defined(HAVE_MLOCK)
     uid_t uid;
     int err;
 
@@ -158,17 +136,13 @@ lock_pool( void *p, size_t n )
 #ifdef HAVE_BROKEN_MLOCK
     if( uid ) {
 	errno = EPERM;
-	err = errno;
+	err = -1;
     }
     else {
 	err = mlock( p, n );
-	if( err && errno )
-	    err = errno;
     }
 #else
     err = mlock( p, n );
-    if( err && errno )
-	err = errno;
 #endif
 
     if( uid && !geteuid() ) {
@@ -290,11 +264,7 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
-#ifdef USE_CAPABILITIES
-	/* drop all capabilities */
-	cap_set_proc( cap_from_text("all-eip") );
-
-#elif !defined(HAVE_DOSISH_SYSTEM)
+#if !defined(HAVE_DOSISH_SYSTEM)
 	uid_t uid;
 
 	disable_secmem=1;
