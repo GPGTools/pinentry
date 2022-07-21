@@ -43,14 +43,12 @@ AC_DEFUN([IU_LIB_NCURSES], [
       # Use ncurses header files instead of the ordinary ones, if possible;
       # is there a better way of doing this, that avoids looking in specific
       # directories?
-      AC_ARG_WITH(ncurses-include-dir,
-[  --with-ncurses-include-dir=DIR
-                          Set directory containing the include files for
+      AC_ARG_WITH([ncurses-include-dir],
+                  AS_HELP_STRING([--with-ncurses-include-dir=DIR],
+                         [Set directory containing the include files for
                           use with -lncurses, when it isn't installed as
                           the default curses library.  If DIR is "none",
-                          then no special ncurses include files are used.
-  --without-ncurses-include-dir
-                          Equivalent to --with-ncurses-include-dir=none])dnl
+                          then no special ncurses include files are used.]))
       if test "${with_ncurses_include_dir+set}" = set; then
         AC_MSG_CHECKING(for ncurses include dir)
 	case "$with_ncurses_include_dir" in
@@ -112,9 +110,9 @@ AC_DEFUN([IU_LIB_TERMCAP], [
   fi
   AC_SUBST(LIBTERMCAP)])dnl
 
-dnl IU_LIB_CURSES -- checke for curses, and associated libraries
+dnl IU_LIB_CURSES -- check for curses, and associated libraries
 dnl
-dnl Checks for varions libraries implementing the curses interface, and if
+dnl Checks for various libraries implementing the curses interface, and if
 dnl found, defines LIBCURSES to be the appropriate linker specification,
 dnl *including* any termcap libraries if needed (some versions of curses
 dnl don't need termcap).
@@ -132,9 +130,7 @@ AC_DEFUN([IU_LIB_CURSES], [
       AC_CACHE_CHECK(whether curses needs $LIBTERMCAP,
 		     inetutils_cv_curses_needs_termcap,
 	LIBS="$LIBCURSES"
-	AC_TRY_LINK([#include <curses.h>], [initscr ();],
-		    [inetutils_cv_curses_needs_termcap=no],
-		    [inetutils_cv_curses_needs_termcap=yes]))
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <curses.h>]], [[initscr ();]])],[inetutils_cv_curses_needs_termcap=no],[inetutils_cv_curses_needs_termcap=yes]))
       if test $inetutils_cv_curses_needs_termcap = yes; then
 	  LIBCURSES="$LIBCURSES $LIBTERMCAP"
       fi

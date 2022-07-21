@@ -29,7 +29,7 @@ dnl The moc lookup code is based on libpoppler (rev. d821207)
 AC_DEFUN([FIND_QT],
 [
   AC_ARG_ENABLE(pinentry-qt5,
-                AC_HELP_STRING([--disable-pinentry-qt5],
+                AS_HELP_STRING([--disable-pinentry-qt5],
                            [Don't use qt5 even if it is available.]),
                 enable_pinentry_qt5=$enableval,
                 enable_pinentry_qt5="try")
