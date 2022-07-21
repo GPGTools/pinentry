@@ -272,8 +272,7 @@ COMMON_LIBS="$LIBASSUAN_LIBS $COMMON_LIBS"
 
 
 dnl Checks for libsecmem.
-GNUPG_CHECK_TYPEDEF(byte, HAVE_BYTE_TYPEDEF)
-GNUPG_CHECK_TYPEDEF(ulong, HAVE_ULONG_TYPEDEF)
+AC_CHECK_TYPES([byte, ulong, u64])
 
 dnl
 dnl Check for curses pinentry program.

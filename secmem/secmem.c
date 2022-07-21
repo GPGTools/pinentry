@@ -48,7 +48,7 @@ typedef union {
     short b;
     char c[1];
     long d;
-#ifdef HAVE_U64_TYPEDEF
+#ifdef HAVE_U64_TYPE
     u64 e;
 #endif
     float f;

@@ -22,21 +22,20 @@
 
 #include <sys/types.h>
 
-#ifndef HAVE_BYTE_TYPEDEF
+#ifndef HAVE_TYPE_BYTE
 # undef byte
-# ifdef __riscos__
-    /* Norcroft treats char == unsigned char but char* != unsigned char*  */
-    typedef char byte;
-# else
-    typedef unsigned char byte;
+# if !(defined(_WIN32) && defined(cbNDRContext))
+   /* Windows typedefs byte in the rpc headers.  Avoid warning about
+      double definition.  */
+   typedef unsigned char byte;
 # endif
-# define HAVE_BYTE_TYPEDEF
+# define HAVE_TYPE_BYTE
 #endif
 
-#ifndef HAVE_ULONG_TYPEDEF
+#ifndef HAVE_TYPE_ULONG
 # undef ulong
   typedef unsigned long ulong;
-# define HAVE_ULONG_TYPEDEF
+# define HAVE_TYPE_ULONG
 #endif
 
 
