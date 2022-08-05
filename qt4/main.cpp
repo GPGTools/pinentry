@@ -210,7 +210,7 @@ qt_cmd_handler(pinentry_t pe)
     if (want_pass) {
         char *str;
 
-        PinEntryDialog pinentry(nullptr, 0, pe->timeout, true, !!pe->quality_bar,
+        PinEntryDialog pinentry(NULL, 0, pe->timeout, true, !!pe->quality_bar,
                                 repeatString, visibilityTT, hideTT);
         setup_foreground_window(&pinentry, pe->parent_wid);
         pinentry.setPinentryInfo(pe);
@@ -275,7 +275,7 @@ qt_cmd_handler(pinentry_t pe)
             pe->notok      ? QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel :
             /* else */       QMessageBox::Ok | QMessageBox::Cancel ;
 
-        PinentryConfirm box(QMessageBox::Information, pe->timeout, title, desc, buttons, nullptr);
+        PinentryConfirm box(QMessageBox::Information, pe->timeout, title, desc, buttons, NULL);
         setup_foreground_window(&box, pe->parent_wid);
 
         const struct {

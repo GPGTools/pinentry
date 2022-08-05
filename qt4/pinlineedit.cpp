@@ -29,7 +29,7 @@ PinLineEdit::keyPressEvent(QKeyEvent *e)
 {
     QLineEdit::keyPressEvent(e);
 
-    if ( e->key() == Qt::Key::Key_Backspace )
+    if ( e->key() == Qt::Key_Backspace )
 	emit backspacePressed();
 }
 

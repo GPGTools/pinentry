@@ -452,7 +452,7 @@ void PinEntryDialog::generatePin()
         if (_edit->echoMode() == QLineEdit::Password) {
             toggleVisibility();
         }
-        const auto pinStr = QString::fromUtf8(pin);
+        const QString pinStr = QString::fromUtf8(pin);
         _edit->setText(pinStr);
         mRepeat->setText(pinStr);
     }
