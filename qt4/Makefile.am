@@ -20,7 +20,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = pinentry-qt
+bin_PROGRAMS = pinentry-qt4
 
 EXTRA_DIST = document-encrypt.png pinentry.qrc
 
@@ -37,13 +37,13 @@ endif
 AM_CPPFLAGS = $(COMMON_CFLAGS) \
 	-I$(top_srcdir) -I$(top_srcdir)/secmem \
 	$(ncurses_include) -I$(top_srcdir)/pinentry
-AM_CXXFLAGS = $(PINENTRY_QT_CFLAGS)
-pinentry_qt_LDADD = \
+AM_CXXFLAGS = $(PINENTRY_QT4_CFLAGS)
+pinentry_qt4_LDADD = \
 	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
-	$(COMMON_LIBS) $(PINENTRY_QT_LIBS) $(libcurses) $(LIBCAP)
-pinentry_qt_LDFLAGS = $(PINENTRY_QT_LDFLAGS)
+	$(COMMON_LIBS) $(PINENTRY_QT4_LIBS) $(libcurses) $(LIBCAP)
+pinentry_qt4_LDFLAGS = $(PINENTRY_QT4_LDFLAGS)
 
-if BUILD_PINENTRY_QT
+if BUILD_PINENTRY_QT4
 BUILT_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 endif
@@ -51,12 +51,12 @@ endif
 CLEANFILES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
-pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
+pinentry_qt4_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp qrc_pinentry.cpp pinentryconfirm.cpp pinentryconfirm.h \
 	pinlineedit.h pinlineedit.cpp
 
-nodist_pinentry_qt_SOURCES = \
+nodist_pinentry_qt4_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc
 
 .h.moc:
-	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+	$(MOC4) `test -f '$<' || echo '$(srcdir)/'`$< -o $@

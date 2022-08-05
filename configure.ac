@@ -542,24 +542,24 @@ if test "$have_w32_system" != "yes"; then
 fi
 
 dnl
-dnl Check for Qt pinentry program.
+dnl Check for Qt5 pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
-            AS_HELP_STRING([--enable-pinentry-qt],[build qt pinentry]),
+            AS_HELP_STRING([--enable-pinentry-qt],[build Qt5 pinentry]),
             pinentry_qt=$enableval, pinentry_qt=maybe)
 
 
 dnl
 dnl Checks for qt libraries.  Deal correctly with $pinentry_qt = maybe.
-dnl Tries to find Qt5, falls back on Qt4
+dnl Tries to find Qt5
 dnl
 if test "$pinentry_qt" != "no"; then
   FIND_QT
-  if test "$have_qt4_libs" != "yes" -a "$have_qt5_libs" != "yes"; then
+  if test "$have_qt5_libs" != "yes"; then
     if test "$pinentry_qt" = "yes"; then
         AC_MSG_ERROR([[
     ***
-    *** Qt4 (QtCore, QtGui) or Qt5 (Qt5Core, Qt5Gui, Qt5Widgets) is required.
+    *** Qt5 (Qt5Core, Qt5Gui, Qt5Widgets) is required.
     ***]])
     else
         pinentry_qt=no
@@ -579,11 +579,6 @@ fi
 AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
 if test "$pinentry_qt" = "yes"; then
   AC_DEFINE(PINENTRY_QT, 1, [The qt version of Pinentry is to be build])
-  if test "$have_qt4_libs" = "yes"; then
-    pinentry_qt_lib_version="(Qt4)"
-  else
-    pinentry_qt_lib_version="(Qt5)"
-  fi
 fi
 if test "$have_qt5_x11extras" = "yes"; then
   AC_DEFINE(PINENTRY_QT_X11, 1, [pinentry-qt should use x11.])
@@ -599,6 +594,46 @@ else
 fi
 
 dnl
+dnl Check for Qt4 pinentry program.
+dnl
+AC_ARG_ENABLE(pinentry-qt4,
+            AS_HELP_STRING([--enable-pinentry-qt4],[build Qt4 pinentry]),
+            pinentry_qt4=$enableval, pinentry_qt4=maybe)
+
+
+dnl
+dnl Checks for Qt4 libraries.  Deal correctly with $pinentry_qt4 = maybe.
+dnl Tries to find Qt4
+dnl
+if test "$pinentry_qt4" != "no"; then
+  FIND_QT4
+  if test "$have_qt4_libs" != "yes"; then
+    if test "$pinentry_qt4" = "yes"; then
+        AC_MSG_ERROR([[
+    ***
+    *** Qt4 (QtCore, QtGui) is required.
+    ***]])
+    else
+        pinentry_qt4=no
+    fi
+  fi
+fi
+
+AC_SUBST(PINENTRY_QT4_CFLAGS)
+AC_SUBST(PINENTRY_QT4_LIBS)
+AC_SUBST(PINENTRY_QT4_LDFLAGS)
+AC_SUBST(MOC4)
+
+dnl If we have come so far, qt4 pinentry can be build.
+if test "$pinentry_qt4" != "no"; then
+    pinentry_qt4=yes
+fi
+AM_CONDITIONAL(BUILD_PINENTRY_QT4, test "$pinentry_qt4" = "yes")
+if test "$pinentry_qt4" = "yes"; then
+  AC_DEFINE(PINENTRY_QT4, 1, [The qt4 version of Pinentry is to be build])
+fi
+
+dnl
 dnl Check for TQt pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-tqt,
@@ -611,7 +646,8 @@ if test "$pinentry_tqt" != "no"; then
     AC_MSG_ERROR([[
     ***
     *** Building both Qt and TQt pinentries is not supported.
-    *** Use --disable-pinentry-qt if you want the TQt pinentry.
+    *** Use --disable-pinentry-qt and --disable-pinentry-qt4
+    *** if you want the TQt pinentry.
     ***]])
   fi
 
@@ -710,7 +746,11 @@ else
                 if test "$pinentry_efl" = "yes"; then
                   PINENTRY_DEFAULT=pinentry-efl
                 else
-                  AC_MSG_ERROR([[No pinentry enabled.]])
+                  if test "$pinentry_qt4" = "yes"; then
+                    PINENTRY_DEFAULT=pinentry-qt4
+                  else
+                    AC_MSG_ERROR([[No pinentry enabled.]])
+                  fi
                 fi
               fi
             fi
@@ -799,6 +839,7 @@ gtk+-2/Makefile
 gnome3/Makefile
 qt/Makefile
 qt/icons/Makefile
+qt4/Makefile
 tqt/Makefile
 w32/Makefile
 fltk/Makefile
@@ -821,7 +862,8 @@ AC_MSG_NOTICE([
 	EFL Pinentry .....: $pinentry_efl
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
-	Qt Pinentry ......: $pinentry_qt $pinentry_qt_lib_version
+	Qt5 Pinentry .....: $pinentry_qt
+	Qt4 Pinentry .....: $pinentry_qt4
 	TQt Pinentry .....: $pinentry_tqt
 	W32 Pinentry .....: $pinentry_w32
 	FLTK Pinentry ....: $pinentry_fltk

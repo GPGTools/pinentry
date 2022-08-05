@@ -17,12 +17,11 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
-dnl Autoconf macro to find either Qt4 or Qt5
+dnl Autoconf macro to find Qt5
 dnl
 dnl sets PINENTRY_QT_LIBS and PINENTRY_QT_CFLAGS
 dnl
-dnl if QT5 was found have_qt5_libs is set to yes
-dnl if QT4 was found have_qt4_libs is set to yes
+dnl if Qt5 was found have_qt5_libs is set to yes
 dnl
 dnl The moc lookup code is based on libpoppler (rev. d821207)
 
@@ -131,31 +130,5 @@ AC_DEFUN([FIND_QT],
       fi
     fi
 
-  fi
-  if test "$have_qt5_libs" != "yes"; then
-    PKG_CHECK_MODULES(PINENTRY_QT,
-                      QtCore >= 4.6.0 QtGui >= 4.6.0,
-                      [have_qt4_libs="yes"],
-                      [have_qt4_libs="no"])
-    if test "$have_qt4_libs" = "yes"; then
-      AC_CHECK_TOOL(MOC, moc)
-      AC_MSG_CHECKING([moc version])
-      mocversion=`$MOC -v 2>&1`
-      mocversiongrep=`echo $mocversion | grep "Qt 4"`
-      if test x"$mocversiongrep" != x"$mocversion"; then
-        AC_MSG_RESULT([no])
-        # moc was not the qt4 one, try with moc-qt4
-        AC_CHECK_TOOL(MOC2, moc-qt4)
-        mocversion=`$MOC2 -v 2>&1`
-        mocversiongrep=`echo $mocversion | grep "Qt 4"`
-        if test x"$mocversiongrep" != x"$mocversion"; then
-          # no valid moc found
-          have_qt4_libs="no";
-          MOC="not found"
-        else
-          MOC=$MOC2
-        fi
-      fi
-    fi
   fi
 ])
