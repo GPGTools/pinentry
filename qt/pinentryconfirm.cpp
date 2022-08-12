@@ -25,6 +25,7 @@
 #include "accessibility.h"
 #include "pinentrydialog.h"
 
+#include <QApplication>
 #include <QAbstractButton>
 #include <QGridLayout>
 #include <QLabel>
@@ -46,11 +47,24 @@ PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString 
     _timer.callOnTimeout(this, &PinentryConfirm::slotTimeout);
     Accessibility::setDescription(this, text);
     Accessibility::setName(this, title);
-    raiseWindow(this);
 
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installActivationObserver(this);
     accessibilityActiveChanged(QAccessible::isActive());
+#endif
+
+#if QT_VERSION >= 0x050000
+    /* This is in line with PinentryDialog ctor to have a maximizing
+     * animation when opening. */
+    if (qApp->platformName() != QLatin1String("wayland")) {
+        setWindowState(Qt::WindowMinimized);
+        QTimer::singleShot(0, this, [this] () {
+            raiseWindow(this);
+        });
+    }
+#else
+    activateWindow();
+    raise();
 #endif
 }
 
@@ -91,7 +105,6 @@ void PinentryConfirm::showEvent(QShowEvent *event)
     }
 
     QMessageBox::showEvent(event);
-    raiseWindow(this);
 
     if (timeout() > std::chrono::milliseconds::zero()) {
         _timer.setSingleShot(true);
