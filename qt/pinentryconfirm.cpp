@@ -45,8 +45,6 @@ PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString 
     : QMessageBox{icon, title, text, buttons, parent, flags}
 {
     _timer.callOnTimeout(this, &PinentryConfirm::slotTimeout);
-    Accessibility::setDescription(this, text);
-    Accessibility::setName(this, title);
 
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installActivationObserver(this);
