@@ -402,7 +402,6 @@ void PinEntryDialog::setDescription(const QString &txt)
 {
     _desc->setVisible(!txt.isEmpty());
     _desc->setText(txt);
-    Accessibility::setDescription(_desc, txt);
     _icon->setPixmap(applicationIconPixmap());
     setError(QString());
 }
@@ -418,7 +417,6 @@ void PinEntryDialog::setError(const QString &txt)
         _icon->setPixmap(applicationIconPixmap(QIcon{QStringLiteral(":/icons/data-error.svg")}));
     }
     _error->setText(txt);
-    Accessibility::setDescription(_error, txt);
     _error->setVisible(!txt.isEmpty());
 }
 
@@ -466,7 +464,6 @@ void PinEntryDialog::setQualityBar(const QString &txt)
 {
     if (_have_quality_bar) {
         _quality_bar_label->setText(txt);
-        Accessibility::setDescription(_quality_bar_label, txt);
     }
 }
 
