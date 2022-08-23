@@ -453,14 +453,12 @@ QString PinEntryDialog::prompt() const
 void PinEntryDialog::setOkText(const QString &txt)
 {
     _ok->setText(txt);
-    Accessibility::setDescription(_ok, txt);
     _ok->setVisible(!txt.isEmpty());
 }
 
 void PinEntryDialog::setCancelText(const QString &txt)
 {
     _cancel->setText(txt);
-    Accessibility::setDescription(_cancel, txt);
     _cancel->setVisible(!txt.isEmpty());
 }
 
