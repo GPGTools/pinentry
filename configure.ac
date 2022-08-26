@@ -577,9 +577,6 @@ if test "$pinentry_qt5" != "no"; then
     pinentry_qt5=yes
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_QT5, test "$pinentry_qt5" = "yes")
-if test "$pinentry_qt5" = "yes"; then
-  AC_DEFINE(PINENTRY_QT5, 1, [The qt version of Pinentry is to be build])
-fi
 if test "$have_qt5_x11extras" = "yes"; then
   AC_DEFINE(PINENTRY_QT_X11, 1, [pinentry-qt should use x11.])
 fi
@@ -629,9 +626,6 @@ if test "$pinentry_qt4" != "no"; then
     pinentry_qt4=yes
 fi
 AM_CONDITIONAL(BUILD_PINENTRY_QT4, test "$pinentry_qt4" = "yes")
-if test "$pinentry_qt4" = "yes"; then
-  AC_DEFINE(PINENTRY_QT4, 1, [The qt4 version of Pinentry is to be build])
-fi
 
 dnl
 dnl Check for TQt pinentry program.
