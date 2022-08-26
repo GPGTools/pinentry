@@ -546,46 +546,46 @@ dnl Check for Qt5 pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt,
             AS_HELP_STRING([--enable-pinentry-qt],[build Qt5 pinentry]),
-            pinentry_qt=$enableval, pinentry_qt=maybe)
+            pinentry_qt5=$enableval, pinentry_qt5=maybe)
 
 
 dnl
-dnl Checks for qt libraries.  Deal correctly with $pinentry_qt = maybe.
+dnl Checks for qt libraries.  Deal correctly with $pinentry_qt5 = maybe.
 dnl Tries to find Qt5
 dnl
-if test "$pinentry_qt" != "no"; then
-  FIND_QT
+if test "$pinentry_qt5" != "no"; then
+  FIND_QT5
   if test "$have_qt5_libs" != "yes"; then
-    if test "$pinentry_qt" = "yes"; then
+    if test "$pinentry_qt5" = "yes"; then
         AC_MSG_ERROR([[
     ***
     *** Qt5 (Qt5Core, Qt5Gui, Qt5Widgets) is required.
     ***]])
     else
-        pinentry_qt=no
+        pinentry_qt5=no
     fi
   fi
 fi
 
-AC_SUBST(PINENTRY_QT_CFLAGS)
-AC_SUBST(PINENTRY_QT_LIBS)
-AC_SUBST(PINENTRY_QT_LDFLAGS)
-AC_SUBST(MOC)
+AC_SUBST(PINENTRY_QT5_CFLAGS)
+AC_SUBST(PINENTRY_QT5_LIBS)
+AC_SUBST(PINENTRY_QT5_LDFLAGS)
+AC_SUBST(MOC5)
 
 dnl If we have come so far, qt pinentry can be build.
-if test "$pinentry_qt" != "no"; then
-    pinentry_qt=yes
+if test "$pinentry_qt5" != "no"; then
+    pinentry_qt5=yes
 fi
-AM_CONDITIONAL(BUILD_PINENTRY_QT, test "$pinentry_qt" = "yes")
-if test "$pinentry_qt" = "yes"; then
-  AC_DEFINE(PINENTRY_QT, 1, [The qt version of Pinentry is to be build])
+AM_CONDITIONAL(BUILD_PINENTRY_QT5, test "$pinentry_qt5" = "yes")
+if test "$pinentry_qt5" = "yes"; then
+  AC_DEFINE(PINENTRY_QT5, 1, [The qt version of Pinentry is to be build])
 fi
 if test "$have_qt5_x11extras" = "yes"; then
   AC_DEFINE(PINENTRY_QT_X11, 1, [pinentry-qt should use x11.])
 fi
 if test "$have_kf5waylandclient" = "yes"; then
-  PINENTRY_QT_CFLAGS="$KF5WAYLANDCLIENT_CFLAGS $PINENTRY_QT_CFLAGS -fpic"
-  PINENTRY_QT_LIBS="$KF5WAYLANDCLIENT_LIBS $PINENTRY_QT_LIBS"
+  PINENTRY_QT5_CFLAGS="$KF5WAYLANDCLIENT_CFLAGS $PINENTRY_QT5_CFLAGS -fpic"
+  PINENTRY_QT5_LIBS="$KF5WAYLANDCLIENT_LIBS $PINENTRY_QT5_LIBS"
   AC_DEFINE(PINENTRY_QT_WAYLAND, 1, [pinentry-qt should use KF5WaylandClient.])
 else
   if test "$have_w32_system" != "yes"; then
@@ -642,7 +642,7 @@ AC_ARG_ENABLE(pinentry-tqt,
 
 if test "$pinentry_tqt" != "no"; then
 
-  if test "$pinentry_qt" = "yes"; then
+  if test "$pinentry_qt5" = "yes" -o "$pinentry_qt4" = "yes"; then
     AC_MSG_ERROR([[
     ***
     *** Building both Qt and TQt pinentries is not supported.
@@ -722,7 +722,7 @@ AM_CONDITIONAL(BUILD_PINENTRY_FLTK, test "$pinentry_fltk" = "yes")
 if test "$pinentry_gtk_2" = "yes"; then
   PINENTRY_DEFAULT=pinentry-gtk-2
 else
-  if test "$pinentry_qt" = "yes"; then
+  if test "$pinentry_qt5" = "yes"; then
     PINENTRY_DEFAULT=pinentry-qt
   else
     if test "$pinentry_gnome_3" = "yes"; then
@@ -862,7 +862,7 @@ AC_MSG_NOTICE([
 	EFL Pinentry .....: $pinentry_efl
 	GTK+-2 Pinentry ..: $pinentry_gtk_2
 	GNOME 3 Pinentry .: $pinentry_gnome_3
-	Qt5 Pinentry .....: $pinentry_qt
+	Qt5 Pinentry .....: $pinentry_qt5
 	Qt4 Pinentry .....: $pinentry_qt4
 	TQt Pinentry .....: $pinentry_tqt
 	W32 Pinentry .....: $pinentry_w32

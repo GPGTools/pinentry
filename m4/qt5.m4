@@ -1,4 +1,4 @@
-dnl qt.m4
+dnl qt5.m4
 dnl Copyright (C) 2015 Intevation GmbH
 dnl
 dnl This file is part of PINENTRY.
@@ -19,13 +19,13 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 dnl Autoconf macro to find Qt5
 dnl
-dnl sets PINENTRY_QT_LIBS and PINENTRY_QT_CFLAGS
+dnl sets PINENTRY_QT5_LIBS and PINENTRY_QT5_CFLAGS
 dnl
 dnl if Qt5 was found have_qt5_libs is set to yes
 dnl
 dnl The moc lookup code is based on libpoppler (rev. d821207)
 
-AC_DEFUN([FIND_QT],
+AC_DEFUN([FIND_QT5],
 [
   AC_ARG_ENABLE(pinentry-qt5,
                 AS_HELP_STRING([--disable-pinentry-qt5],
@@ -34,38 +34,38 @@ AC_DEFUN([FIND_QT],
                 enable_pinentry_qt5="try")
 
   have_qt5_libs="no";
-  require_qt_cpp11="no";
+  require_qt5_cpp11="no";
 
   if test "$enable_pinentry_qt5" != "no"; then
-    PKG_CHECK_MODULES(PINENTRY_QT,
+    PKG_CHECK_MODULES(PINENTRY_QT5,
                       Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0,
                       [have_qt5_libs="yes"],
                       [have_qt5_libs="no"])
 
     if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
-      PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -fpic"
+      PINENTRY_QT5_CFLAGS="$PINENTRY_QT5_CFLAGS -fpic"
     fi
   fi
   if test "$have_qt5_libs" = "yes"; then
-    PKG_CHECK_MODULES(PINENTRY_QT_REQUIRE_CPP11,
+    PKG_CHECK_MODULES(PINENTRY_QT5_REQUIRE_CPP11,
                       Qt5Core >= 5.7.0,
-                      [require_qt_cpp11="yes"],
-                      [require_qt_cpp11="no"])
+                      [require_qt5_cpp11="yes"],
+                      [require_qt5_cpp11="no"])
 
-    if test "${require_qt_cpp11}" = "yes"; then
-      PINENTRY_QT_CFLAGS="$PINENTRY_QT_CFLAGS -std=c++11"
+    if test "${require_qt5_cpp11}" = "yes"; then
+      PINENTRY_QT5_CFLAGS="$PINENTRY_QT5_CFLAGS -std=c++11"
     fi
 
-    qtlibdir=`"$PKG_CONFIG" --variable libdir Qt5Core`
-    if test -n "$qtlibdir"; then
+    qt5libdir=`"$PKG_CONFIG" --variable libdir Qt5Core`
+    if test -n "$qt5libdir"; then
       if test "$enable_rpath" != "no"; then
-        PINENTRY_QT_LDFLAGS="$PINENTRY_QT_LDFLAGS -Wl,-rpath \"$qtlibdir\""
+        PINENTRY_QT5_LDFLAGS="$PINENTRY_QT5_LDFLAGS -Wl,-rpath \"$qt5libdir\""
       fi
     fi
 
     if test "$have_x11" = "yes"; then
       PKG_CHECK_MODULES(
-        PINENTRY_QT_X11_EXTRAS,
+        PINENTRY_QT5_X11_EXTRAS,
         Qt5X11Extras >= 5.1.0,
         [have_qt5_x11extras="yes"],
         [
@@ -73,20 +73,20 @@ AC_DEFUN([FIND_QT],
           have_qt5_x11extras="no"
         ])
       if test "$have_qt5_x11extras" = "yes"; then
-        PINENTRY_QT_CFLAGS="$LIBX11_CFLAGS $PINENTRY_QT_CFLAGS $PINENTRY_QT_X11_EXTRAS_CFLAGS"
-        PINENTRY_QT_LIBS="$LIBX11_LIBS $PINENTRY_QT_LIBS $PINENTRY_QT_X11_EXTRAS_LIBS"
+        PINENTRY_QT5_CFLAGS="$LIBX11_CFLAGS $PINENTRY_QT5_CFLAGS $PINENTRY_QT5_X11_EXTRAS_CFLAGS"
+        PINENTRY_QT5_LIBS="$LIBX11_LIBS $PINENTRY_QT5_LIBS $PINENTRY_QT5_X11_EXTRAS_LIBS"
       fi
     fi
 
-    AC_CHECK_TOOL(MOC, moc)
+    AC_CHECK_TOOL(MOC5, moc)
     AC_MSG_CHECKING([moc version])
-    mocversion=`$MOC -v 2>&1`
+    mocversion=`$MOC5 -v 2>&1`
     mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc 5"`
     if test x"$mocversiongrep" != x"$mocversion"; then
       AC_MSG_RESULT([no])
       # moc was not the qt5 one, try with moc-qt5
-      AC_CHECK_TOOL(MOC2, moc-qt5)
-      mocversion=`$MOC2 -v 2>&1`
+      AC_CHECK_TOOL(MOC5_2, moc-qt5)
+      mocversion=`$MOC5_2 -v 2>&1`
       mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc-qt5 5|moc 5"`
       if test x"$mocversiongrep" != x"$mocversion"; then
         AC_CHECK_TOOL(QTCHOOSER, qtchooser)
@@ -97,22 +97,22 @@ AC_DEFUN([FIND_QT],
           # no valid moc found
           have_qt5_libs="no";
         else
-          MOC=$qt5tooldir/moc
+          MOC5=$qt5tooldir/moc
         fi
       else
-        MOC=$MOC2
+        MOC5=$MOC5_2
       fi
     fi
 
-    AC_CHECK_TOOL(RCC, rcc)
+    AC_CHECK_TOOL(RCC5, rcc)
     AC_MSG_CHECKING([rcc version])
-    rccversion=`$RCC -v 2>&1`
+    rccversion=`$RCC5 -v 2>&1`
     rccversiongrep=`echo $rccversion | grep -E "Qt 5|rcc 5"`
     if test x"$rccversiongrep" != x"$rccversion"; then
       AC_MSG_RESULT([no])
       # rcc was not the qt5 one, try with rcc-qt5
-      AC_CHECK_TOOL(RCC2, rcc-qt5)
-      rccversion=`$RCC2 -v 2>&1`
+      AC_CHECK_TOOL(RCC5_2, rcc-qt5)
+      rccversion=`$RCC5_2 -v 2>&1`
       rccversiongrep=`echo $rccversion | grep -E "Qt 5|rcc-qt5 5|rcc 5"`
       if test x"$rccversiongrep" != x"$rccversion"; then
         AC_CHECK_TOOL(QTCHOOSER, qtchooser)
@@ -123,10 +123,10 @@ AC_DEFUN([FIND_QT],
           # no valid rcc found
           have_qt5_libs="no";
         else
-          RCC=$qt5tooldir/rcc
+          RCC5=$qt5tooldir/rcc
         fi
       else
-        RCC=$RCC2
+        RCC5=$RCC5_2
       fi
     fi
 

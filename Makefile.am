@@ -58,7 +58,7 @@ else
 pinentry_gnome_3 =
 endif
 
-if BUILD_PINENTRY_QT
+if BUILD_PINENTRY_QT5
 pinentry_qt = qt
 else
 pinentry_qt =
