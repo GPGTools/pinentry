@@ -90,35 +90,6 @@ QPixmap applicationIconPixmap(const QIcon &overlayIcon)
     return pm;
 }
 
-namespace
-{
-
-class TextLabel : public QLabel
-{
-public:
-    using QLabel::QLabel;
-
-protected:
-    void focusInEvent(QFocusEvent *ev) override;
-};
-
-void TextLabel::focusInEvent(QFocusEvent *ev)
-{
-    QLabel::focusInEvent(ev);
-
-    // if the text label gets focus, then select its text; this is a workaround
-    // for missing focus indicators for labels in many Qt styles
-    const Qt::FocusReason reason = ev->reason();
-    const auto isKeyboardFocusEvent = reason == Qt::TabFocusReason
-                                   || reason == Qt::BacktabFocusReason
-                                   || reason == Qt::ShortcutFocusReason;
-    if (!text().isEmpty() && isKeyboardFocusEvent) {
-        Accessibility::selectLabelText(this);
-    }
-}
-
-}
-
 void PinEntryDialog::slotTimeout()
 {
     _timed_out = true;
@@ -155,7 +126,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     auto *const grid = new QGridLayout;
     int row = 1;
 
-    _error = new TextLabel{this};
+    _error = new QLabel{this};
     _error->setTextFormat(Qt::PlainText);
     _error->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _error->setPalette(redTextPalette);
@@ -163,14 +134,14 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     grid->addWidget(_error, row, 1, 1, 2);
 
     row++;
-    _desc = new TextLabel{this};
+    _desc = new QLabel{this};
     _desc->setTextFormat(Qt::PlainText);
     _desc->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _desc->hide();
     grid->addWidget(_desc,  row, 1, 1, 2);
 
     row++;
-    mCapsLockHint = new TextLabel{this};
+    mCapsLockHint = new QLabel{this};
     mCapsLockHint->setTextFormat(Qt::PlainText);
     mCapsLockHint->setTextInteractionFlags(Qt::TextSelectableByMouse);
     mCapsLockHint->setPalette(redTextPalette);
@@ -222,7 +193,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     }
 
     row++;
-    mConstraintsHint = new TextLabel{this};
+    mConstraintsHint = new QLabel{this};
     mConstraintsHint->setTextFormat(Qt::PlainText);
     mConstraintsHint->setTextInteractionFlags(Qt::TextSelectableByMouse);
     mConstraintsHint->setVisible(false);
@@ -231,7 +202,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     row++;
     mFormattedPassphraseHintSpacer = new QLabel{this};
     mFormattedPassphraseHintSpacer->setVisible(false);
-    mFormattedPassphraseHint = new TextLabel{this};
+    mFormattedPassphraseHint = new QLabel{this};
     mFormattedPassphraseHint->setTextFormat(Qt::PlainText);
     mFormattedPassphraseHint->setTextInteractionFlags(Qt::TextSelectableByMouse);
     mFormattedPassphraseHint->setVisible(false);
@@ -253,7 +224,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         grid->addWidget(mRepeat, row, 2);
 
         row++;
-        mRepeatError = new TextLabel{this};
+        mRepeatError = new QLabel{this};
         mRepeatError->setTextFormat(Qt::PlainText);
         mRepeatError->setTextInteractionFlags(Qt::TextSelectableByMouse);
         mRepeatError->setPalette(redTextPalette);

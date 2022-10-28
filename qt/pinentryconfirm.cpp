@@ -110,15 +110,6 @@ void PinentryConfirm::showEvent(QShowEvent *event)
     }
 }
 
-bool PinentryConfirm::focusNextPrevChild(bool next)
-{
-    auto ret = QMessageBox::focusNextPrevChild(next);
-    if (ret && (focusWidget() == messageBoxLabel(this))) {
-        Accessibility::selectLabelText(messageBoxLabel(this));
-    }
-    return ret;
-}
-
 void PinentryConfirm::slotTimeout()
 {
     QAbstractButton *b = button(QMessageBox::Cancel);

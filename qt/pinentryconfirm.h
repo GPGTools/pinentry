@@ -46,7 +46,6 @@ public:
 
 protected:
     void showEvent(QShowEvent *event) override;
-    bool focusNextPrevChild(bool next) override;
 
 private Q_SLOTS:
     void slotTimeout();
