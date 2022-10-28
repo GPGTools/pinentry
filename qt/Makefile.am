@@ -48,6 +48,8 @@ pinentry_qt_LDFLAGS = $(PINENTRY_QT5_LDFLAGS)
 if BUILD_PINENTRY_QT5
 BUILT_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc \
+	focusframe.moc \
+	keyboardfocusindication.moc \
 	pinentryrc.cpp
 endif
 
@@ -64,6 +66,8 @@ pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	pinlineedit.h pinlineedit.cpp capslock.cpp capslock.h capslock_p.h \
 	pinentry_debug.cpp pinentry_debug.h util.h accessibility.cpp \
 	accessibility.h qti18n.cpp pinentryrc.qrc \
+	focusframe.h focusframe.cpp \
+	keyboardfocusindication.h keyboardfocusindication.cpp \
 	$(pinentry_qt_platform_SOURCES)
 
 nodist_pinentry_qt_SOURCES = $(BUILT_SOURCES)

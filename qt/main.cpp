@@ -28,6 +28,7 @@
 #endif
 
 #include "accessibility.h"
+#include "keyboardfocusindication.h"
 #include "pinentryconfirm.h"
 #include "pinentrydialog.h"
 #include "pinentry.h"
@@ -419,6 +420,7 @@ main(int argc, char *argv[])
         Q_ASSERT (new_argc);
         app = new QApplication(new_argc, new_argv);
         app->setWindowIcon(QIcon(QLatin1String(":/icons/document-encrypt.png")));
+        (void) new KeyboardFocusIndication{app};
     }
 
     pinentry_parse_opts(argc, argv);
