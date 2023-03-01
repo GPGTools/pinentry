@@ -134,9 +134,12 @@ struct dialog
   int pin_x;
   int repeat_pin_y;
   int repeat_pin_x;
+  int quality_x;
+  int quality_y;
   /* Width of the PIN field.  */
   int pin_size;
   int repeat_pin_size;
+  int quality_size;
   /* Cursor location in PIN field.  */
   int pin_loc;
   int repeat_pin_loc;
@@ -714,7 +717,10 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       y += 2;		/* Pin entry field.  */
 
       if (repeat_passphrase)
-        y += 2;
+        {
+          y += 2;
+          y += 2; // quality meter
+        }
     }
   y += 2;		/* OK/Cancel and bottom frame.  */
 
@@ -900,7 +906,27 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
           ypos++;
           move (ypos, xpos);
           addch (ACS_VLINE);
-          ypos++;
+
+          dialog->quality_y = ypos + 1;
+          dialog->quality_x = xpos + 3;
+          dialog->quality_size = x - 6;
+          move (ypos, xpos + 2);
+          addch (ACS_ULCORNER);
+          hline (0, x - 6);
+          move (ypos, xpos + 2 + x - 5);
+          addch (ACS_URCORNER);
+          move (ypos + 1, xpos + 2);
+          vline (0, 1);
+          move (ypos + 1, xpos + 2 + x -5);
+          vline (0, 1);
+          move (ypos + 2, xpos + 2);
+          addch (ACS_LLCORNER);
+          hline (0, x - 6);
+          move (ypos + 2, xpos + 2 + x - 5);
+          addch (ACS_LRCORNER);
+          move (ypos + 2, xpos + 2 + x - 5);
+          move (dialog->quality_y, dialog->quality_x);
+          ypos += 3;
         }
     }
   move (ypos, xpos);
@@ -1245,6 +1271,19 @@ dialog_input (dialog_t diag, int alt, int chr)
 
   if (pin)
     pin[*pin_len] = 0;
+
+  if (diag->pinentry->repeat_passphrase && diag->pos == DIALOG_POS_PIN)
+    {
+      int n = pinentry_inq_quality(diag->pinentry, pin, *pin_len);
+
+      if (n >= 0)
+        {
+          move(diag->quality_y, diag->quality_x);
+          hline(' ', diag->quality_size);
+          n = n*diag->quality_size/100;
+          hline(ACS_BLOCK, n);
+        }
+    }
 }
 
 static int
