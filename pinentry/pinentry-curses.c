@@ -437,22 +437,14 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
         {
           if (dialog->error_y || dialog->error_x)
             {
-              int y;
-
-              for (y = 0; y < dialog->error_height; y++)
+              for (i = 0; i < dialog->error_height; i++)
                 {
-                  move (dialog->error_y+y, dialog->error_x);
-                  addch (ACS_VLINE);
-                  addch (' ');
-                  while (i++ < x - 4)
-                    addch (' ');
-                  i = 0;
+                  move (i+ dialog->error_y, dialog->error_x);
+                  hline(' ', dialog->width - 2);
                 }
-            }
-          if (dialog->repeat_error && dialog->pinentry->repeat_passphrase)
-            {
-              move (dialog->error_y+1, dialog->error_x);
-              addch (ACS_VLINE);
+
+              move (dialog->error_y, dialog->error_x);
+              vline(0, dialog->error_height+1);
             }
         }
     }
@@ -462,8 +454,9 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
   while (p && *p)
     {
       move (error_y, dialog->error_x);
-      addch (ACS_VLINE);
-      addch (' ');
+      vline(0, dialog->error_height+1);
+      move (error_y, dialog->error_x+1);
+      addch(' ');
       if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
         {
           attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
@@ -471,7 +464,7 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
         }
       else
         standout ();
-      for (;*p && *p != NLCH; p++)
+      for (i = 0; *p && *p != NLCH; p++)
         if (i < x - 4)
           {
             i++;
@@ -480,8 +473,7 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
             else
               ADDCH (*p);
           }
-      while (i++ < x - 4)
-        addch (' ');
+      hline(' ', dialog->width-i-4);
 
       if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
         {
@@ -494,7 +486,6 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
           p++;
 
       i = 0;
-      (*ypos)++;
       error_y++;
     }
 
@@ -504,6 +495,7 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
       addch (ACS_VLINE);
     }
 
+  (*ypos)++;
   for (error_y = 0; error_y < dialog->error_height; error_y++)
     (*ypos)++;
 }
@@ -697,9 +689,6 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 	{
           CH *start = error;
           int len = 0;
-
-          if (*start)
-            dialog->error_height++;
 
           do
             {
@@ -905,7 +894,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
             addch ('_');
           ypos++;
           move (ypos, xpos);
-          addch (ACS_VLINE);
+          vline(0, 3);
 
           dialog->quality_y = ypos + 1;
           dialog->quality_x = xpos + 3;
