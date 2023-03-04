@@ -85,7 +85,7 @@ nl_langinfo (int ignore)
 #define STRING_NOTOK "<No>"
 #define STRING_CANCEL "<Cancel>"
 
-#define USE_COLORS		(has_colors () && COLOR_PAIRS >= 2)
+#define USE_COLORS		(has_colors () && COLOR_PAIRS >= 4)
 static short pinentry_color[] = { -1, -1, COLOR_BLACK, COLOR_RED,
 				  COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE,
 				  COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE };
@@ -166,6 +166,7 @@ struct dialog
   int width;
   CH *error;
   CH *repeat_error;
+  CH *repeat_ok;
 
   pinentry_t pinentry;
 };
@@ -428,10 +429,15 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
   if (dialog->pinentry->confirm)
     return;
 
-  if (repeat_matches != 0)
+  for (i = 0; i < dialog->error_height; i++)
+    {
+      move (error_y+i, dialog->error_x+1);
+      hline(' ', dialog->width-2);
+    }
+
+  if (repeat_matches == -1)
     {
       error = p = dialog->error && dialog->pinentry->error ? dialog->error : NULL;
-      repeat_matches = 0;
 
       if (!p)
         {
@@ -447,10 +453,21 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
               vline(0, dialog->error_height+1);
             }
         }
-    }
-  else if (dialog->pinentry->repeat_passphrase)
-    p = dialog->repeat_error;
 
+      if (pinentry->repeat_passphrase && dialog->repeat_ok)
+        {
+          p = dialog->repeat_ok;
+          goto draw;
+        }
+    }
+  else if (pinentry->repeat_passphrase && dialog->repeat_ok && repeat_matches == 1)
+    p = dialog->repeat_ok;
+  else if (pinentry->repeat_passphrase && dialog->repeat_error && repeat_matches == 0)
+    p = dialog->repeat_error;
+  else
+    p = dialog->error;
+
+draw:
   while (p && *p)
     {
       move (error_y, dialog->error_x);
@@ -459,26 +476,45 @@ draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
       addch(' ');
       if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
         {
-          attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
-          attron (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+          if (dialog->repeat_ok && (repeat_matches == 1 || repeat_matches == -1))
+            {
+              attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+              attron (COLOR_PAIR (3) | (pinentry->color_so_bright ? A_BOLD : 0));
+            }
+          else
+            {
+              attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+              attron (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+            }
         }
       else
         standout ();
+
       for (i = 0; *p && *p != NLCH; p++)
         if (i < x - 4)
           {
             i++;
-            if (repeat_matches)
-              addch (' ');
+            if (dialog->error || (pinentry->repeat_passphrase
+                 && dialog->repeat_error && repeat_matches == 0))
+              {
+                ADDCH (*p);
+              }
+            else if (dialog->repeat_ok && (repeat_matches == 1 || repeat_matches == -1))
+              {
+                ADDCH (*p);
+              }
             else
-              ADDCH (*p);
+              addch (' '); // Error without any OK set needs clearing.
           }
       hline(' ', dialog->width-i-4);
 
-      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
+      if (USE_COLORS)
         {
-          attroff (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
-          attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+         if (repeat_matches == 0 && pinentry->color_so != PINENTRY_COLOR_NONE)
+           attroff (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+         else if (repeat_matches == 1 && pinentry->color_ok != PINENTRY_COLOR_NONE)
+           attroff (COLOR_PAIR (3) | (pinentry->color_so_bright ? A_BOLD : 0));
+         attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
         }
       else
         standend ();
@@ -546,9 +582,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   int error_x = 0;
   CH *description = NULL;
   CH *error = NULL;
+  CH *ok = NULL;
   CH *prompt = NULL;
   CH *repeat_passphrase = NULL;
   CH *repeat_error_string = NULL;
+  CH *repeat_ok_string = NULL;
 
   dialog->pinentry = pinentry;
   dialog->error_height = 0;
@@ -594,6 +632,14 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
           if (!error || (error && STRLEN (error) < STRLEN (repeat_error_string)))
             error = repeat_error_string;
         }
+      COPY_OUT (repeat_ok_string);
+      if (!repeat_ok_string || !*repeat_ok_string)
+        {
+          free (repeat_ok_string);
+          repeat_ok_string = NULL;
+        }
+      else
+        ok = dialog->repeat_ok = repeat_ok_string;
     }
 
   /* There is no pinentry->default_notok.  Map it to
@@ -703,6 +749,28 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
           while (start[len - 1]);
           y++;
         }
+      if (ok)
+        {
+          CH *start = ok;
+          int len = 0;
+          int i = 0;
+
+          do
+            {
+              int width = collect_line (size_x - 4, &start, &len);
+
+              if (width > error_x)
+                error_x = width;
+              i++;
+            }
+          while (start[len - 1]);
+          if (i > dialog->error_height)
+            {
+              y += i - dialog->error_height;
+              dialog->error_height = i;
+              y++;
+            }
+        }
       y += 2;		/* Pin entry field.  */
 
       if (repeat_passphrase)
@@ -737,7 +805,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 #define MIN_PINENTRY_LENGTH 40
       int new_x;
 
-      if (error)
+      if (error || ok)
 	{
 	  new_x = error_x;
 	  if (new_x > size_x - 4)
@@ -833,7 +901,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     {
       int i;
 
-      if (error)
+      if (error || ok)
         {
           dialog->error_x = xpos;
           dialog->error_y = ypos;
@@ -965,15 +1033,6 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     free (prompt);
   if (repeat_passphrase)
     free (repeat_passphrase);
-
-  if (!err)
-    {
-      int ox = dialog->error_x;
-      int oy = dialog->error_y;
-
-      dialog->width = x;
-      draw_error (dialog, &ox, &oy, 1);
-    }
 
   return err;
 }
@@ -1270,7 +1329,11 @@ dialog_input (dialog_t diag, int alt, int chr)
           move(diag->quality_y, diag->quality_x);
           hline(' ', diag->quality_size);
           n = n*diag->quality_size/100;
+          attroff (COLOR_PAIR (1) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
+          attron (COLOR_PAIR (4) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
           hline(ACS_BLOCK, n);
+          attroff (COLOR_PAIR (4) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
+          attron (COLOR_PAIR (1) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
         }
     }
 }
@@ -1399,11 +1462,25 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  pinentry->color_so = PINENTRY_COLOR_RED;
 	  pinentry->color_so_bright = 1;
 	}
-      if (COLOR_PAIRS >= 2)
+      if (pinentry->color_ok == PINENTRY_COLOR_DEFAULT)
+	{
+	  pinentry->color_ok = PINENTRY_COLOR_GREEN;
+	  pinentry->color_ok_bright = 1;
+	}
+      if (pinentry->color_qualitybar == PINENTRY_COLOR_DEFAULT)
+	{
+	  pinentry->color_qualitybar = PINENTRY_COLOR_CYAN;
+	  pinentry->color_qualitybar_bright = 0;
+	}
+      if (COLOR_PAIRS >= 4)
 	{
 	  init_pair (1, pinentry_color[pinentry->color_fg],
 		     pinentry_color[pinentry->color_bg]);
 	  init_pair (2, pinentry_color[pinentry->color_so],
+		     pinentry_color[pinentry->color_bg]);
+	  init_pair (3, pinentry_color[pinentry->color_ok],
+		     pinentry_color[pinentry->color_bg]);
+	  init_pair (4, pinentry_color[pinentry->color_qualitybar],
 		     pinentry_color[pinentry->color_bg]);
 
 	  bkgd (COLOR_PAIR (1));

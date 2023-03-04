@@ -162,6 +162,10 @@ struct pinentry
      (Assuan: "SETREPEATERROR ERROR".)  */
   char *repeat_error_string;
 
+  /* The string to show if a repeated passphrase does match.
+     (Assuan: "SETREPEATOK STRING".)  */
+  char *repeat_ok_string;
+
   /* Set to true if the passphrase has been entered a second time and
      matches the first passphrase.  */
   int repeat_okay;
@@ -202,6 +206,10 @@ struct pinentry
   pinentry_color_t color_bg;
   pinentry_color_t color_so;
   int color_so_bright;
+  pinentry_color_t color_ok;
+  int color_ok_bright;
+  pinentry_color_t color_qualitybar;
+  int color_qualitybar_bright;
 
   /* Malloced and i18ned default strings or NULL.  These strings may
      include an underscore character to indicate an accelerator key.

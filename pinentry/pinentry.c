@@ -117,6 +117,10 @@ pinentry_reset (int use_defaults)
   pinentry_color_t color_bg = pinentry.color_bg;
   pinentry_color_t color_so = pinentry.color_so;
   int color_so_bright = pinentry.color_so_bright;
+  pinentry_color_t color_ok = pinentry.color_ok;
+  int color_ok_bright = pinentry.color_ok_bright;
+  pinentry_color_t color_qualitybar = pinentry.color_qualitybar;
+  int color_qualitybar_bright = pinentry.color_qualitybar_bright;
 
   int timeout = pinentry.timeout;
 
@@ -184,6 +188,10 @@ pinentry_reset (int use_defaults)
       pinentry.color_bg = PINENTRY_COLOR_DEFAULT;
       pinentry.color_so = PINENTRY_COLOR_DEFAULT;
       pinentry.color_so_bright = 0;
+      pinentry.color_ok = PINENTRY_COLOR_DEFAULT;
+      pinentry.color_ok_bright = 0;
+      pinentry.color_qualitybar = PINENTRY_COLOR_DEFAULT;
+      pinentry.color_qualitybar_bright = 0;
 
       pinentry.owner_uid = -1;
     }
@@ -222,6 +230,10 @@ pinentry_reset (int use_defaults)
       pinentry.color_bg = color_bg;
       pinentry.color_so = color_so;
       pinentry.color_so_bright = color_so_bright;
+      pinentry.color_ok = color_ok;
+      pinentry.color_ok_bright = color_ok_bright;
+      pinentry.color_qualitybar = color_qualitybar;
+      pinentry.color_qualitybar_bright = color_qualitybar_bright;
 
       pinentry.timeout = timeout;
     }
@@ -996,6 +1008,10 @@ pinentry_parse_opts (int argc, char *argv[])
             tmpstr = parse_color (tmpstr, &pinentry.color_bg, NULL);
             tmpstr = parse_color (tmpstr, &pinentry.color_so,
                                   &pinentry.color_so_bright);
+            tmpstr = parse_color (tmpstr, &pinentry.color_ok,
+                                  &pinentry.color_ok_bright);
+            tmpstr = parse_color (tmpstr, &pinentry.color_qualitybar,
+                                  &pinentry.color_qualitybar_bright);
           }
 	  break;
 
@@ -1386,6 +1402,23 @@ cmd_setrepeat (assuan_context_t ctx, char *line)
   strcpy_escaped (p, line);
   free (pinentry.repeat_passphrase);
   pinentry.repeat_passphrase = p;
+  return 0;
+}
+
+static gpg_error_t
+cmd_setrepeatok (assuan_context_t ctx, char *line)
+{
+  char *p;
+
+  (void)ctx;
+
+  p = malloc (strlen (line) + 1);
+  if (!p)
+    return gpg_error_from_syserror ();
+
+  strcpy_escaped (p, line);
+  free (pinentry.repeat_ok_string);
+  pinentry.repeat_ok_string = p;
   return 0;
 }
 
@@ -1957,6 +1990,7 @@ register_commands (assuan_context_t ctx)
       { "SETKEYINFO", cmd_setkeyinfo },
       { "SETREPEAT",  cmd_setrepeat },
       { "SETREPEATERROR", cmd_setrepeaterror },
+      { "SETREPEATOK", cmd_setrepeatok},
       { "SETERROR",   cmd_seterror },
       { "SETOK",      cmd_setok },
       { "SETNOTOK",   cmd_setnotok },
