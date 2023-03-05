@@ -1326,14 +1326,24 @@ dialog_input (dialog_t diag, int alt, int chr)
 
       if (n >= 0)
         {
+          char buf[16], *p = buf;
+          int r;
+
           move(diag->quality_y, diag->quality_x);
           hline(' ', diag->quality_size);
-          n = n*diag->quality_size/100;
+          r = n*diag->quality_size/100;
           attroff (COLOR_PAIR (1) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
           attron (COLOR_PAIR (4) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
-          hline(ACS_BLOCK, n);
+          hline(ACS_BLOCK, r);
           attroff (COLOR_PAIR (4) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
           attron (COLOR_PAIR (1) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
+          if (n >= 0)
+            {
+              snprintf (buf, sizeof(buf), "%i%%", n);
+              move(diag->quality_y, diag->quality_x+((diag->quality_size/2)-(strlen(buf)/2)));
+              for (; p && *p; p++)
+                addch(*p);
+            }
         }
     }
 }
