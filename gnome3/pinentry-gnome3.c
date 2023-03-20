@@ -30,8 +30,6 @@
 
 #include <assuan.h>
 
-#include "memory.h"
-
 #include "pinentry.h"
 
 #ifdef FALLBACK_CURSES

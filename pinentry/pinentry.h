@@ -21,6 +21,8 @@
 #ifndef PINENTRY_H
 #define PINENTRY_H
 
+#include "../secmem/secmem.h"
+
 #ifdef __cplusplus
 extern "C" {
 #if 0

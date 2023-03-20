@@ -62,8 +62,6 @@ nl_langinfo (int ignore)
 #include <utime.h>
 #endif /*HAVE_UTIME_H*/
 
-#include <memory.h>
-
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
 #endif /*HAVE_WCHAR_H*/
@@ -1362,12 +1360,13 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 #ifndef HAVE_DOSISH_SYSTEM
   int no_input = 1;
 #endif
+#ifdef HAVE_NCURSESW
+  char *old_ctype = NULL;
+#endif
 
   memset (&diag, 0, sizeof (struct dialog));
 
 #ifdef HAVE_NCURSESW
-  char *old_ctype = NULL;
-
   if (pinentry->lc_ctype)
     {
       old_ctype = strdup (setlocale (LC_CTYPE, NULL));

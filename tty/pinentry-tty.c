@@ -41,7 +41,6 @@
 #include <gpg-error.h>
 
 #include "pinentry.h"
-#include "memory.h"
 
 #ifndef HAVE_DOSISH_SYSTEM
 static int timed_out;

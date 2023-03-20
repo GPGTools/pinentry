@@ -29,7 +29,6 @@
 #endif
 
 #include "pinentry.h"
-#include "memory.h"
 
 #include "resource.h"
 /* #include "msgcodes.h" */

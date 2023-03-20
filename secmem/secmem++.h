@@ -19,7 +19,7 @@
 #ifndef __SECMEM_SECMEMPP_H__
 #define __SECMEM_SECMEMPP_H__
 
-#include "secmem/memory.h"
+#include "../secmem/secmem.h"
 #include <cstddef>
 
 namespace secmem {

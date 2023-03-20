@@ -44,7 +44,6 @@
 
 #include <assuan.h>
 
-#include "memory.h"
 #include "secmem-util.h"
 #include "argparse.h"
 #include "pinentry.h"

@@ -48,7 +48,7 @@
 #include <assuan.h>
 
 #include "pinentry-emacs.h"
-#include "memory.h"
+#include "../secmem/secmem.h"
 #include "secmem-util.h"
 
 /* The communication mechanism is similar to emacsclient, but there

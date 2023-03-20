@@ -35,7 +35,7 @@
 #endif
 #include <string.h>
 
-#include "memory.h"
+#include "secmem.h"
 
 #ifdef ORIGINAL_GPG_VERSION
 #include "types.h"
