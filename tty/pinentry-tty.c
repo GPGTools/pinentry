@@ -130,7 +130,7 @@ button (char *text, char *default_text, FILE *ttyfo)
           highlight++;
           continue;
         }
-      if (!isalnum (*highlight))
+      if (!isalnum (*(unsigned char*)highlight))
         /* Unusable accelerator.  */
         continue;
       break;
@@ -140,7 +140,7 @@ button (char *text, char *default_text, FILE *ttyfo)
     /* Not accelerator.  Take the first alpha-numeric character.  */
     {
       highlight = text;
-      while (*highlight && !isalnum (*highlight))
+      while (*highlight && !isalnum (*(unsigned char*)highlight))
 	highlight ++;
     }
 
