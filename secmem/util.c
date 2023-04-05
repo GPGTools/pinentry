@@ -100,7 +100,7 @@ init_uids(void)
 
 /* drop all additional privileges */
 void
-drop_privs()
+drop_privs(void)
 {
 #ifndef HAVE_DOSISH_SYSTEM
   if (!uid_set)
