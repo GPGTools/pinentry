@@ -1,3 +1,7 @@
+dnl This file originated from GNU inetutils, which also uses curses.
+dnl It was modified to allow use of ncursesw for wide character set.
+dnl Also, it was modified to use PKG_CHECK_MODULES.
+dnl
 dnl IU_LIB_NCURSES, IU_LIB_CURSES and IU_LIB_TERMCAP are:
 dnl Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 dnl Written by Miles Bader <miles@gnu.ai.mit.edu>
@@ -13,8 +17,7 @@ dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+dnl along with this program; if not, see <https://www.gnu.org/licenses/>.
 dnl
 
 dnl IU_LIB_NCURSES -- check for, and configure, ncurses
