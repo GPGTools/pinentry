@@ -1357,9 +1357,6 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   int done = 0;
   char *pin_utf8;
   int alt = 0;
-#ifndef HAVE_DOSISH_SYSTEM
-  int no_input = 1;
-#endif
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
 #endif
@@ -1531,7 +1528,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 
       c = wgetch (stdscr);     /* Refresh, accept single keystroke of input.  */
 #ifndef HAVE_DOSISH_SYSTEM
-      if (timed_out && no_input)
+      if (timed_out)
 	{
 	  done = -2;
           pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
@@ -1688,9 +1685,6 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
                 diag.pinentry->repeat_okay = test_repeat (&diag);
             }
 	}
-#ifndef HAVE_DOSISH_SYSTEM
-      no_input = 0;
-#endif
       if (c != -1)
 	alt = 0;
     }
