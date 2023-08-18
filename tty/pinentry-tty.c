@@ -527,16 +527,17 @@ tty_cmd_handler (pinentry_t pinentry)
   int saved_errno = 0;
 
 #ifndef HAVE_DOSISH_SYSTEM
+  struct sigaction sa;
+
+  memset (&sa, 0, sizeof(sa));
+  sa.sa_handler = catchsig;
+  sigaction (SIGINT, &sa, NULL);
+
   timed_out = 0;
 
   if (pinentry->timeout)
     {
-      struct sigaction sa;
-
-      memset (&sa, 0, sizeof(sa));
-      sa.sa_handler = catchsig;
       sigaction (SIGALRM, &sa, NULL);
-      sigaction (SIGINT, &sa, NULL);
       alarm (pinentry->timeout);
     }
 #endif

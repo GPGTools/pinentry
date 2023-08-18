@@ -1534,6 +1534,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
           pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
 	  break;
 	}
+      else if (errno == EINTR)
+	{
+	  done = -2;
+          pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
+	  break;
+	}
 #endif
 
       switch (c)
@@ -1790,14 +1796,16 @@ curses_cmd_handler (pinentry_t pinentry)
   int rc;
 
 #ifndef HAVE_DOSISH_SYSTEM
+  struct sigaction sa;
+
+  memset (&sa, 0, sizeof(sa));
+  sa.sa_handler = catchsig;
+  sigaction (SIGINT, &sa, NULL);
+
   timed_out = 0;
 
   if (pinentry->timeout)
     {
-      struct sigaction sa;
-
-      memset (&sa, 0, sizeof(sa));
-      sa.sa_handler = catchsig;
       sigaction (SIGALRM, &sa, NULL);
       alarm (pinentry->timeout);
     }
