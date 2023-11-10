@@ -793,9 +793,8 @@ If @code{may_cache_password} and @code{keyinfo} are set and the user
 consents, then the @pinentry{} may cache the password with an external
 manager.  Note: getting the user's consent is essential, because
 password managers often provide a different level of security.  If the
-above condition is true and @code{tried_password_cache} is false, then
-a check box with the specified string should be displayed.  The check
-box must default to off.
+above condition is true, then a check box with the specified string should
+be displayed.  The check box must default to off.
 
 @item @code{default-cf-visi}
 The string to show with a question if you want to confirm that
