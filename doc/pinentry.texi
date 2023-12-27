@@ -180,6 +180,7 @@ Grab the keyboard only when the window is focused.  Use this option if
 you are debugging software using the @pinentry{}; otherwise you may
 not be able to to access your X session anymore (unless you have other
 means to connect to the machine to kill the @pinentry{}).
+Note that this feature only supported in flavors of Gtk+2 and Qt@tie{}4/5.
 
 @item --parent-wid @var{n}
 @opindex parent-wid
