@@ -440,7 +440,7 @@ All strings have to be percent escaped.
 
 @item Enable an action for generating a passphrase
 Adds an action for generating a random passphrase to the GETPIN window.
-The action is only available when asking for a new passphrase, i.e. if
+The action is only available when asking for a new passphrase, i.e., if
 SETREPEAT has been called.
 @example
   C: SETGENPIN Suggest
