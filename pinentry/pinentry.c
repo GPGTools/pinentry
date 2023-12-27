@@ -22,9 +22,7 @@
 #include <config.h>
 #endif
 
-#ifndef HAVE_W32CE_SYSTEM
-# include <errno.h>
-#endif
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -34,13 +32,8 @@
 #ifndef HAVE_W32_SYSTEM
 # include <sys/utsname.h>
 #endif
-#ifndef HAVE_W32CE_SYSTEM
-# include <locale.h>
-#endif
+#include <locale.h>
 #include <limits.h>
-#ifdef HAVE_W32CE_SYSTEM
-# include <windows.h>
-#endif
 
 #include <assuan.h>
 
@@ -56,9 +49,6 @@
 # include "pinentry-curses.h"
 #endif
 
-#ifdef HAVE_W32CE_SYSTEM
-#define getpid() GetCurrentProcessId ()
-#endif
 
 /* Keep the name of our program here. */
 static char this_pgmname[50];
@@ -768,9 +758,7 @@ pinentry_have_display (int argc, char **argv)
               remember_display = strdup (argv[1]);
               if (!remember_display)
                 {
-#ifndef HAVE_W32CE_SYSTEM
                   fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
                   exit (EXIT_FAILURE);
                 }
             }
@@ -784,9 +772,7 @@ pinentry_have_display (int argc, char **argv)
               remember_display = strdup (*argv+10);
               if (!remember_display)
                 {
-#ifndef HAVE_W32CE_SYSTEM
                   fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
                   exit (EXIT_FAILURE);
                 }
             }
@@ -795,14 +781,12 @@ pinentry_have_display (int argc, char **argv)
         }
     }
 
-#ifndef HAVE_W32CE_SYSTEM
   {
     const char *s;
     s = getenv ("DISPLAY");
     if (s && *s)
       found = 1;
   }
-#endif
 
   return found;
 }
@@ -948,9 +932,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.display = strdup (pargs.r.ret_str);
 	  if (!pinentry.display)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -958,9 +940,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttyname = strdup (pargs.r.ret_str);
 	  if (!pinentry.ttyname)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -968,9 +948,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttytype_l = strdup (pargs.r.ret_str);
 	  if (!pinentry.ttytype_l)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -978,9 +956,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_ctype = strdup (pargs.r.ret_str);
 	  if (!pinentry.lc_ctype)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -988,9 +964,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.lc_messages = strdup (pargs.r.ret_str);
 	  if (!pinentry.lc_messages)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
@@ -1022,9 +996,7 @@ pinentry_parse_opts (int argc, char *argv[])
 	  pinentry.ttyalert = strdup (pargs.r.ret_str);
 	  if (!pinentry.ttyalert)
 	    {
-#ifndef HAVE_W32CE_SYSTEM
 	      fprintf (stderr, "%s: %s\n", this_pgmname, strerror (errno));
-#endif
 	      exit (EXIT_FAILURE);
 	    }
 	  break;

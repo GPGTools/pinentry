@@ -25,26 +25,6 @@
  * Main dialog
  */
 
-#ifdef HAVE_W32CE_SYSTEM
-
-IDD_PINENT DIALOG DISCARDABLE  0, 0, 150, 100
-STYLE DS_MODALFRAME | DS_SYSMODAL | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Pinentry"
-FONT 8, "MS Shell Dlg"
-BEGIN
-    LTEXT           "", IDC_PINENT_DESC, 2, 2, 140, 24
-    LTEXT           "", IDC_PINENT_ERR, 2, 30, 140, 12
-
-    LTEXT           "", IDC_PINENT_PROMPT, 2, 56, 20, 12
-    EDITTEXT        IDC_PINENT_TEXT, 30, 56, 100, 12, ES_PASSWORD | ES_AUTOHSCROLL
-
-    DEFPUSHBUTTON   "O&K", IDOK, 2, 70, 50, 14
-    PUSHBUTTON      "&Cancel", IDCANCEL, 60, 70, 50, 14
-
-END
-
-#else /* Standard Windows.  */
-
 IDB_ICON_32    BITMAP   DISCARDABLE   "logo-32.bmp"
 IDB_ICON_48    BITMAP   DISCARDABLE   "logo-48.bmp"
 IDB_ICON_64    BITMAP   DISCARDABLE   "logo-64.bmp"
@@ -66,9 +46,3 @@ BEGIN
     DEFPUSHBUTTON   "O&K", IDOK,          50, 105, 85, 14
     PUSHBUTTON      "&Cancel", IDCANCEL, 140, 105, 85, 14
 END
-
-
-
-#endif /* Standard Windows.  */
-
-
