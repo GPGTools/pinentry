@@ -72,9 +72,8 @@ public:
         QString errorTitle;
     };
 
-    explicit PinEntryDialog(QWidget *parent = 0, const char *name = 0,
-                            int timeout = 0, bool modal = false,
-                            bool enable_quality_bar = false,
+    explicit PinEntryDialog(pinentry_t pe, QWidget *parent = 0, const char *name = 0,
+                            bool modal = false,
                             const QString &repeatString = QString(),
                             const QString &visibiltyTT = QString(),
                             const QString &hideTT = QString());
@@ -110,7 +109,7 @@ public:
 
     void setConstraintsOptions(const ConstraintsOptions &options);
 
-    void setPinentryInfo(pinentry_t);
+    void setSavePassphraseCBText(const QString &text);
 
     bool timedOut() const;
 
@@ -123,6 +122,7 @@ protected Q_SLOTS:
     void onBackspace();
     void generatePin();
     void toggleFormattedPassphrase();
+    void togglePasswordCaching(bool enabled);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -176,6 +176,7 @@ private:
     QLabel    *mCapsLockHint = nullptr;
     QLabel    *mConstraintsHint = nullptr;
     QString   mConstraintsErrorTitle;
+    QCheckBox *mSavePassphraseCB = nullptr;
 };
 
 #endif // __PINENTRYDIALOG_H__

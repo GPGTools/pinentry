@@ -212,12 +212,14 @@ qt_cmd_handler(pinentry_t pe)
     const QString generateTT = pe->genpin_tt ? from_utf8(pe->genpin_tt) :
                                QString();
 
+    const QString savePassphraseText =
+        pe->default_pwmngr ? escape_accel(from_utf8(pe->default_pwmngr)) :
+        QStringLiteral("Save passphrase in password manager");
 
     if (want_pass) {
-        PinEntryDialog pinentry(nullptr, 0, pe->timeout, true, !!pe->quality_bar,
+        PinEntryDialog pinentry(pe, nullptr, 0, true,
                                 repeatString, visibilityTT, hideTT);
         setup_foreground_window(&pinentry, pe->parent_wid);
-        pinentry.setPinentryInfo(pe);
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
         pinentry.setDescription(from_utf8(pe->description));
         pinentry.setRepeatErrorText(repeatError);
@@ -233,6 +235,7 @@ qt_cmd_handler(pinentry_t pe)
             from_utf8(pe->constraints_hint_long),
             from_utf8(pe->constraints_error_title)
         });
+        pinentry.setSavePassphraseCBText(savePassphraseText);
 
         if (!title.isEmpty()) {
             pinentry.setWindowTitle(title);

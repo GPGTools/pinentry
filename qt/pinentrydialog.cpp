@@ -96,13 +96,14 @@ void PinEntryDialog::slotTimeout()
     reject();
 }
 
-PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
-                               int timeout, bool modal, bool enable_quality_bar,
+PinEntryDialog::PinEntryDialog(pinentry_t pe, QWidget *parent, const char *name,
+                               bool modal,
                                const QString &repeatString,
                                const QString &visibilityTT,
                                const QString &hideTT)
     : QDialog{parent}
-    , _have_quality_bar{enable_quality_bar}
+    , _have_quality_bar{!!pe->quality_bar}
+    , _pinentry_info{pe}
     , mVisibilityTT{visibilityTT}
     , mHideTT{hideTT}
 {
@@ -232,7 +233,7 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         grid->addWidget(mRepeatError, row, 2);
     }
 
-    if (enable_quality_bar) {
+    if (_have_quality_bar) {
         row++;
         _quality_bar_label = new QLabel(this);
         _quality_bar_label->setTextFormat(Qt::PlainText);
@@ -245,6 +246,19 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         _quality_bar_label->setBuddy(_quality_bar);
         grid->addWidget(_quality_bar, row, 2);
     }
+
+    ++row;
+    mSavePassphraseCB = new QCheckBox{this};
+    mSavePassphraseCB->setVisible(false);
+    mSavePassphraseCB->setCheckState(!!_pinentry_info->may_cache_password
+                                     ? Qt::Checked
+                                     : Qt::Unchecked);
+#ifdef HAVE_LIBSECRET
+    if (_pinentry_info->allow_external_password_cache && _pinentry_info->keyinfo) {
+        mSavePassphraseCB->setVisible(true);
+    }
+#endif
+    grid->addWidget(mSavePassphraseCB, row, 1, 1, 2);
 
     hbox->addLayout(grid, 1);
     mainLayout->addLayout(hbox);
@@ -263,10 +277,10 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
     mainLayout->addWidget(buttons);
     mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-    if (timeout > 0) {
+    if (_pinentry_info->timeout > 0) {
         _timer = new QTimer(this);
         connect(_timer, &QTimer::timeout, this, &PinEntryDialog::slotTimeout);
-        _timer->start(timeout * 1000);
+        _timer->start(_pinentry_info->timeout * 1000);
     }
 
     connect(buttons, &QDialogButtonBox::accepted,
@@ -295,6 +309,8 @@ PinEntryDialog::PinEntryDialog(QWidget *parent, const char *name,
         connect(mRepeat, &QLineEdit::textChanged,
                 this, &PinEntryDialog::textChanged);
     }
+    connect(mSavePassphraseCB, &QCheckBox::toggled,
+            this, &PinEntryDialog::togglePasswordCaching);
 
     auto capsLockWatcher = new CapsLockWatcher{this};
     connect(capsLockWatcher, &CapsLockWatcher::stateChanged,
@@ -510,6 +526,11 @@ void PinEntryDialog::toggleFormattedPassphrase()
     }
 }
 
+void PinEntryDialog::togglePasswordCaching(bool enabled)
+{
+    _pinentry_info->may_cache_password = enabled;
+}
+
 void PinEntryDialog::onBackspace()
 {
     cancelTimeout();
@@ -552,9 +573,9 @@ void PinEntryDialog::updateQuality(const QString &txt)
     }
 }
 
-void PinEntryDialog::setPinentryInfo(pinentry_t peinfo)
+void PinEntryDialog::setSavePassphraseCBText(const QString &text)
 {
-    _pinentry_info = peinfo;
+    mSavePassphraseCB->setText(text);
 }
 
 void PinEntryDialog::focusChanged(QWidget *old, QWidget *now)
