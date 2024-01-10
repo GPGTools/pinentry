@@ -423,6 +423,7 @@ main(int argc, char *argv[])
         Q_ASSERT (new_argc);
         app = new QApplication(new_argc, new_argv);
         app->setWindowIcon(QIcon(QLatin1String(":/icons/document-encrypt.png")));
+        app->setDesktopFileName(QStringLiteral("org.gnupg.pinentry-qt"));
         (void) new KeyboardFocusIndication{app};
     }
 

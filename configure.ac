@@ -836,6 +836,7 @@ w32/Makefile
 fltk/Makefile
 doc/Makefile
 Makefile
+qt/org.gnupg.pinentry-qt.desktop
 ])
 
 AC_OUTPUT

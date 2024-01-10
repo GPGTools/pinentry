@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Pinentry
+Type=Application
+Categories=Qt;Utility;
+Exec=@prefix@/bin/pinentry-qt
+NoDisplay=true
+Icon=document-encrypt
+GenericName=Utility for entering GnuPG secrets

@@ -77,3 +77,6 @@ nodist_pinentry_qt_SOURCES = $(BUILT_SOURCES)
 
 pinentryrc.cpp: pinentryrc.qrc
 	$(RCC5) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+
+desktopdir = $(datadir)/applications
+desktop_DATA = org.gnupg.pinentry-qt.desktop
