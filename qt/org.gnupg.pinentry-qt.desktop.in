@@ -6,3 +6,4 @@ Exec=@prefix@/bin/pinentry-qt
 NoDisplay=true
 Icon=document-encrypt
 GenericName=Utility for entering GnuPG secrets
+X-KDE-Wayland-Interfaces=org_kde_kwin_keystate
