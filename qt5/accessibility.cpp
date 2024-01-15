@@ -1,4 +1,4 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
+/* accessibility.cpp - Helpers for making pinentry accessible
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,34 +18,30 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "accessibility.h"
 
-#include "capslock.h"
-#include "capslock_p.h"
+#include <QString>
+#include <QWidget>
 
-#include <QGuiApplication>
-
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+namespace Accessibility
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
-}
 
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
+void setDescription(QWidget *w, const QString &text)
 {
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
+    if (w) {
+#ifndef QT_NO_ACCESSIBILITY
+        w->setAccessibleDescription(text);
 #endif
     }
 }
 
-#include "capslock.moc"
+void setName(QWidget *w, const QString &text)
+{
+    if (w) {
+#ifndef QT_NO_ACCESSIBILITY
+        w->setAccessibleName(text);
+#endif
+    }
+}
+
+} // namespace Accessibility

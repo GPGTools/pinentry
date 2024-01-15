@@ -1,4 +1,4 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
+/* capslock_p.h - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,34 +18,44 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#ifndef __PINENTRY_QT_CAPSLOCK_P_H__
+#define __PINENTRY_QT_CAPSLOCK_P_H__
 
 #include "capslock.h"
-#include "capslock_p.h"
 
-#include <QGuiApplication>
-
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+#ifdef PINENTRY_QT_WAYLAND
+namespace KWayland
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
-}
-
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
+namespace Client
 {
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
-    }
+class Registry;
+class Seat;
 }
+}
+#endif
 
-#include "capslock.moc"
+class CapsLockWatcher::Private
+{
+public:
+    explicit Private(CapsLockWatcher *);
+#ifdef PINENTRY_QT_WAYLAND
+    void watchWayland();
+#endif
+
+private:
+#ifdef PINENTRY_QT_WAYLAND
+    void registry_seatAnnounced(quint32, quint32);
+    void seat_hasKeyboardChanged(bool);
+    void keyboard_modifiersChanged(quint32);
+#endif
+
+private:
+    CapsLockWatcher *const q;
+
+#ifdef PINENTRY_QT_WAYLAND
+    KWayland::Client::Registry *registry = nullptr;
+    KWayland::Client::Seat *seat = nullptr;
+#endif
+};
+
+#endif // __PINENTRY_QT_CAPSLOCK_P_H__

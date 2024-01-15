@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <file>icons/data-error.svg</file>
+    <file>icons/document-encrypt.png</file>
+    <file>icons/hint.svg</file>
+    <file>icons/password-generate.svg</file>
+    <file>icons/visibility.svg</file>
+</qresource>
+</RCC>

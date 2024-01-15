@@ -32,8 +32,10 @@
 CapsLockWatcher::Private::Private(CapsLockWatcher *q)
     : q{q}
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
+#ifdef PINENTRY_QT_WAYLAND
+    if (qApp->platformName() == QLatin1String("wayland")) {
+        watchWayland();
+    }
 #endif
 }
 
@@ -41,9 +43,9 @@ CapsLockWatcher::CapsLockWatcher(QObject *parent)
     : QObject{parent}
     , d{new Private{this}}
 {
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
+    if (qApp->platformName() == QLatin1String("wayland")) {
+#ifndef PINENTRY_QT_WAYLAND
+        qWarning() << "CapsLockWatcher was compiled without support for Wayland";
 #endif
     }
 }

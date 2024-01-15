@@ -1,4 +1,4 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
+/* pinentry_debug.h - Logging category for pinentry
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -22,30 +22,10 @@
 # include "config.h"
 #endif
 
-#include "capslock.h"
-#include "capslock_p.h"
+#include "pinentry_debug.h"
 
-#include <QGuiApplication>
-
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
-{
-#ifdef PINENTRY_KGUIADDONS
-    watch();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+Q_LOGGING_CATEGORY(PINENTRY_LOG, "gpg.pinentry", QtWarningMsg)
+#else
+Q_LOGGING_CATEGORY(PINENTRY_LOG, "gpg.pinentry")
 #endif
-}
-
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
-{
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
-    }
-}
-
-#include "capslock.moc"

@@ -23,39 +23,23 @@
 
 #include "capslock.h"
 
-#ifdef PINENTRY_QT_WAYLAND
-namespace KWayland
-{
-namespace Client
-{
-class Registry;
-class Seat;
-}
-}
+#ifdef PINENTRY_KGUIADDONS
+#include <KModifierKeyInfo>
 #endif
 
 class CapsLockWatcher::Private
 {
 public:
     explicit Private(CapsLockWatcher *);
-#ifdef PINENTRY_QT_WAYLAND
-    void watchWayland();
-#endif
 
-private:
-#ifdef PINENTRY_QT_WAYLAND
-    void registry_seatAnnounced(quint32, quint32);
-    void seat_hasKeyboardChanged(bool);
-    void keyboard_modifiersChanged(quint32);
+#ifdef PINENTRY_KGUIADDONS
+    void watch();
+    KModifierKeyInfo *keyInfo = nullptr;
 #endif
+private:
 
 private:
     CapsLockWatcher *const q;
-
-#ifdef PINENTRY_QT_WAYLAND
-    KWayland::Client::Registry *registry = nullptr;
-    KWayland::Client::Seat *seat = nullptr;
-#endif
 };
 
 #endif // __PINENTRY_QT_CAPSLOCK_P_H__

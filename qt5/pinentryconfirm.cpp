@@ -116,7 +116,7 @@ void PinentryConfirm::slotTimeout()
     _timed_out = true;
 
     if (b) {
-        b->animateClick();
+        b->animateClick(0);
     }
 }
 

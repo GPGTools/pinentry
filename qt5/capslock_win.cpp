@@ -1,4 +1,4 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
+/* capslock_win.cpp - Helper to check whether Caps Lock is on
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,34 +18,11 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include "capslock.h"
-#include "capslock_p.h"
 
-#include <QGuiApplication>
+#include <windows.h>
 
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+LockState capsLockState()
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
+    return (GetKeyState(VK_CAPITAL) & 1) ? LockState::On : LockState::Off;
 }
-
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
-{
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
-    }
-}
-
-#include "capslock.moc"

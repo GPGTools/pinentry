@@ -1,5 +1,5 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
- * Copyright (C) 2021 g10 Code GmbH
+/* focusframe.h - A focus indicator for labels.
+ * Copyright (C) 2022 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
@@ -18,34 +18,19 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#ifndef __FOCUSFRAME_H__
+#define __FOCUSFRAME_H__
 
-#include "capslock.h"
-#include "capslock_p.h"
+#include <QFocusFrame>
 
-#include <QGuiApplication>
-
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+class FocusFrame : public QFocusFrame
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
-}
+    Q_OBJECT
+public:
+    using QFocusFrame::QFocusFrame;
 
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
-{
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
-    }
-}
+protected:
+    void paintEvent(QPaintEvent *event) override;
+};
 
-#include "capslock.moc"
+#endif // __FOCUSFRAME_H__

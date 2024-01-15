@@ -1,4 +1,4 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
+/* util.h - Helper for managing malloced pointers
  * Copyright (C) 2021 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
@@ -18,34 +18,23 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#ifndef __PINENTRY_QT_UTIL_H__
+#define __PINENTRY_QT_UTIL_H__
 
-#include "capslock.h"
-#include "capslock_p.h"
+#include <memory>
 
-#include <QGuiApplication>
+#include <stdlib.h>
 
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+namespace _detail
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
-}
-
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
-{
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
+struct FreeDeleter {
+    void operator()(void *ptr) const {
+        free(ptr);
     }
+};
 }
 
-#include "capslock.moc"
+template<class T>
+using unique_malloced_ptr = std::unique_ptr<T, _detail::FreeDeleter>;
+
+#endif // __PINENTRY_QT_UTIL_H__

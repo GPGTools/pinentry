@@ -58,10 +58,16 @@ else
 pinentry_gnome_3 =
 endif
 
-if BUILD_PINENTRY_QT5
+if BUILD_PINENTRY_QT6
 pinentry_qt = qt
 else
 pinentry_qt =
+endif
+
+if BUILD_PINENTRY_QT5
+pinentry_qt5 = qt5
+else
+pinentry_qt5 =
 endif
 
 if BUILD_PINENTRY_QT4
@@ -102,7 +108,7 @@ endif
 
 SUBDIRS = m4 secmem pinentry ${pinentry_curses} ${pinentry_tty} \
 	${pinentry_emacs} ${pinentry_gtk_2} ${pinentry_gnome_3} \
-	${pinentry_qt} ${pinentry_qt4}  ${pinentry_tqt} ${pinentry_w32} \
+	${pinentry_qt} ${pinentry_qt5} ${pinentry_qt4}  ${pinentry_tqt} ${pinentry_w32} \
 	${pinentry_fltk} ${pinentry_efl} ${doc}
 
 

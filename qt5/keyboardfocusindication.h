@@ -1,5 +1,5 @@
-/* capslock.cpp - Helper to check whether Caps Lock is on
- * Copyright (C) 2021 g10 Code GmbH
+/* keyboardfocusindication.h - Helper for extended keyboard focus indication.
+ * Copyright (C) 2022 g10 Code GmbH
  *
  * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
@@ -18,34 +18,25 @@
  * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#ifndef __KEYBOARDFOCUSINDICATION_H__
+#define __KEYBOARDFOCUSINDICATION_H__
 
-#include "capslock.h"
-#include "capslock_p.h"
+#include <QObject>
+#include <QPointer>
+#include <QWidget>
 
-#include <QGuiApplication>
+class FocusFrame;
 
-#include <QDebug>
-
-CapsLockWatcher::Private::Private(CapsLockWatcher *q)
-    : q{q}
+class KeyboardFocusIndication : public QObject
 {
-#ifdef PINENTRY_KGUIADDONS
-    watch();
-#endif
-}
+    Q_OBJECT
+public:
+    KeyboardFocusIndication(QObject *parent);
 
-CapsLockWatcher::CapsLockWatcher(QObject *parent)
-    : QObject{parent}
-    , d{new Private{this}}
-{
-    if (qApp->platformName() == QLatin1String("wayland") || qApp->platformName() == QLatin1String("xcb")) {
-#ifndef PINENTRY_KGUIADDONS
-        qWarning() << "CapsLockWatcher was compiled without support for unix";
-#endif
-    }
-}
+private:
+    void updateFocusFrame(QWidget *, QWidget *);
 
-#include "capslock.moc"
+    QPointer<FocusFrame> focusFrame;
+};
+
+#endif // __KEYBOARDFOCUSINDICATION_H__

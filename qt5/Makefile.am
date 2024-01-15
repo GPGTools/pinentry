@@ -20,7 +20,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = pinentry-qt
+bin_PROGRAMS = pinentry-qt5
 
 EXTRA_DIST = pinentryrc.qrc
 
@@ -39,13 +39,13 @@ endif
 AM_CPPFLAGS = $(COMMON_CFLAGS) \
 	-I$(top_srcdir) -I$(top_srcdir)/secmem \
 	$(ncurses_include) -I$(top_srcdir)/pinentry
-AM_CXXFLAGS = $(PINENTRY_QT6_CFLAGS)
-pinentry_qt_LDADD = \
+AM_CXXFLAGS = $(PINENTRY_QT5_CFLAGS)
+pinentry_qt5_LDADD = \
 	../pinentry/libpinentry.a $(top_builddir)/secmem/libsecmem.a \
-	$(COMMON_LIBS) $(PINENTRY_QT6_LIBS) $(libcurses)
-pinentry_qt_LDFLAGS = $(PINENTRY_QT6_LDFLAGS)
+	$(COMMON_LIBS) $(PINENTRY_QT5_LIBS) $(libcurses)
+pinentry_qt5_LDFLAGS = $(PINENTRY_QT5_LDFLAGS)
 
-if BUILD_PINENTRY_QT6
+if BUILD_PINENTRY_QT5
 BUILT_SOURCES = \
 	pinentryconfirm.moc pinentrydialog.moc pinlineedit.moc capslock.moc \
 	focusframe.moc \
@@ -56,27 +56,27 @@ endif
 CLEANFILES = $(BUILT_SOURCES)
 
 if HAVE_W32_SYSTEM
-pinentry_qt_platform_SOURCES = capslock_win.cpp
+pinentry_qt5_platform_SOURCES = capslock_win.cpp
 else
-pinentry_qt_platform_SOURCES = capslock_unix.cpp
+pinentry_qt5_platform_SOURCES = capslock_unix.cpp
 endif
 
-pinentry_qt_SOURCES = pinentrydialog.h pinentrydialog.cpp \
+pinentry_qt5_SOURCES = pinentrydialog.h pinentrydialog.cpp \
 	main.cpp pinentryconfirm.cpp pinentryconfirm.h \
 	pinlineedit.h pinlineedit.cpp capslock.cpp capslock.h capslock_p.h \
 	pinentry_debug.cpp pinentry_debug.h util.h accessibility.cpp \
 	accessibility.h qti18n.cpp pinentryrc.qrc \
 	focusframe.h focusframe.cpp \
 	keyboardfocusindication.h keyboardfocusindication.cpp \
-	$(pinentry_qt_platform_SOURCES)
+	$(pinentry_qt5_platform_SOURCES)
 
-nodist_pinentry_qt_SOURCES = $(BUILT_SOURCES)
+nodist_pinentry_qt5_SOURCES = $(BUILT_SOURCES)
 
 .h.moc:
-	$(MOC6) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+	$(MOC5) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
 
 pinentryrc.cpp: pinentryrc.qrc
-	$(RCC6) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+	$(RCC5) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
 
 desktopdir = $(datadir)/applications
-desktop_DATA = org.gnupg.pinentry-qt.desktop
+desktop_DATA = org.gnupg.pinentry-qt5.desktop
