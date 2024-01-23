@@ -234,7 +234,7 @@ qt_cmd_handler(pinentry_t pe)
         PinEntryDialog pinentry(pe, nullptr, 0, true,
                                 repeatString, visibilityTT, hideTT);
         if (qApp->platformName() == QStringLiteral("wayland")) {
-            setup_foreground_window(&pinentry, QString::fromLatin1(qgetenv("PINENTRY_GEOM_HINT")));
+            setup_foreground_window(&pinentry, QUrl::fromPercentEncoding(qgetenv("PINENTRY_GEOM_HINT").split(' ')[0]));
         } else {
             setup_foreground_window(&pinentry, pe->parent_wid);
         }
@@ -314,7 +314,7 @@ qt_cmd_handler(pinentry_t pe)
         box.setTextInteractionFlags(Qt::TextSelectableByMouse);
         box.setTimeout(std::chrono::seconds{pe->timeout});
         if (qApp->platformName() == QStringLiteral("wayland")) {
-            setup_foreground_window(&box, QString::fromLatin1(qgetenv("PINENTRY_GEOM_HINT")));
+            setup_foreground_window(&box, QUrl::fromPercentEncoding(qgetenv("PINENTRY_GEOM_HINT").split(' ')[0]));
         } else {
             setup_foreground_window(&box, pe->parent_wid);
         }
