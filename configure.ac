@@ -650,6 +650,32 @@ else
 fi
 
 dnl
+dnl Check for KF6WindowSystem library
+dnl
+have_kf6windowsystem=no
+if test "$have_w32_system" != "yes" && test "$pinentry_qt6" = "yes"; then
+	PKG_CHECK_MODULES(
+		KF6WINDOWSYSTEM,
+		[KF6WindowSystem >= 5.240],
+		[have_kf6windowsystem=yes],
+		[
+			AC_MSG_WARN([pkg-config could not find the module KF6WindowSystem])
+			have_kf6windowsystem=no
+		]
+	)
+fi
+
+if test "$have_kf6windowsystem" = "yes"; then
+  PINENTRY_QT6_CFLAGS="$KF6WINDOWSYSTEM_CFLAGS $PINENTRY_QT6_CFLAGS"
+  PINENTRY_QT6_LIBS="$KF6WINDOWSYSTEM_LIBS $PINENTRY_QT6_LIBS"
+  AC_DEFINE(PINENTRY_KWINDOWSYSTEM, 1, [pinentry-qt should use KF6WindowSystem.])
+else
+  if test "$have_w32_system" != "yes"; then
+    AC_MSG_WARN([pinentry-qt will be built without window parenting on wayland])
+  fi
+fi
+
+dnl
 dnl Check for Qt4 pinentry program.
 dnl
 AC_ARG_ENABLE(pinentry-qt4,

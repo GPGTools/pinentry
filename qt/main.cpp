@@ -72,6 +72,10 @@
 #include <windows.h>
 #endif
 
+#ifdef PINENTRY_KWINDOWSYSTEM
+#include <KWindowSystem>
+#endif
+
 #include "pinentry_debug.h"
 
 static QString escape_accel(const QString &s)
@@ -171,6 +175,16 @@ setup_foreground_window(QWidget *widget, WId parentWid)
                            Qt::WindowMinimizeButtonHint);
 }
 
+static void
+setup_foreground_window(QWidget *widget, const QString &parentWid)
+{
+#ifdef PINENTRY_KWINDOWSYSTEM
+    widget->winId(); // Important; ensures that a window handle is returned.
+    KWindowSystem::setMainWindow(widget->windowHandle(), parentWid);
+#endif
+}
+
+
 static int
 qt_cmd_handler(pinentry_t pe)
 {
@@ -219,8 +233,13 @@ qt_cmd_handler(pinentry_t pe)
     if (want_pass) {
         PinEntryDialog pinentry(pe, nullptr, 0, true,
                                 repeatString, visibilityTT, hideTT);
-        setup_foreground_window(&pinentry, pe->parent_wid);
+        if (qApp->platformName() == QStringLiteral("wayland")) {
+            setup_foreground_window(&pinentry, QString::fromLatin1(qgetenv("PINENTRY_GEOM_HINT")));
+        } else {
+            setup_foreground_window(&pinentry, pe->parent_wid);
+        }
         pinentry.setPrompt(escape_accel(from_utf8(pe->prompt)));
+
         pinentry.setDescription(from_utf8(pe->description));
         pinentry.setRepeatErrorText(repeatError);
         pinentry.setGenpinLabel(generateLbl);
@@ -294,7 +313,11 @@ qt_cmd_handler(pinentry_t pe)
         box.setTextFormat(Qt::PlainText);
         box.setTextInteractionFlags(Qt::TextSelectableByMouse);
         box.setTimeout(std::chrono::seconds{pe->timeout});
-        setup_foreground_window(&box, pe->parent_wid);
+        if (qApp->platformName() == QStringLiteral("wayland")) {
+            setup_foreground_window(&box, QString::fromLatin1(qgetenv("PINENTRY_GEOM_HINT")));
+        } else {
+            setup_foreground_window(&box, pe->parent_wid);
+        }
 
         const struct {
             QMessageBox::StandardButton button;
