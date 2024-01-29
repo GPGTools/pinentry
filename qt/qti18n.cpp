@@ -32,7 +32,7 @@ static bool loadCatalog(const QString &catalog, const QLocale &locale)
 {
     auto translator = new QTranslator(QCoreApplication::instance());
 
-    if (!translator->load(locale, catalog, QString(), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+    if (!translator->load(locale, catalog, QString(), QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
         qDebug() << "Loading the" << catalog << "catalog failed for locale" << locale;
         delete translator;
         return false;
