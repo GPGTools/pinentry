@@ -1194,7 +1194,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     }
   else if (!strcmp (key, "allow-external-password-cache") && !*value)
     {
-      pinentry.allow_external_password_cache = 1;
+      char *desktop = getenv ("XDG_SESSION_DESKTOP");
+      pinentry.allow_external_password_cache = (!desktop || strcmp (desktop, "KDE"));
       pinentry.tried_password_cache = 0;
     }
   else if (!strcmp (key, "allow-emacs-prompt") && !*value)
