@@ -458,15 +458,24 @@ AM_CONDITIONAL(BUILD_PINENTRY_GTK_2, test "$pinentry_gtk_2" = "yes")
 if test "$pinentry_gnome_3" != "no"; then
 	PKG_CHECK_MODULES(
 		GNOME3,
-		[gcr-3,gcr-base-3],
+		[gcr-4],
 		[
 			pinentry_gnome_3=yes
 			AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
+			AC_DEFINE(GCR_API_4, 1, [GCR API version])
 		],
-		[
-			AC_MSG_WARN([pkg-config could not find the module gcr-3,gcr-base-3])
-			pinentry_gnome_3=no
-		]
+		[PKG_CHECK_MODULES(
+			GNOME3,
+			[gcr-base-3],
+			[
+				pinentry_gnome_3=yes
+				AC_DEFINE(GCR_API_SUBJECT_TO_CHANGE, 1, [Nod nod])
+			],
+			[
+				AC_MSG_WARN([pkg-config could not find the module gcr-4 or gcr-base-3])
+				pinentry_gnome_3=no
+			]
+		)]
 	)
 fi
 
