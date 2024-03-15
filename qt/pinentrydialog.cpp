@@ -58,19 +58,10 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
-#if QT_VERSION >= 0x050700
-#include <QtPlatformHeaders/QWindowsWindowFunctions>
-#endif
 #endif
 
 void raiseWindow(QWidget *w)
 {
-#ifdef Q_OS_WIN
-#if QT_VERSION >= 0x050700
-    QWindowsWindowFunctions::setWindowActivationBehavior(
-            QWindowsWindowFunctions::AlwaysActivateWindow);
-#endif
-#endif
     w->setWindowState((w->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
     w->activateWindow();
     w->raise();
