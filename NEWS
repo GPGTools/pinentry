@@ -1,3 +1,44 @@
+Noteworthy changes in version 1.3.0 (2024-03-18)
+------------------------------------------------
+
+ * qt: Add new Qt6 frontend.  [rP1e79123c38]
+
+ * qt: Set parent window on Wayland.  [T6930]
+
+ * qt: Fix capslock detection on Wayland.  [rP7dfc60a70d]
+
+ * qt: Fix window icon on Wayland.  [T6887]
+
+ * qt: Add support for external password manager with libsecret.
+   [T6801]
+
+ * qt: Remove focus indication by text selection.  [T5863]
+
+ * qt: Use same focus indication for labels as Kleopatra.  [T5863]
+
+ * qt: Improve accessibility.  [T5863]
+
+ * gnome3: Prefer gcr-4.  [rP069c219223]
+
+ * curses: Fix timeout handling.  [rP08408498b3]
+
+ * curses: Add SETREPEATOK and quality bar colors.  [rP2f109972e4]
+
+ * curses: Add password quality meter.  [rP2923707e75]
+
+ * curses,tty: Upon SIGINT, let pinentry exit gracefully.  [T6641]
+
+ * w32: Fix non-focused window and simplify code.  [rPabbecc67d9]
+
+ * Disable secret storage integration when running on KDE Plasma.
+   [rPefb6de7f]
+
+ * The Windows CE support has been removed.
+
+
+ Release-info: https://dev.gnupg.org/T7046
+
+
 Noteworthy changes in version 1.2.1 (2022-08-24)
 ------------------------------------------------
 
