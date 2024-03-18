@@ -25,7 +25,7 @@
 #include "capslock.h"
 #include "capslock_p.h"
 
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
 # include <KWayland/Client/connection_thread.h>
 # include <KWayland/Client/keyboard.h>
 # include <KWayland/Client/registry.h>
@@ -34,7 +34,7 @@
 
 #include <QGuiApplication>
 
-#ifdef PINENTRY_QT_X11
+#ifdef PINENTRY_QT5_X11
 # include <QX11Info>
 # include <X11/XKBlib.h>
 # undef Status
@@ -42,25 +42,25 @@
 
 #include <QDebug>
 
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
 using namespace KWayland::Client;
 #endif
 
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
 static bool watchingWayland = false;
 #endif
 
 LockState capsLockState()
 {
     static bool reportUnsupportedPlatform = true;
-#ifdef PINENTRY_QT_X11
+#ifdef PINENTRY_QT5_X11
     if (qApp->platformName() == QLatin1String("xcb")) {
         unsigned int state;
         XkbGetIndicatorState(QX11Info::display(), XkbUseCoreKbd, &state);
         return (state & 0x01) == 1 ? LockState::On : LockState::Off;
     }
 #endif
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
     if (qApp->platformName() == QLatin1String("wayland")) {
         if (!watchingWayland && reportUnsupportedPlatform) {
             qDebug() << "Use CapsLockWatcher for checking for Caps Lock on Wayland";
@@ -74,7 +74,7 @@ LockState capsLockState()
     return LockState::Unknown;
 }
 
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
 void CapsLockWatcher::Private::watchWayland()
 {
     watchingWayland = true;

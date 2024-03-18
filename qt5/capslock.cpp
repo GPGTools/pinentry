@@ -32,7 +32,7 @@
 CapsLockWatcher::Private::Private(CapsLockWatcher *q)
     : q{q}
 {
-#ifdef PINENTRY_QT_WAYLAND
+#ifdef PINENTRY_QT5_WAYLAND
     if (qApp->platformName() == QLatin1String("wayland")) {
         watchWayland();
     }
@@ -44,7 +44,7 @@ CapsLockWatcher::CapsLockWatcher(QObject *parent)
     , d{new Private{this}}
 {
     if (qApp->platformName() == QLatin1String("wayland")) {
-#ifndef PINENTRY_QT_WAYLAND
+#ifndef PINENTRY_QT5_WAYLAND
         qWarning() << "CapsLockWatcher was compiled without support for Wayland";
 #endif
     }
