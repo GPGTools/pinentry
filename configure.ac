@@ -29,7 +29,7 @@ min_automake_version="1.14"
 m4_define([mym4_package],[pinentry])
 m4_define([mym4_major], [1])
 m4_define([mym4_minor], [3])
-m4_define([mym4_micro], [0])
+m4_define([mym4_micro], [1])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
