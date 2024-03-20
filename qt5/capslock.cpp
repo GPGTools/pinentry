@@ -32,7 +32,7 @@
 CapsLockWatcher::Private::Private(CapsLockWatcher *q)
     : q{q}
 {
-#ifdef PINENTRY_QT5_WAYLAND
+#if PINENTRY_QT5_WAYLAND
     if (qApp->platformName() == QLatin1String("wayland")) {
         watchWayland();
     }

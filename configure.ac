@@ -180,6 +180,7 @@ if test "$GCC" = yes; then
           CFLAGS="$CFLAGS -Wdeclaration-after-statement"
         fi
 
+        CPPFLAGS="$CPPFLAGS -Wundef"
     else
         # Not in maintainer mode: Use standard warnings.
         CFLAGS="$CFLAGS -Wall"
@@ -601,6 +602,8 @@ fi
 AM_CONDITIONAL(BUILD_PINENTRY_QT5, test "$pinentry_qt5" = "yes")
 if test "$have_qt5_x11extras" = "yes"; then
   AC_DEFINE(PINENTRY_QT5_X11, 1, [pinentry-qt5 should use x11.])
+else
+  AC_DEFINE(PINENTRY_QT5_X11, 0, [pinentry-qt5 shouldn't use x11.])
 fi
 if test "$have_kf5waylandclient" = "yes"; then
   PINENTRY_QT5_CFLAGS="$KF5WAYLANDCLIENT_CFLAGS $PINENTRY_QT5_CFLAGS -fpic"
@@ -610,6 +613,7 @@ else
   if test "$have_w32_system" != "yes"; then
     AC_MSG_WARN([pinentry-qt5 will be built without Caps Lock warning on Wayland])
   fi
+  AC_DEFINE(PINENTRY_QT5_WAYLAND, 0, [pinentry-qt5 shouldn't use KF5WaylandClient.])
 fi
 
 dnl
@@ -656,6 +660,7 @@ else
   if test "$have_w32_system" != "yes"; then
     AC_MSG_WARN([pinentry-qt will be built without Caps Lock warning on Unix])
   fi
+  AC_DEFINE(PINENTRY_KGUIADDONS, 0, [pinentry-qt shouldn't use KF6GuiAddons.])
 fi
 
 dnl
@@ -682,6 +687,7 @@ else
   if test "$have_w32_system" != "yes"; then
     AC_MSG_WARN([pinentry-qt will be built without window parenting on wayland])
   fi
+  AC_DEFINE(PINENTRY_KWINDOWSYSTEM, 0, [pinentry-qt shouldn't use KF6WindowSystem.])
 fi
 
 dnl

@@ -23,7 +23,7 @@
 
 #include "capslock.h"
 
-#ifdef PINENTRY_QT5_WAYLAND
+#if PINENTRY_QT5_WAYLAND
 namespace KWayland
 {
 namespace Client
@@ -38,12 +38,12 @@ class CapsLockWatcher::Private
 {
 public:
     explicit Private(CapsLockWatcher *);
-#ifdef PINENTRY_QT5_WAYLAND
+#if PINENTRY_QT5_WAYLAND
     void watchWayland();
 #endif
 
 private:
-#ifdef PINENTRY_QT5_WAYLAND
+#if PINENTRY_QT5_WAYLAND
     void registry_seatAnnounced(quint32, quint32);
     void seat_hasKeyboardChanged(bool);
     void keyboard_modifiersChanged(quint32);
@@ -52,7 +52,7 @@ private:
 private:
     CapsLockWatcher *const q;
 
-#ifdef PINENTRY_QT5_WAYLAND
+#if PINENTRY_QT5_WAYLAND
     KWayland::Client::Registry *registry = nullptr;
     KWayland::Client::Seat *seat = nullptr;
 #endif

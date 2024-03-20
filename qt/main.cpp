@@ -72,7 +72,7 @@
 #include <windows.h>
 #endif
 
-#ifdef PINENTRY_KWINDOWSYSTEM
+#if PINENTRY_KWINDOWSYSTEM
 #include <KWindowSystem>
 #endif
 
@@ -178,7 +178,7 @@ setup_foreground_window(QWidget *widget, WId parentWid)
 static void
 setup_foreground_window(QWidget *widget, const QString &parentWid)
 {
-#ifdef PINENTRY_KWINDOWSYSTEM
+#if PINENTRY_KWINDOWSYSTEM
     widget->winId(); // Important; ensures that a window handle is returned.
     KWindowSystem::setMainWindow(widget->windowHandle(), parentWid);
 #endif

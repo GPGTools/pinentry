@@ -32,7 +32,7 @@ LockState capsLockState()
 {
     static bool reportUnsupportedPlatform = true;
 
-#ifdef PINENTRY_KGUIADDONS
+#if PINENTRY_KGUIADDONS
     if (qApp->platformName() != QLatin1String("wayland") && qApp->platformName() != QLatin1String("xcb") && reportUnsupportedPlatform) {
 #else
     if (reportUnsupportedPlatform) {
@@ -40,14 +40,14 @@ LockState capsLockState()
         qWarning() << "Checking for Caps Lock not possible on unsupported platform:" << qApp->platformName();
     }
     reportUnsupportedPlatform = false;
-#ifdef PINENTRY_KGUIADDONS
+#if PINENTRY_KGUIADDONS
     static KModifierKeyInfo keyInfo;
     return keyInfo.isKeyLocked(Qt::Key_CapsLock) ? LockState::On : LockState::Off;
 #endif
     return LockState::Unknown;
 }
 
-#ifdef PINENTRY_KGUIADDONS
+#if PINENTRY_KGUIADDONS
 void CapsLockWatcher::Private::watch()
 {
     keyInfo = new KModifierKeyInfo();

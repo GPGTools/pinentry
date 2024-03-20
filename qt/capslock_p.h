@@ -23,7 +23,7 @@
 
 #include "capslock.h"
 
-#ifdef PINENTRY_KGUIADDONS
+#if PINENTRY_KGUIADDONS
 #include <KModifierKeyInfo>
 #endif
 
@@ -32,7 +32,7 @@ class CapsLockWatcher::Private
 public:
     explicit Private(CapsLockWatcher *);
 
-#ifdef PINENTRY_KGUIADDONS
+#if PINENTRY_KGUIADDONS
     void watch();
     KModifierKeyInfo *keyInfo = nullptr;
 #endif
