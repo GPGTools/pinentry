@@ -4,6 +4,6 @@ Type=Application
 Categories=Qt;Utility;
 Exec=@prefix@/bin/pinentry-qt
 NoDisplay=true
-Icon=document-encrypt
+Icon=pinentry
 GenericName=Utility for entering GnuPG secrets
 X-KDE-Wayland-Interfaces=org_kde_kwin_keystate

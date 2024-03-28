@@ -20,7 +20,10 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = data-error.svg \
-	     document-encrypt.png \
+	     pinentry.png \
 	     hint.svg \
 	     password-generate.svg \
              visibility.svg
+
+icons_DATA = pinentry.png
+iconsdir = $(datadir)/pixmaps
