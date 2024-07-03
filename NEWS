@@ -1,6 +1,14 @@
-Noteworthy changes in version 1.3.1 (unreleased)
+Noteworthy changes in version 1.3.1 (2024-07-03)
 ------------------------------------------------
 
+ * qt: Install and use pinentry icon.  [rPf9c252a8d9]
+
+ * qt: Small fix for Qt5.  [rP844360c9c9]
+
+ * qt: Fix Windows build of Qt6.  [rP34019f954a]
+
+ * New envvar PINENTRY_KDE_USE_WALLET to enable the secret storage
+   integration on KDE.  [rP23753cfb03]
 
  Release-info: https://dev.gnupg.org/T7046
 
