@@ -1137,6 +1137,24 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
   return 0;
 }
 
+static void
+dialog_release (dialog_t diag)
+{
+  free (diag->ok);
+  free (diag->repeat_ok);
+  free (diag->repeat_error);
+  if (diag->cancel)
+    free (diag->cancel);
+  if (diag->notok)
+    free (diag->notok);
+
+  if (diag->repeat_pin)
+    secmem_free (diag->repeat_pin);
+
+  if (diag->error)
+    free (diag->error);
+}
+
 /* XXX Assume that field width is at least > 5.  */
 static void
 dialog_input (dialog_t diag, int alt, int chr)
@@ -1514,6 +1532,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
         fclose (ttyfi);
       if (ttyfo)
         fclose (ttyfo);
+      dialog_release (&diag);
       return -2;
     }
   dialog_switch_pos (&diag, confirm_mode? DIALOG_POS_OK : DIALOG_POS_PIN);
@@ -1719,12 +1738,7 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
     fclose (ttyfi);
   if (ttyfo)
     fclose (ttyfo);
-  /* XXX Factor out into dialog_release or something.  */
-  free (diag.ok);
-  if (diag.cancel)
-    free (diag.cancel);
-  if (diag.notok)
-    free (diag.notok);
+  dialog_release (&diag);
 
   if (!confirm_mode)
     {
@@ -1739,12 +1753,6 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  pinentry->locale_err = 0;
 	}
     }
-
-  if (diag.repeat_pin)
-    secmem_free (diag.repeat_pin);
-
-  if (diag.error)
-    free (diag.error);
 
   if (done == -2)
     pinentry->canceled = 1;
