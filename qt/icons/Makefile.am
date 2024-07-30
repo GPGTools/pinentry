@@ -23,7 +23,10 @@ EXTRA_DIST = data-error.svg \
 	     pinentry.png \
 	     hint.svg \
 	     password-generate.svg \
-             visibility.svg
+         visibility.svg \
+	     hint_dark.svg \
+	     password-generate_dark.svg \
+         visibility_dark.svg
 
 icons_DATA = pinentry.png
 iconsdir = $(datadir)/pixmaps

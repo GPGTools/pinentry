@@ -177,6 +177,7 @@ private:
     QLabel    *mConstraintsHint = nullptr;
     QString   mConstraintsErrorTitle;
     QCheckBox *mSavePassphraseCB = nullptr;
+    QString   mIconSuffix;
 };
 
 #endif // __PINENTRYDIALOG_H__

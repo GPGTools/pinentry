@@ -1,6 +1,7 @@
 Noteworthy changes in version 1.3.2 (unreleased)
 ------------------------------------------------
 
+ * qt: Use light icons in dark mode.  [T7230]
 
 Noteworthy changes in version 1.3.1 (2024-07-03)
 ------------------------------------------------
