@@ -23,14 +23,16 @@
 # include "config.h"
 #endif
 
+#ifdef GCR_API_4
+#include <gcr/gcr.h>
+#else
 #include <gcr/gcr-base.h>
+#endif
 
 #include <string.h>
 #include <stdlib.h>
 
 #include <assuan.h>
-
-#include "memory.h"
 
 #include "pinentry.h"
 
@@ -214,7 +216,6 @@ create_prompt (pinentry_t pe, int confirm)
      ui/frob-system-prompt.c for example conversion using %lu */
   snprintf (window_id, sizeof (window_id), "%lu",
             (long unsigned int)pe->parent_wid);
-  window_id[sizeof (window_id) - 1] = '\0';
   gcr_prompt_set_caller_window (prompt, window_id);
 
 #ifdef HAVE_LIBSECRET

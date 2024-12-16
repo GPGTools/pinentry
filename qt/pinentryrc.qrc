@@ -1,0 +1,13 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <file>icons/data-error.svg</file>
+    <file>icons/pinentry.png</file>
+    <file>icons/hint.svg</file>
+    <file>icons/password-generate.svg</file>
+    <file>icons/visibility.svg</file>
+    <file>icons/hint_dark.svg</file>
+    <file>icons/password-generate_dark.svg</file>
+    <file>icons/visibility_dark.svg</file>
+</qresource>
+</RCC>

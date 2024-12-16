@@ -22,7 +22,7 @@
   or smaller, so that the generated ChangeLog lines, each with its
   leading TAB, will not exceed 80 columns.
 
-  For more infomration please check the HACHING file from the GnuPG
+  For more information please check the HACKING file from the GnuPG
   project.
 
 * String translation

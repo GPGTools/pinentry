@@ -399,14 +399,12 @@ changed_text_handler (GtkWidget *widget)
   else if (percent < 0)
     {
       snprintf (textbuf, sizeof textbuf, "(%d%%)", -percent);
-      textbuf[sizeof textbuf -1] = 0;
       color.red = 0xffff;
       percent = -percent;
     }
   else
     {
       snprintf (textbuf, sizeof textbuf, "%d%%", percent);
-      textbuf[sizeof textbuf -1] = 0;
       color.green = 0xffff;
     }
   gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (qualitybar),

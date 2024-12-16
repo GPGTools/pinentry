@@ -31,7 +31,7 @@
 #endif
 
 #include "password-cache.h"
-#include "memory.h"
+#include "../secmem/secmem.h"
 
 #ifdef HAVE_LIBSECRET
 static const SecretSchema *

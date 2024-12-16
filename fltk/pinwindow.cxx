@@ -32,7 +32,7 @@
 #include <FL/Fl_Return_Button.H>
 #include <FL/Fl_Pixmap.H>
 
-#include "memory.h"
+#include "../secmem/secmem.h"
 
 #include "encrypt.xpm"
 #include "icon.xpm"

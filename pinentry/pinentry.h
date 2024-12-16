@@ -1,5 +1,5 @@
 /* pinentry.h - The interface for the PIN entry support library.
- * Copyright (C) 2002, 2003, 2010, 2015 g10 Code GmbH
+ * Copyright (C) 2002, 2003, 2010, 2015, 2021 g10 Code GmbH
  *
  * This file is part of PINENTRY.
  *
@@ -20,6 +20,8 @@
 
 #ifndef PINENTRY_H
 #define PINENTRY_H
+
+#include "../secmem/secmem.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -150,6 +152,9 @@ struct pinentry
      dismiss button is required. */
   int one_button;
 
+  /* Whether this is a CONFIRM pinentry. */
+  int confirm;
+
   /* If true a second prompt for the passphrase is shown and the user
      is expected to enter the same passphrase again.  Pinentry checks
      that both match.  (Assuan: "SETREPEAT".)  */
@@ -158,6 +163,10 @@ struct pinentry
   /* The string to show if a repeated passphrase does not match.
      (Assuan: "SETREPEATERROR ERROR".)  */
   char *repeat_error_string;
+
+  /* The string to show if a repeated passphrase does match.
+     (Assuan: "SETREPEATOK STRING".)  */
+  char *repeat_ok_string;
 
   /* Set to true if the passphrase has been entered a second time and
      matches the first passphrase.  */
@@ -170,19 +179,28 @@ struct pinentry
      "SETQUALITYBAR LABEL".)  */
   char *quality_bar;
 
-  /* The tooltip to be show for the qualitybar.  Malloced or NULL.
+  /* The tooltip to be shown for the qualitybar.  Malloced or NULL.
      (Assuan: "SETQUALITYBAR_TT TOOLTIP".)  */
   char *quality_bar_tt;
 
   /* If this is not NULL, a generate action should be shown.
      There will be an inquiry back to the caller to get such a
      PIN. generate action.  Malloced or NULL.
-     (Assuan: "GENPIN LABEL .)  */
+     (Assuan: "SETGENPIN LABEL" .)  */
   char *genpin_label;
 
-  /* The tooltip to be show for the generate action.  Malloced or NULL.
-     (Assuan: "GENPIN TOOLTIP".)  */
+  /* The tooltip to be shown for the generate action.  Malloced or NULL.
+     (Assuan: "SETGENPIN_TT TOOLTIP".)  */
   char *genpin_tt;
+
+  /* Specifies whether passphrase formatting should be enabled.
+     (Assuan: "OPTION formatted-passphrase")  */
+  int formatted_passphrase;
+
+  /* A hint to be shown near the passphrase input field if passphrase
+     formatting is enabled.  Malloced or NULL.
+     (Assuan: "OPTION formatted-passphrase-hint=HINT".)  */
+  char *formatted_passphrase_hint;
 
   /* For the curses pinentry, the color of error messages.  */
   pinentry_color_t color_fg;
@@ -190,6 +208,10 @@ struct pinentry
   pinentry_color_t color_bg;
   pinentry_color_t color_so;
   int color_so_bright;
+  pinentry_color_t color_ok;
+  int color_ok_bright;
+  pinentry_color_t color_qualitybar;
+  int color_qualitybar_bright;
 
   /* Malloced and i18ned default strings or NULL.  These strings may
      include an underscore character to indicate an accelerator key.
@@ -212,6 +234,9 @@ struct pinentry
   /* (Assuan: "OPTION default-tt-hide
      Hide passphrase").  */
   char *default_tt_hide;
+  /* (Assuan: "OPTION default-capshint
+     Caps Lock is on").  */
+  char *default_capshint;
 
   /* Whether we are allowed to read the password from an external
      cache.  (Assuan: "OPTION allow-external-password-cache")  */
@@ -239,6 +264,26 @@ struct pinentry
      used.  */
   char *invisible_char;
 
+  /* Whether the passphrase constraints are enforced by gpg-agent.
+     (Assuan: "OPTION constraints-enforce")  */
+  int constraints_enforce;
+
+  /* A short translated hint for the user with the constraints for new
+     passphrases to be displayed near the passphrase input field.
+     Malloced or NULL.
+     (Assuan: "OPTION constraints-hint-short=At least 8 characters".)  */
+  char *constraints_hint_short;
+
+  /* A longer translated hint for the user with the constraints for new
+     passphrases to be displayed for example as tooltip.  Malloced or NULL.
+     (Assuan: "OPTION constraints-hint-long=The passphrase must ...".)  */
+  char *constraints_hint_long;
+
+  /* A short translated title for an error dialog informing the user about
+     unsatisfied passphrase constraints.  Malloced or NULL.
+     (Assuan: "OPTION constraints-error-title=Passphrase Not Allowed".)  */
+  char *constraints_error_title;
+
 };
 typedef struct pinentry *pinentry_t;
 
@@ -263,21 +308,19 @@ int pinentry_loop (void);
  */
 int pinentry_loop2 (int infd, int outfd);
 
-
-/* Convert the UTF-8 encoded string TEXT to the encoding given in
-   LC_CTYPE.  Return NULL on error. */
-char *pinentry_utf8_to_local (const char *lc_ctype, const char *text);
-
-/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
-   SECURE set to true, use secure memory for the returned buffer.
-   Return NULL on error. */
-char *pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure);
+const char *pinentry_get_pgmname (void);
 
 char *pinentry_get_title (pinentry_t pe);
 
 /* Run a quality inquiry for PASSPHRASE of LENGTH. */
 int pinentry_inq_quality (pinentry_t pin,
                           const char *passphrase, size_t length);
+
+/* Run a checkpin inquiry for PASSPHRASE of LENGTH.  Returns NULL, if the
+   passphrase satisfies the constraints.  Otherwise, returns a malloced error
+   string. */
+char *pinentry_inq_checkpin (pinentry_t pin,
+                             const char *passphrase, size_t length);
 
 /* Run a genpin iquriry. Returns a malloced string or NULL */
 char *pinentry_inq_genpin (pinentry_t pin);

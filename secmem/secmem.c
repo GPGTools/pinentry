@@ -20,24 +20,20 @@
  */
 
 #include <config.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef HAVE_W32CE_SYSTEM
 #include <errno.h>
-#endif
 #include <stdarg.h>
 #include <unistd.h>
 #if defined(HAVE_MLOCK) || defined(HAVE_MMAP)
 # include <sys/mman.h>
 # include <sys/types.h>
 # include <fcntl.h>
-# ifdef USE_CAPABILITIES
-#  include <sys/capability.h>
-# endif
 #endif
 #include <string.h>
 
-#include "memory.h"
+#include "secmem.h"
 
 #ifdef ORIGINAL_GPG_VERSION
 #include "types.h"
@@ -51,7 +47,7 @@ typedef union {
     short b;
     char c[1];
     long d;
-#ifdef HAVE_U64_TYPEDEF
+#ifdef HAVE_U64_TYPE
     u64 e;
 #endif
     float f;
@@ -103,7 +99,9 @@ struct memblock_struct {
 
 static void  *pool;
 static volatile int pool_okay; /* may be checked in an atexit function */
+#if HAVE_MMAP
 static int   pool_is_mmapped;
+#endif
 static size_t poolsize; /* allocated length */
 static size_t poollen;	/* used length */
 static MEMBLOCK *unused_blocks;
@@ -128,26 +126,7 @@ print_warn(void)
 static void
 lock_pool( void *p, size_t n )
 {
-#if defined(USE_CAPABILITIES) && defined(HAVE_MLOCK)
-    int err;
-
-    cap_set_proc( cap_from_text("cap_ipc_lock+ep") );
-    err = mlock( p, n );
-    if( err && errno )
-	err = errno;
-    cap_set_proc( cap_from_text("cap_ipc_lock+p") );
-
-    if( err ) {
-	if( errno != EPERM
-	  #ifdef EAGAIN  /* OpenBSD returns this */
-	    && errno != EAGAIN
-	  #endif
-	  )
-	    log_error("can't lock memory: %s\n", strerror(err));
-	show_warning = 1;
-    }
-
-#elif defined(HAVE_MLOCK)
+#if defined(HAVE_MLOCK)
     uid_t uid;
     int err;
 
@@ -156,17 +135,13 @@ lock_pool( void *p, size_t n )
 #ifdef HAVE_BROKEN_MLOCK
     if( uid ) {
 	errno = EPERM;
-	err = errno;
+	err = -1;
     }
     else {
 	err = mlock( p, n );
-	if( err && errno )
-	    err = errno;
     }
 #else
     err = mlock( p, n );
-    if( err && errno )
-	err = errno;
 #endif
 
     if( uid && !geteuid() ) {
@@ -180,11 +155,13 @@ lock_pool( void *p, size_t n )
 	    && errno != EAGAIN
 #endif
 	  )
-	    log_error("can't lock memory: %s\n", strerror(err));
+	    log_error("can't lock memory: %s\n", strerror(errno));
 	show_warning = 1;
     }
 
 #else
+    (void)p;
+    (void)n;
     log_info("Please note that you don't have secure memory on this system\n");
 #endif
 }
@@ -193,20 +170,22 @@ lock_pool( void *p, size_t n )
 static void
 init_pool( size_t n)
 {
+#if HAVE_MMAP
     size_t pgsize;
+#endif
 
     poolsize = n;
 
     if( disable_secmem )
 	log_bug("secure memory is disabled");
 
+#if HAVE_MMAP
 #ifdef HAVE_GETPAGESIZE
     pgsize = getpagesize();
 #else
     pgsize = 4096;
 #endif
 
-#if HAVE_MMAP
     poolsize = (poolsize + pgsize -1 ) & ~(pgsize-1);
 # ifdef MAP_ANONYMOUS
        pool = mmap( 0, poolsize, PROT_READ|PROT_WRITE,
@@ -284,11 +263,7 @@ void
 secmem_init( size_t n )
 {
     if( !n ) {
-#ifdef USE_CAPABILITIES
-	/* drop all capabilities */
-	cap_set_proc( cap_from_text("all-eip") );
-
-#elif !defined(HAVE_DOSISH_SYSTEM)
+#if !defined(HAVE_DOSISH_SYSTEM)
 	uid_t uid;
 
 	disable_secmem=1;
@@ -380,7 +355,9 @@ secmem_realloc( void *p, size_t newsize )
     if (! p)
       return secmem_malloc(newsize);
 
-    mb = (MEMBLOCK*)((char*)p - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
+    mb = (MEMBLOCK*) (void *) ((char *) p
+                               - offsetof (MEMBLOCK, u.aligned.c));
+
     size = mb->size;
     if( newsize < size )
 	return p; /* it is easier not to shrink the memory */
@@ -401,7 +378,8 @@ secmem_free( void *a )
     if( !a )
 	return;
 
-    mb = (MEMBLOCK*)((char*)a - ((size_t) &((MEMBLOCK*)0)->u.aligned.c));
+    mb = (MEMBLOCK*) (void *) ((char*)a
+                               - offsetof (MEMBLOCK, u.aligned.c));
     size = mb->size;
     /* This does not make much sense: probably this memory is held in the
      * cache. We do it anyway: */
@@ -423,7 +401,7 @@ m_is_secure( const void *p )
 }
 
 void
-secmem_term()
+secmem_term(void)
 {
     if( !pool_okay )
 	return;
@@ -445,7 +423,7 @@ secmem_term()
 
 
 void
-secmem_dump_stats()
+secmem_dump_stats(void)
 {
     if( disable_secmem )
 	return;

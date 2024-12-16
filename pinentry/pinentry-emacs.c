@@ -48,7 +48,7 @@
 #include <assuan.h>
 
 #include "pinentry-emacs.h"
-#include "memory.h"
+#include "../secmem/secmem.h"
 #include "secmem-util.h"
 
 /* The communication mechanism is similar to emacsclient, but there
@@ -498,7 +498,7 @@ set_labels (pinentry_t pe)
     set_label (pe, "SETOK", pe->default_ok);
   if (pe->cancel)
     set_label (pe, "SETCANCEL", pe->cancel);
-  else if (pe->default_ok)
+  else if (pe->default_cancel)
     set_label (pe, "SETCANCEL", pe->default_cancel);
   if (pe->notok)
     set_label (pe, "SETNOTOK", pe->notok);
