@@ -180,6 +180,7 @@ Grab the keyboard only when the window is focused.  Use this option if
 you are debugging software using the @pinentry{}; otherwise you may
 not be able to to access your X session anymore (unless you have other
 means to connect to the machine to kill the @pinentry{}).
+Note that this feature only supported in flavors of Gtk+2 and Qt@tie{}4/5/6.
 
 @item --parent-wid @var{n}
 @opindex parent-wid
@@ -214,7 +215,7 @@ options using Assuan protocol options.
 @chapter Front Ends
 
 There are several different flavors of @pinentry{}.  Concretely, there
-are Gtk+2, Qt@tie{}4, TQt, EFL, FLTK, Gnome@tie{}3, Emacs, curses and
+are Gtk+2, Qt@tie{}4/5/6, TQt, EFL, FLTK, Gnome@tie{}3, Emacs, curses and
 tty variants.  These different implementations provide higher levels
 of integration with a specific environment.  For instance, the
 Gnome@tie{}3 @pinentry{} uses Gnome@tie{}3 widgets to display the
@@ -406,6 +407,74 @@ If you want to show a tooltip for the quality bar, you may use
 
 @noindent
 With STRING being a percent escaped string shown as the tooltip.
+
+
+@item Enable enforcement of passphrase constraints
+This will make the pinentry check whether the new passphrase entered by
+the user satisfies the passphrase constraints before passing the passphrase
+to gpg-agent and closing the pinentry.  This gives the user the chance to
+modify the passphrase until the constraints are satisfied without retyping
+the passphrase.
+@example
+  C: OPTION constraints-enforce
+  S: OK
+@end example
+
+To inform the user about the constraints a short hint and a longer hint
+can be set using
+@example
+  C: OPTION constraints-hint-short=At least 8 characters
+  S: OK
+  C: OPTION constraints-hint-long=The passphrase must ...
+  S: OK
+@end example
+
+Additionally, a title for the dialog showing details in case of unsatisfied
+constraints can be set using
+@example
+  C: OPTION constraints-error-title=Passphrase Not Allowed
+  S: OK
+@end example
+
+All strings have to be percent escaped.
+
+
+@item Enable an action for generating a passphrase
+Adds an action for generating a random passphrase to the GETPIN window.
+The action is only available when asking for a new passphrase, i.e., if
+SETREPEAT has been called.
+@example
+  C: SETGENPIN Suggest
+  S: OK
+@end example
+
+If you want to provide a tooltip for the action, you may use
+@example
+  C: SETGENPIN_TT Suggest a random passphrase
+  S: OK
+@end example
+
+
+@item Enable passphrase formatting
+Passphrase formatting will group the characters of the passphrase into
+groups of five characters separated by non-breaking spaces or a similar
+separator.  This is useful in combination with passphrase generation to make
+the generated passphrase easier readable.
+@example
+  C: OPTION formatted-passphrase
+  S: OK
+@end example
+
+Note: If passphrase formatting is enabled, then, depending on the concrete
+pinentry, all occurrences of the character used as separator may be stripped
+from the entered passphrase.
+
+To provide a hint for the user that is shown if passphrase formatting is
+enabled use
+@example
+  C: OPTION formatted-passphrase-hint=Blanks are not part of the passphrase.
+  S: OK
+@end example
 
 
 @item Ask for a PIN
@@ -679,14 +748,54 @@ password quality widget correspondingly.
 @item @code{quality_bar_tt}
 A tooltip for the quality bar.
 
+@item @code{constraints_enforce}
+If this is not 0, then passphrase constraints are enforced by gpg-agent.
+In this case pinentry can use the @code{pinentry_inq_checkpin} function
+for checking whether the new passphrase satisfies the constraints before
+passing it to gpg-agent.
+
+@item @code{constraints_hint_short}
+A short translated hint for the user with the constraints for new
+passphrases to be displayed near the passphrase input field.
+
+@item @code{constraints_hint_short}
+A longer translated hint for the user with the constraints for new
+passphrases to be displayed for example as tooltip.
+
+@item @code{constraints_error_title}
+A short translated title for an error dialog informing the user about
+unsatisfied passphrase constraints.
+
+@item @code{genpin_label}
+If this is set, a generate action should be shown.  The value of this
+field is a label for the action.
+
+Note: Call the @code{pinentry_inq_genpin} function to request a randomly
+generated passphrase.
+
+@item @code{genpin_tt}
+The tooltip for the generate action.
+
+@item @code{formatted_passphrase}
+If this is not 0, then passphrase formatting should be enabled.  If it is
+enabled, then the unmasked passphrase should be grouped into groups of five
+characters separated by non-breaking spaces or a similar separator.
+
+To simplify the implementation all occurrences of the character used as
+separator can be stripped from the entered passphrase, if formatting is
+enabled.
+
+@item @code{formatted_passphrase_hint}
+A hint to be shown if passphrase formatting is enabled.  It should be shown
+near the passphrase input field.
+
 @item @code{default_pwmngr}
 If @code{may_cache_password} and @code{keyinfo} are set and the user
 consents, then the @pinentry{} may cache the password with an external
 manager.  Note: getting the user's consent is essential, because
 password managers often provide a different level of security.  If the
-above condition is true and @code{tried_password_cache} is false, then
-a check box with the specified string should be displayed.  The check
-box must default to off.
+above condition is true, then a check box with the specified string should
+be displayed.  The check box must default to off.
 
 @item @code{default-cf-visi}
 The string to show with a question if you want to confirm that
@@ -698,6 +807,9 @@ Tooltip for an action that would reveal the entered password.
 @item @code{default-tt-hide}
 Tooltip for an action that would hide the password revealed
 by the action labeld with @code{default-tt-visi}
+
+@item @code{default-capshint}
+A hint to be shown if Caps Lock is on.
 
 @end table
 

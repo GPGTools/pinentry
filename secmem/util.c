@@ -23,9 +23,7 @@
 #define _GNU_SOURCE 1
 
 #include <unistd.h>
-#ifndef HAVE_W32CE_SYSTEM
-# include <errno.h>
-#endif
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,11 +51,7 @@ xwrite(int fd, const void *data, size_t bytes)
       do
         written = write (fd, ptr, todo);
       while (
-#ifdef HAVE_W32CE_SYSTEM
-             0
-#else
              written == -1 && errno == EINTR
-#endif
              );
       if (written < 0)
         break;
@@ -100,7 +94,7 @@ init_uids(void)
 
 /* drop all additional privileges */
 void
-drop_privs()
+drop_privs(void)
 {
 #ifndef HAVE_DOSISH_SYSTEM
   if (!uid_set)

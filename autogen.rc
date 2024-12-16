@@ -14,8 +14,6 @@ esac
 case "$myhost" in
   w32)
     configure_opts="
-      --with-gpg-error-prefix=@SYSROOT@
-      --with-libassuan-prefix=@SYSROOT@
       --with-libiconv-prefix=@SYSROOT@
       PKG_CONFIG_LIBDIR=@SYSROOT@/lib/pkgconfig
       "

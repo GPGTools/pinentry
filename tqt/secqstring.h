@@ -65,7 +65,7 @@
 
 extern "C"
 {
-#include "memory.h"
+#include "../secmem/secmem.h"
 }
 
 /* We need the original qchar and qstring for transparent conversion

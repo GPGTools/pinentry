@@ -33,6 +33,6 @@ endif
 AM_CPPFLAGS = $(COMMON_CFLAGS) $(EFL_CFLAGS) $(ncurses_include) \
 	-I$(top_srcdir)/secmem -I$(top_srcdir)/pinentry
 LDADD = ../pinentry/libpinentry.a ../secmem/libsecmem.a \
-	$(COMMON_LIBS) $(LIBCAP) $(EFL_LIBS) $(libcurses)
+	$(COMMON_LIBS) $(EFL_LIBS) $(libcurses)
 
 pinentry_efl_SOURCES = pinentry-efl.c

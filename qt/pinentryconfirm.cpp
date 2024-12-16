@@ -1,6 +1,9 @@
 /* pinentryconfirm.cpp - A QMessageBox with a timeout
  *
  * Copyright (C) 2011 Ben Kibbey <bjk@luxsci.net>
+ * Copyright (C) 2022 g10 Code GmbH
+ *
+ * Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,27 +21,66 @@
  */
 
 #include "pinentryconfirm.h"
+
+#include "accessibility.h"
 #include "pinentrydialog.h"
+
+#include <QApplication>
 #include <QAbstractButton>
 #include <QGridLayout>
+#include <QLabel>
 #include <QSpacerItem>
 #include <QFontMetrics>
 
-PinentryConfirm::PinentryConfirm(Icon icon, int timeout, const QString &title,
-                                 const QString &desc, StandardButtons buttons, QWidget *parent) :
-    QMessageBox(icon, title, desc, buttons, parent)
+namespace
 {
-    _timed_out = false;
-    if (timeout > 0) {
-        _timer = new QTimer(this);
-        connect(_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
-        _timer->start(timeout * 1000);
-    }
+QLabel *messageBoxLabel(QMessageBox *messageBox)
+{
+    return messageBox->findChild<QLabel *>(QStringLiteral("qt_msgbox_label"));
+}
+}
+
+PinentryConfirm::PinentryConfirm(Icon icon, const QString &title, const QString &text,
+                                 StandardButtons buttons, QWidget *parent, Qt::WindowFlags flags)
+    : QMessageBox{icon, title, text, buttons, parent, flags}
+{
+    _timer.callOnTimeout(this, &PinentryConfirm::slotTimeout);
+
 #ifndef QT_NO_ACCESSIBILITY
-    setAccessibleDescription(desc);
-    setAccessibleName(title);
+    QAccessible::installActivationObserver(this);
+    accessibilityActiveChanged(QAccessible::isActive());
 #endif
-    raiseWindow(this);
+
+#if QT_VERSION >= 0x050000
+    /* This is in line with PinentryDialog ctor to have a maximizing
+     * animation when opening. */
+    if (qApp->platformName() != QLatin1String("wayland")) {
+        setWindowState(Qt::WindowMinimized);
+        QTimer::singleShot(0, this, [this] () {
+            raiseWindow(this);
+        });
+    }
+#else
+    activateWindow();
+    raise();
+#endif
+}
+
+PinentryConfirm::~PinentryConfirm()
+{
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::removeActivationObserver(this);
+#endif
+}
+
+void PinentryConfirm::setTimeout(std::chrono::seconds timeout)
+{
+    _timer.setInterval(timeout);
+}
+
+std::chrono::seconds PinentryConfirm::timeout() const
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(_timer.intervalAsDuration());
 }
 
 bool PinentryConfirm::timedOut() const
@@ -60,8 +102,12 @@ void PinentryConfirm::showEvent(QShowEvent *event)
         resized = true;
     }
 
-    QDialog::showEvent(event);
-    raiseWindow(this);
+    QMessageBox::showEvent(event);
+
+    if (timeout() > std::chrono::milliseconds::zero()) {
+        _timer.setSingleShot(true);
+        _timer.start();
+    }
 }
 
 void PinentryConfirm::slotTimeout()
@@ -70,8 +116,19 @@ void PinentryConfirm::slotTimeout()
     _timed_out = true;
 
     if (b) {
-        b->animateClick(0);
+        b->animateClick();
     }
 }
+
+#ifndef QT_NO_ACCESSIBILITY
+void PinentryConfirm::accessibilityActiveChanged(bool active)
+{
+    // Allow text label to get focus if accessibility is active
+    const auto focusPolicy = active ? Qt::StrongFocus : Qt::ClickFocus;
+    if (auto label = messageBoxLabel(this)) {
+        label->setFocusPolicy(focusPolicy);
+    }
+}
+#endif
 
 #include "pinentryconfirm.moc"

@@ -19,37 +19,23 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #if WINVER < 0x0403
 # define WINVER 0x0403  /* Required for SendInput.  */
 #endif
 #include <windows.h>
-#ifdef HAVE_W32CE_SYSTEM
-# include <winioctl.h>
-# include <sipapi.h>
-#endif
 
 #include "pinentry.h"
-#include "memory.h"
 
 #include "resource.h"
 /* #include "msgcodes.h" */
 
 #define PGMNAME "pinentry-w32"
 
-#ifndef LSFW_LOCK
-# define LSFW_LOCK 1
-# define LSFW_UNLOCK 2
-#endif
-
 #ifndef debugfp
 #define debugfp stderr
 #endif
 
-
-/* This function pointer gets initialized in main.  */
-#ifndef HAVE_W32CE_SYSTEM
-static BOOL WINAPI (*lock_set_foreground_window)(UINT);
-#endif
 
 static int w32_cmd_handler (pinentry_t pe);
 static void ok_button_clicked (HWND dlg, pinentry_t pe);
@@ -79,50 +65,12 @@ w32_strerror (int ec)
 
   if (ec == -1)
     ec = (int)GetLastError ();
-#ifdef HAVE_W32CE_SYSTEM
-  /* There is only a wchar_t FormatMessage.  It does not make much
-     sense to play the conversion game; we print only the code.  */
-  snprintf (strerr, sizeof strerr, "ec=%d", ec);
-  strerr[sizeof strerr -1] = 0;
-#else
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, sizeof strerr - 1, NULL);
-#endif
   return strerr;
 }
 
-
-
-#ifdef HAVE_W32CE_SYSTEM
-/* Create a pipe.  WRITE_END shall have the opposite value of the one
-   pssed to _assuan_w32ce_prepare_pipe; see there for more
-   details.  */
-#define GPGCEDEV_IOCTL_MAKE_PIPE                                        \
-  CTL_CODE (FILE_DEVICE_STREAMS, 2049, METHOD_BUFFERED, FILE_ANY_ACCESS)
-static HANDLE
-w32ce_finish_pipe (int rvid, int write_end)
-{
-  HANDLE hd;
-
-  hd = CreateFile (L"GPG1:", write_end? GENERIC_WRITE : GENERIC_READ,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE,
-                   NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL,NULL);
-  if (hd != INVALID_HANDLE_VALUE)
-    {
-      if (!DeviceIoControl (hd, GPGCEDEV_IOCTL_MAKE_PIPE,
-                            &rvid, sizeof rvid, NULL, 0, NULL, NULL))
-        {
-          DWORD lastrc = GetLastError ();
-          CloseHandle (hd);
-          hd = INVALID_HANDLE_VALUE;
-          SetLastError (lastrc);
-        }
-    }
-
-  return hd;
-}
-#endif /*HAVE_W32CE_SYSTEM*/
 
 
 /* static HWND */
@@ -213,34 +161,11 @@ utf8_to_wchar (const char *string)
 }
 
 
-/* Raise the software input panel.  */
-static void
-raise_sip (HWND dlg)
-{
-#ifdef HAVE_W32CE_SYSTEM
-  SIPINFO si;
-
-  SetForegroundWindow (dlg);
-
-  memset (&si, 0, sizeof si);
-  si.cbSize = sizeof si;
-
-  if (SipGetInfo (&si))
-    {
-      si.fdwFlags |= SIPF_ON;
-      SipSetInfo (&si);
-    }
-#else
-  (void)dlg;
-#endif
-}
-
 /* Center the window CHILDWND with the desktop as its parent
    window.  STYLE is passed as second arg to SetWindowPos.*/
 static void
 center_window (HWND childwnd, HWND style)
 {
-#ifndef HAVE_W32CE_SYSTEM
   HWND parwnd;
   RECT rchild, rparent;
   HDC hdc;
@@ -274,60 +199,6 @@ center_window (HWND childwnd, HWND style)
   if (style == HWND_TOPMOST || style == HWND_NOTOPMOST)
     flags = SWP_NOMOVE | SWP_NOSIZE;
   SetWindowPos (childwnd, style? style : NULL, xnew, ynew, 0, 0, flags);
-#endif
-}
-
-
-
-static void
-move_mouse_and_click (HWND hwnd)
-{
-#ifndef HAVE_W32CE_SYSTEM
-  RECT rect;
-  HDC hdc;
-  int wscreen, hscreen, x, y, normx, normy;
-  INPUT inp[3];
-  int idx;
-
-  hdc = GetDC (hwnd);
-  wscreen = GetDeviceCaps (hdc, HORZRES);
-  hscreen = GetDeviceCaps (hdc, VERTRES);
-  ReleaseDC (hwnd, hdc);
-  if (wscreen < 10 || hscreen < 10)
-    return;
-
-  GetWindowRect (hwnd, &rect);
-  x = rect.left;
-  y = rect.bottom;
-
-  normx = x * (65535 / wscreen);
-  if (normx < 0 || normx > 65535)
-    return;
-  normy = y * (65535 / hscreen);
-  if (normy < 0 || normy > 65535)
-    return;
-
-  for (idx=0; idx < 3; idx++)
-    memset (&inp[idx], 0, sizeof inp[idx]);
-
-  idx=0;
-  inp[idx].type = INPUT_MOUSE;
-  inp[idx].mi.dx = normx;
-  inp[idx].mi.dy = normy;
-  inp[idx].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-  idx++;
-
-  inp[idx].type = INPUT_MOUSE;
-  inp[idx].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-  idx++;
-
-  inp[idx].type = INPUT_MOUSE;
-  inp[idx].mi.dwFlags = MOUSEEVENTF_LEFTUP;
-  idx++;
-
-  if ( (SendInput (idx, inp, sizeof (INPUT)) != idx) && debugfp)
-    fprintf (debugfp, "SendInput failed: %s\n", w32_strerror (-1));
-#endif
 }
 
 
@@ -339,7 +210,9 @@ resize_button (HWND hwnd, const char *string)
   if (!hwnd)
     return;
 
-  /* FIXME: Need to figure out how to convert dialog coorddnates to
+  (void)string;
+
+  /* FIXME: Need to figure out how to convert dialog coordinates to
      screen coordinates and how buttons should be placed.  */
 /*   SetWindowPos (hbutton, NULL, */
 /*                 10, 180,  */
@@ -421,7 +294,7 @@ set_bitmap (HWND dlg, int item)
 
 
 /* Dialog processing loop.  */
-static BOOL CALLBACK
+static INT_PTR CALLBACK
 dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   static pinentry_t pe;
@@ -477,20 +350,8 @@ dlg_proc (HWND dlg, UINT msg, WPARAM wparam, LPARAM lparam)
 
       center_window (dlg, HWND_TOP);
 
-      /* Unfortunately we can't use SetForegroundWindow because there
-         is no easy eay to have all the calling processes do an
-         AllowSetForegroundWindow.  What we do instead is to bad hack
-         by simulating a click to the Window. */
-/*       if (SetForegroundWindow (dlg) && lock_set_foreground_window) */
-/*         { */
-/*           lock_set_foreground_window (LSFW_LOCK); */
-/*         } */
-
-/*       show_window_hierarchy (GetDesktopWindow (), 0); */
-
       ShowWindow (dlg, SW_SHOW);
-      move_mouse_and_click ( GetDlgItem (dlg, IDC_PINENT_PROMPT) );
-      raise_sip (dlg);
+
       break;
 
     case WM_COMMAND:
@@ -571,8 +432,6 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
 static int
 w32_cmd_handler (pinentry_t pe)
 {
-/*   HWND lastwindow = GetForegroundWindow (); */
-
   confirm_mode = !pe->pin;
 
   passphrase_ok = confirm_yes = 0;
@@ -580,14 +439,7 @@ w32_cmd_handler (pinentry_t pe)
   dialog_handle = NULL;
   DialogBoxParam (GetModuleHandle (NULL), MAKEINTRESOURCE (IDD_PINENT),
                   GetDesktopWindow (), dlg_proc, (LPARAM)pe);
-  if (dialog_handle)
-    {
-/*       if (lock_set_foreground_window) */
-/*         lock_set_foreground_window (LSFW_UNLOCK); */
-/*       if (lastwindow) */
-/*         SetForegroundWindow (lastwindow); */
-    }
-  else
+  if (!dialog_handle)
     return -1;
 
   if (confirm_mode)
@@ -599,93 +451,12 @@ w32_cmd_handler (pinentry_t pe)
 }
 
 
-/* WindowsCE uses a very strange way of handling the standard streams.
-   There is a function SetStdioPath to associate a standard stream
-   with a file or a device but what we really want is to use pipes as
-   standard streams.  Despite that we implement pipes using a device,
-   we would have some limitations on the number of open pipes due to
-   the 3 character limit of device file name.  Thus we don't take this
-   path.  Another option would be to install a file system driver with
-   support for pipes; this would allow us to get rid of the device
-   name length limitation.  However, with GnuPG we can get away be
-   redefining the standard streams and passing the handles to be used
-   on the command line.  This has also the advantage that it makes
-   creating a process much easier and does not require the
-   SetStdioPath set and restore game.  The caller needs to pass the
-   rendezvous ids using up to three options:
-
-     -&S0=<rvid> -&S1=<rvid> -&S2=<rvid>
-
-   They are all optional but they must be the first arguments on the
-   command line.  Parsing stops as soon as an invalid option is found.
-   These rendezvous ids are then used to finish the pipe creation.*/
-#ifdef HAVE_W32CE_SYSTEM
-static void
-parse_std_file_handles (int *argcp, char ***argvp)
-{
-  int argc = *argcp;
-  char **argv = *argvp;
-  const char *s;
-  int fd;
-  int i;
-  int fixup = 0;
-
-  if (!argc)
-    return;
-
-  for (argc--, argv++; argc; argc--, argv++)
-    {
-      s = *argv;
-      if (*s == '-' && s[1] == '&' && s[2] == 'S'
-          && (s[3] == '0' || s[3] == '1' || s[3] == '2')
-          && s[4] == '='
-          && (strchr ("-01234567890", s[5]) || !strcmp (s+5, "null")))
-        {
-          if (s[5] == 'n')
-            fd = (int)(-1);
-          else
-            fd = (int)w32ce_finish_pipe (atoi (s+5), s[3] != '0');
-          if (s[3] == '0' && fd != -1)
-            w32_infd = fd;
-          else if (s[3] == '1' && fd != -1)
-            w32_outfd = fd;
-          fixup++;
-        }
-      else
-        break;
-    }
-
-  if (fixup)
-    {
-      argc = *argcp;
-      argc -= fixup;
-      *argcp = argc;
-
-      argv = *argvp;
-      for (i=1; i < argc; i++)
-        argv[i] = argv[i + fixup];
-      for (; i < argc + fixup; i++)
-        argv[i] = NULL;
-    }
-
-
-}
-#endif /*HAVE_W32CE_SYSTEM*/
-
 
 int
 main (int argc, char **argv)
 {
-#ifndef HAVE_W32CE_SYSTEM
-  void *handle;
-#endif
-
   w32_infd = STDIN_FILENO;
   w32_outfd = STDOUT_FILENO;
-
-#ifdef HAVE_W32CE_SYSTEM
-  parse_std_file_handles (&argc, &argv);
-#endif
 
   pinentry_init (PGMNAME);
 
@@ -695,26 +466,9 @@ main (int argc, char **argv)
 /*   if (!debugfp) */
 /*     debugfp = stderr; */
 
-  /* We need to load a function because that one is only available
-     since W2000 but not in older NTs.  */
-#ifndef HAVE_W32CE_SYSTEM
-  handle = LoadLibrary ("user32.dll");
-  if (handle)
-    {
-      void *foo;
-      foo = GetProcAddress (handle, "LockSetForegroundWindow");
-      if (foo)
-        lock_set_foreground_window = foo;
-      else
-        CloseHandle (handle);
-    }
-#endif
 
   if (pinentry_loop2 (w32_infd, w32_outfd))
     return 1;
 
-#ifdef HAVE_W32CE_SYSTEM
-  Sleep (400);
-#endif
   return 0;
 }

@@ -23,6 +23,6 @@ bin_PROGRAMS = pinentry-emacs
 
 AM_CPPFLAGS = $(COMMON_CFLAGS) $(NEMACS_INCLUDE) -I$(top_srcdir)/pinentry
 LDADD = ../pinentry/libpinentry.a ../secmem/libsecmem.a \
-	$(COMMON_LIBS) $(LIBCAP) $(LIBEMACS) $(LIBICONV)
+	$(COMMON_LIBS) $(LIBEMACS) $(LIBICONV)
 
 pinentry_emacs_SOURCES = pinentry-emacs.c
