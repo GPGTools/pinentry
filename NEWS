@@ -1,3 +1,110 @@
+Noteworthy changes in version 1.3.1 (2024-07-03)
+------------------------------------------------
+
+ * qt: Install and use pinentry icon.  [rPf9c252a8d9]
+
+ * qt: Small fix for Qt5.  [rP844360c9c9]
+
+ * qt: Fix Windows build of Qt6.  [rP34019f954a]
+
+ * New envvar PINENTRY_KDE_USE_WALLET to enable the secret storage
+   integration on KDE.  [rP23753cfb03]
+
+ Release-info: https://dev.gnupg.org/T7046
+
+
+Noteworthy changes in version 1.3.0 (2024-03-18)
+------------------------------------------------
+
+ * qt: Add new Qt6 frontend.  [rP1e79123c38]
+
+ * qt: Set parent window on Wayland.  [T6930]
+
+ * qt: Fix capslock detection on Wayland.  [rP7dfc60a70d]
+
+ * qt: Fix window icon on Wayland.  [T6887]
+
+ * qt: Add support for external password manager with libsecret.
+   [T6801]
+
+ * qt: Remove focus indication by text selection.  [T5863]
+
+ * qt: Use same focus indication for labels as Kleopatra.  [T5863]
+
+ * qt: Improve accessibility.  [T5863]
+
+ * gnome3: Prefer gcr-4.  [rP069c219223]
+
+ * curses: Fix timeout handling.  [rP08408498b3]
+
+ * curses: Add SETREPEATOK and quality bar colors.  [rP2f109972e4]
+
+ * curses: Add password quality meter.  [rP2923707e75]
+
+ * curses,tty: Upon SIGINT, let pinentry exit gracefully.  [T6641]
+
+ * w32: Fix non-focused window and simplify code.  [rPabbecc67d9]
+
+ * Disable secret storage integration when running on KDE Plasma.
+   [rPefb6de7f]
+
+ * The Windows CE support has been removed.
+
+
+ Release-info: https://dev.gnupg.org/T7046
+
+
+Noteworthy changes in version 1.2.1 (2022-08-24)
+------------------------------------------------
+
+ * qt: Support building with Qt 5.9.  [T5592]
+
+ * curses: Handle an error at curses initialization.  [T5623]
+
+ * curses: Specify fg/bg when an extention of Ncurses is not available.
+   [T5631]
+
+ * qt: Fix translation of context menu entries.  [T5786]
+
+ * qt: Further improve the accessibility.  [T5863]
+
+ * qt: Fix moving focus to second input field when pressing Enter in
+   first input field.  [T5866]
+
+ * qt: Update the cursor position when reformatting the text.  [T5972]
+
+ * qt: Use foreground raising code also with the confirm prompt.
+   [T6134]
+
+ * Make the legacy qt4 version build again.  [T5569]
+
+ * Make sure an entered PIN is always cleared from memory.  [T5977]
+
+ * Build fixes for Windows.  [T5893]
+
+
+Noteworthy changes in version 1.2.0 (2021-08-25)
+------------------------------------------------
+
+ * qt: Show a warning if Caps Lock is on on Windows, X11 (requires
+   libX11 and Qt5X11Extras), and Wayland (requires KF5WaylandClient).
+   [T4950]
+
+ * qt: Support password formatting.  This makes generated passwords
+   easier to transcript. [T5517]
+
+ * qt: Fix showing of pinentry window on Wayland.  [T5528]
+
+ * qt: Check passphrase constraints before accepting passphrase if
+   passphrase constraints are requested to be enforced.  [T5532]
+
+ * qt: Improve detection of running in a GUI session.  [T3659]
+
+ * qt: Improve accessibility when entering new password.  [T5543]
+
+ Release-info: https://dev.gnupg.org/T5566
+
+
 Noteworthy changes in version 1.1.1 (2021-01-21)
 ------------------------------------------------
 

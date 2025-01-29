@@ -10,6 +10,7 @@
 /config.status
 /configure
 /Makefile.in
+/VERSION
 autom4te.cache/
 assuan/Makefile.in
 assuan/Makefile
@@ -32,6 +33,12 @@ pinentry/Makefile.in
 pinentry/Makefile
 qt/Makefile.in
 qt/Makefile
+qt/icons/Makefile.in
+qt/icons/Makefile
+qt4/Makefile.in
+qt4/Makefile
+qt5/Makefile.in
+qt5/icons/Makefile.in
 tqt/Makefile.in
 tqt/Makefile
 secmem/Makefile.in

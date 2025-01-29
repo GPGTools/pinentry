@@ -34,7 +34,6 @@
 #include <getopt.h>
 #include <assert.h>
 
-#include "memory.h"
 #include <memory>
 
 #include <pinentry.h>

@@ -41,7 +41,6 @@
 #include <gpg-error.h>
 
 #include "pinentry.h"
-#include "memory.h"
 
 #ifndef HAVE_DOSISH_SYSTEM
 static int timed_out;
@@ -131,7 +130,7 @@ button (char *text, char *default_text, FILE *ttyfo)
           highlight++;
           continue;
         }
-      if (!isalnum (*highlight))
+      if (!isalnum (*(unsigned char*)highlight))
         /* Unusable accelerator.  */
         continue;
       break;
@@ -141,7 +140,7 @@ button (char *text, char *default_text, FILE *ttyfo)
     /* Not accelerator.  Take the first alpha-numeric character.  */
     {
       highlight = text;
-      while (*highlight && !isalnum (*highlight))
+      while (*highlight && !isalnum (*(unsigned char*)highlight))
 	highlight ++;
     }
 
@@ -525,18 +524,20 @@ tty_cmd_handler (pinentry_t pinentry)
   int rc = 0;
   FILE *ttyfi = stdin;
   FILE *ttyfo = stdout;
+  int saved_errno = 0;
 
 #ifndef HAVE_DOSISH_SYSTEM
+  struct sigaction sa;
+
+  memset (&sa, 0, sizeof(sa));
+  sa.sa_handler = catchsig;
+  sigaction (SIGINT, &sa, NULL);
+
   timed_out = 0;
 
   if (pinentry->timeout)
     {
-      struct sigaction sa;
-
-      memset (&sa, 0, sizeof(sa));
-      sa.sa_handler = catchsig;
       sigaction (SIGALRM, &sa, NULL);
-      sigaction (SIGINT, &sa, NULL);
       alarm (pinentry->timeout);
     }
 #endif
@@ -545,30 +546,27 @@ tty_cmd_handler (pinentry_t pinentry)
     {
       ttyfi = fopen (pinentry->ttyname, "r");
       if (!ttyfi)
-        rc = -1;
-      else
+        return -1;
+
+      ttyfo = fopen (pinentry->ttyname, "w");
+      if (!ttyfo)
         {
-          ttyfo = fopen (pinentry->ttyname, "w");
-          if (!ttyfo)
-            {
-              int err = errno;
-              fclose (ttyfi);
-              errno = err;
-              rc = -1;
-            }
+          saved_errno = errno;
+          fclose (ttyfi);
+          errno = saved_errno;
+          return -1;
         }
     }
 
   if (terminal_save (fileno (ttyfi)) < 0)
     rc = -1;
-
-  if (! rc)
+  else
     {
       if (terminal_setup (fileno (ttyfi), !!pinentry->pin) == -1)
         {
-          int err = errno;
+          saved_errno = errno;
           fprintf (stderr, "terminal_setup failure, exiting\n");
-          errno = err;
+          rc = -1;
         }
       else
         {
@@ -578,16 +576,18 @@ tty_cmd_handler (pinentry_t pinentry)
             rc = confirm (pinentry, ttyfi, ttyfo);
 
           terminal_restore (fileno (ttyfi));
+          do_touch_file (pinentry);
         }
     }
-
-  do_touch_file (pinentry);
 
   if (pinentry->ttyname)
     {
       fclose (ttyfi);
       fclose (ttyfo);
     }
+
+  if (saved_errno)
+    errno = saved_errno;
 
   return rc;
 }

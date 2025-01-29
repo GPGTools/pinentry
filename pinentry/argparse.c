@@ -1386,7 +1386,7 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
 }
 
 static void
-show_version ()
+show_version (void)
 {
   const char *s;
   int i;

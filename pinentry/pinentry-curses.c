@@ -29,7 +29,29 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <iconv.h>
-#include <langinfo.h>
+#if defined(HAVE_LANGINFO_H)
+# include <langinfo.h>
+#elif defined(HAVE_W32_SYSTEM)
+# include <stdio.h>
+# ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
+/* A simple replacement for nl_langinfo that only understands
+   CODESET.  */
+# define CODESET 1
+char *
+nl_langinfo (int ignore)
+{
+  static char codepage[20];
+  UINT cp = GetACP ();
+
+  (void)ignore;
+
+  sprintf (codepage, "CP%u", cp);
+  return codepage;
+}
+#endif
 #include <limits.h>
 #include <string.h>
 #include <errno.h>
@@ -39,8 +61,6 @@
 #ifdef HAVE_UTIME_H
 #include <utime.h>
 #endif /*HAVE_UTIME_H*/
-
-#include <memory.h>
 
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
@@ -63,7 +83,7 @@
 #define STRING_NOTOK "<No>"
 #define STRING_CANCEL "<Cancel>"
 
-#define USE_COLORS		(has_colors () && COLOR_PAIRS >= 2)
+#define USE_COLORS		(has_colors () && COLOR_PAIRS >= 4)
 static short pinentry_color[] = { -1, -1, COLOR_BLACK, COLOR_RED,
 				  COLOR_GREEN, COLOR_YELLOW, COLOR_BLUE,
 				  COLOR_MAGENTA, COLOR_CYAN, COLOR_WHITE };
@@ -71,45 +91,6 @@ static int init_screen;
 #ifndef HAVE_DOSISH_SYSTEM
 static int timed_out;
 #endif
-
-typedef enum
-  {
-    DIALOG_POS_NONE,
-    DIALOG_POS_PIN,
-    DIALOG_POS_OK,
-    DIALOG_POS_NOTOK,
-    DIALOG_POS_CANCEL
-  }
-dialog_pos_t;
-
-struct dialog
-{
-  dialog_pos_t pos;
-  int pin_y;
-  int pin_x;
-  /* Width of the PIN field.  */
-  int pin_size;
-  /* Cursor location in PIN field.  */
-  int pin_loc;
-  int pin_max;
-  /* Length of PIN.  */
-  int pin_len;
-  int got_input;
-  int no_echo;
-
-  int ok_y;
-  int ok_x;
-  char *ok;
-  int cancel_y;
-  int cancel_x;
-  char *cancel;
-  int notok_y;
-  int notok_x;
-  char *notok;
-
-  pinentry_t pinentry;
-};
-typedef struct dialog *dialog_t;
 
 
 #ifdef HAVE_NCURSESW
@@ -131,6 +112,206 @@ typedef char CH;
 #define NLCH '\n'
 #define SPCH ' '
 #endif
+
+typedef enum
+  {
+    DIALOG_POS_NONE,
+    DIALOG_POS_PIN,
+    DIALOG_POS_REPEAT_PIN,
+    DIALOG_POS_OK,
+    DIALOG_POS_NOTOK,
+    DIALOG_POS_CANCEL
+  }
+dialog_pos_t;
+
+struct dialog
+{
+  dialog_pos_t pos;
+  char *repeat_pin;
+  int pin_y;
+  int pin_x;
+  int repeat_pin_y;
+  int repeat_pin_x;
+  int quality_x;
+  int quality_y;
+  /* Width of the PIN field.  */
+  int pin_size;
+  int repeat_pin_size;
+  int quality_size;
+  /* Cursor location in PIN field.  */
+  int pin_loc;
+  int repeat_pin_loc;
+  int pin_max;
+  /* Length of PIN.  */
+  int pin_len;
+  int got_input;
+  int no_echo;
+  int repeat_pin_len;
+
+  int ok_y;
+  int ok_x;
+  char *ok;
+  int cancel_y;
+  int cancel_x;
+  char *cancel;
+  int notok_y;
+  int notok_x;
+  char *notok;
+
+  int error_y;
+  int error_x;
+  int error_height;
+  int width;
+  CH *error;
+  CH *repeat_error;
+  CH *repeat_ok;
+
+  pinentry_t pinentry;
+};
+typedef struct dialog *dialog_t;
+
+/* Flag to remember whether a warning has been printed.  */
+static int lc_ctype_unknown_warning;
+
+static char *
+pinentry_utf8_to_local (const char *lc_ctype, const char *text)
+{
+  iconv_t cd;
+  const char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+  char *old_ctype;
+  char *target_encoding;
+  const char *pgmname = pinentry_get_pgmname ();
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    {
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
+      return strdup (text);
+    }
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  target_encoding = nl_langinfo (CODESET);
+  if (!target_encoding)
+    target_encoding = "?";
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open (target_encoding, "UTF-8");
+  if (cd == (iconv_t) -1)
+    {
+      fprintf (stderr, "%s: can't convert from UTF-8 to %s: %s\n",
+               pgmname, target_encoding, strerror (errno));
+      free (output_buf);
+      return NULL;
+    }
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      fprintf (stderr, "%s: error converting from UTF-8 to %s: %s\n",
+               pgmname, target_encoding, strerror (errno));
+      free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
+
+/* Convert TEXT which is encoded according to LC_CTYPE to UTF-8.  With
+   SECURE set to true, use secure memory for the returned buffer.
+   Return NULL on error. */
+static char *
+pinentry_local_to_utf8 (char *lc_ctype, char *text, int secure)
+{
+  char *old_ctype;
+  char *source_encoding;
+  iconv_t cd;
+  const char *input = text;
+  size_t input_len = strlen (text) + 1;
+  char *output;
+  size_t output_len;
+  char *output_buf;
+  size_t processed;
+  const char *pgmname = pinentry_get_pgmname ();
+
+  /* If no locale setting could be determined, simply copy the
+     string.  */
+  if (!lc_ctype)
+    {
+      if (! lc_ctype_unknown_warning)
+	{
+	  fprintf (stderr, "%s: no LC_CTYPE known - assuming UTF-8\n",
+		   pgmname);
+	  lc_ctype_unknown_warning = 1;
+	}
+      output_buf = secure? secmem_malloc (input_len) : malloc (input_len);
+      if (output_buf)
+        strcpy (output_buf, input);
+      return output_buf;
+    }
+
+  old_ctype = strdup (setlocale (LC_CTYPE, NULL));
+  if (!old_ctype)
+    return NULL;
+  setlocale (LC_CTYPE, lc_ctype);
+  source_encoding = nl_langinfo (CODESET);
+  setlocale (LC_CTYPE, old_ctype);
+  free (old_ctype);
+
+  /* This is overkill, but simplifies the iconv invocation greatly.  */
+  output_len = input_len * MB_LEN_MAX;
+  output_buf = output = secure? secmem_malloc (output_len):malloc (output_len);
+  if (!output)
+    return NULL;
+
+  cd = iconv_open ("UTF-8", source_encoding);
+  if (cd == (iconv_t) -1)
+    {
+      fprintf (stderr, "%s: can't convert from %s to UTF-8: %s\n",
+               pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
+      if (secure)
+        secmem_free (output_buf);
+      else
+        free (output_buf);
+      return NULL;
+    }
+  processed = iconv (cd, (ICONV_CONST char **)&input, &input_len,
+                     &output, &output_len);
+  iconv_close (cd);
+  if (processed == (size_t) -1 || input_len)
+    {
+      fprintf (stderr, "%s: error converting from %s to UTF-8: %s\n",
+               pgmname, source_encoding? source_encoding : "?",
+               strerror (errno));
+      if (secure)
+        secmem_free (output_buf);
+      else
+        free (output_buf);
+      return NULL;
+    }
+  return output_buf;
+}
 
 /* Return the next line up to MAXWIDTH columns wide in START and LEN.
    Return value is the width needed for the line.
@@ -233,6 +414,158 @@ utf8_to_local (const char *lc_ctype, const char *string)
 }
 #endif
 
+static int test_repeat (dialog_t);
+static void
+draw_error (dialog_t dialog, int *xpos, int *ypos, int repeat_matches)
+{
+  CH *p = NULL, *error = NULL;
+  int i = 0;
+  int x = dialog->width;
+  int error_y = dialog->error_y;
+  pinentry_t pinentry = dialog->pinentry;
+
+  if (dialog->pinentry->confirm)
+    return;
+
+  for (i = 0; i < dialog->error_height; i++)
+    {
+      move (error_y+i, dialog->error_x+1);
+      hline(' ', dialog->width-2);
+    }
+
+  if (repeat_matches == -1)
+    {
+      error = p = dialog->error && dialog->pinentry->error ? dialog->error : NULL;
+
+      if (!p)
+        {
+          if (dialog->error_y || dialog->error_x)
+            {
+              for (i = 0; i < dialog->error_height; i++)
+                {
+                  move (i+ dialog->error_y, dialog->error_x);
+                  hline(' ', dialog->width - 2);
+                }
+
+              move (dialog->error_y, dialog->error_x);
+              vline(0, dialog->error_height+1);
+            }
+        }
+
+      if (pinentry->repeat_passphrase && dialog->repeat_ok)
+        {
+          p = dialog->repeat_ok;
+          goto draw;
+        }
+    }
+  else if (pinentry->repeat_passphrase && dialog->repeat_ok && repeat_matches == 1)
+    p = dialog->repeat_ok;
+  else if (pinentry->repeat_passphrase && dialog->repeat_error && repeat_matches == 0)
+    p = dialog->repeat_error;
+  else
+    p = dialog->error;
+
+draw:
+  while (p && *p)
+    {
+      move (error_y, dialog->error_x);
+      vline(0, dialog->error_height+1);
+      move (error_y, dialog->error_x+1);
+      addch(' ');
+      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
+        {
+          if (dialog->repeat_ok && (repeat_matches == 1 || repeat_matches == -1))
+            {
+              attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+              attron (COLOR_PAIR (3) | (pinentry->color_so_bright ? A_BOLD : 0));
+            }
+          else
+            {
+              attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+              attron (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+            }
+        }
+      else
+        standout ();
+
+      for (i = 0; *p && *p != NLCH; p++)
+        if (i < x - 4)
+          {
+            i++;
+            if (dialog->error || (pinentry->repeat_passphrase
+                 && dialog->repeat_error && repeat_matches == 0))
+              {
+                ADDCH (*p);
+              }
+            else if (dialog->repeat_ok && (repeat_matches == 1 || repeat_matches == -1))
+              {
+                ADDCH (*p);
+              }
+            else
+              addch (' '); // Error without any OK set needs clearing.
+          }
+      hline(' ', dialog->width-i-4);
+
+      if (USE_COLORS)
+        {
+         if (repeat_matches == 0 && pinentry->color_so != PINENTRY_COLOR_NONE)
+           attroff (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
+         else if (repeat_matches == 1 && pinentry->color_ok != PINENTRY_COLOR_NONE)
+           attroff (COLOR_PAIR (3) | (pinentry->color_so_bright ? A_BOLD : 0));
+         attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
+        }
+      else
+        standend ();
+      if (*p == '\n')
+          p++;
+
+      i = 0;
+      error_y++;
+    }
+
+  if (error)
+    {
+      move (*ypos, *xpos);
+      addch (ACS_VLINE);
+    }
+
+  (*ypos)++;
+  for (error_y = 0; error_y < dialog->error_height; error_y++)
+    (*ypos)++;
+}
+
+static int
+test_repeat (dialog_t diag)
+{
+  int x = diag->error_x;
+  int y = diag->error_y;
+  int ox, oy;
+  int ret = 0;
+
+  if (!diag->pinentry->repeat_passphrase)
+    ret = 1;
+
+  if (!diag->pinentry->pin && !diag->repeat_pin)
+    ret = 1;
+
+  if ((diag->pinentry->pin && !*diag->pinentry->pin
+          && (!diag->repeat_pin || !*diag->repeat_pin)))
+    ret = 1;
+
+  if (diag->repeat_pin && !*diag->repeat_pin
+          && (!diag->pinentry->pin || !*diag->pinentry->pin))
+    ret = 1;
+
+  if (diag->pinentry->pin && diag->repeat_pin
+      && !strcmp (diag->pinentry->pin, diag->repeat_pin))
+    ret = 1;
+
+  getyx (stdscr, oy, ox);
+  draw_error (diag, &x, &y, ret);
+  wmove (stdscr, oy, ox);
+  return ret;
+}
+
 static int
 dialog_create (pinentry_t pinentry, dialog_t dialog)
 {
@@ -247,9 +580,14 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   int error_x = 0;
   CH *description = NULL;
   CH *error = NULL;
+  CH *ok = NULL;
   CH *prompt = NULL;
+  CH *repeat_passphrase = NULL;
+  CH *repeat_error_string = NULL;
+  CH *repeat_ok_string = NULL;
 
   dialog->pinentry = pinentry;
+  dialog->error_height = 0;
 
 #define COPY_OUT(what)							\
   do									\
@@ -267,8 +605,40 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   while (0)
 
   COPY_OUT (description);
-  COPY_OUT (error);
   COPY_OUT (prompt);
+  COPY_OUT (repeat_passphrase);
+
+  COPY_OUT (error);
+  if (!error || !*error)
+    {
+      free (error);
+      error = NULL;
+    }
+  dialog->error = error;
+
+  if (repeat_passphrase)
+    {
+      COPY_OUT (repeat_error_string);
+      if (!repeat_error_string || !*repeat_error_string)
+        {
+          free (repeat_error_string);
+          repeat_error_string = NULL;
+        }
+      dialog->repeat_error = repeat_error_string;
+      if (repeat_error_string)
+        {
+          if (!error || (error && STRLEN (error) < STRLEN (repeat_error_string)))
+            error = repeat_error_string;
+        }
+      COPY_OUT (repeat_ok_string);
+      if (!repeat_ok_string || !*repeat_ok_string)
+        {
+          free (repeat_ok_string);
+          repeat_ok_string = NULL;
+        }
+      else
+        ok = dialog->repeat_ok = repeat_ok_string;
+    }
 
   /* There is no pinentry->default_notok.  Map it to
      pinentry->notok.  */
@@ -315,6 +685,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
         }								\
       dialog->which = pinentry_utf8_to_local (pinentry->lc_ctype,	\
 					      new ? new : default);	\
+      free (new);							\
       if (!dialog->which)						\
         {								\
 	  err = 1;							\
@@ -360,26 +731,51 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     {
       if (error)
 	{
-	  CH *p = error;
-	  int err_x = 0;
+          CH *start = error;
+          int len = 0;
 
-	  while (*p)
-	    {
-	      if (*(p++) == '\n')
-		{
-		  if (err_x > error_x)
-		    error_x = err_x;
-		  y++;
-		  err_x = 0;
-		}
-	      else
-		err_x++;
-	    }
-	  if (err_x > error_x)
-	    error_x = err_x;
-	  y += 2;	/* Error message.  */
-	}
+          do
+            {
+              int width = collect_line (size_x - 4, &start, &len);
+
+              if (width > error_x)
+                error_x = width;
+
+              dialog->error_height++;
+              y++;
+            }
+          while (start[len - 1]);
+          y++;
+        }
+      if (ok)
+        {
+          CH *start = ok;
+          int len = 0;
+          int i = 0;
+
+          do
+            {
+              int width = collect_line (size_x - 4, &start, &len);
+
+              if (width > error_x)
+                error_x = width;
+              i++;
+            }
+          while (start[len - 1]);
+          if (i > dialog->error_height)
+            {
+              y += i - dialog->error_height;
+              dialog->error_height = i;
+              y++;
+            }
+        }
       y += 2;		/* Pin entry field.  */
+
+      if (repeat_passphrase)
+        {
+          y += 2;
+          y += 2; // quality meter
+        }
     }
   y += 2;		/* OK/Cancel and bottom frame.  */
 
@@ -407,7 +803,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 #define MIN_PINENTRY_LENGTH 40
       int new_x;
 
-      if (error)
+      if (error || ok)
 	{
 	  new_x = error_x;
 	  if (new_x > size_x - 4)
@@ -419,8 +815,12 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       new_x = MIN_PINENTRY_LENGTH;
       if (prompt)
 	{
-	  new_x += STRWIDTH (prompt) + 1;	/* One space after prompt.  */
+          int n  = repeat_passphrase ? STRWIDTH (repeat_passphrase) : 0;
+	  new_x += STRWIDTH (prompt) + n + 1;	/* One space after prompt.  */
 	}
+      else if (repeat_passphrase)
+        new_x += STRWIDTH (repeat_passphrase) + 1;
+
       if (new_x > size_x - 4)
 	new_x = size_x - 4;
       if (new_x > x)
@@ -451,8 +851,8 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
 
   dialog->pos = DIALOG_POS_NONE;
   dialog->pin_max = pinentry->pin_len;
-  dialog->pin_loc = 0;
-  dialog->pin_len = 0;
+  dialog->pin_loc = dialog->repeat_pin_loc = 0;
+  dialog->pin_len = dialog->repeat_pin_len = 0;
   ypos = (size_y - y) / 2;
   xpos = (size_x - x) / 2;
   move (ypos, xpos);
@@ -468,6 +868,7 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
   move (ypos + y - 1, xpos + x - 1);
   addch (ACS_LRCORNER);
   ypos++;
+  dialog->width = x;
   if (description)
     {
       CH *start = description;
@@ -498,45 +899,12 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
     {
       int i;
 
-      if (error)
-	{
-	  CH *p = error;
-	  i = 0;
-
-	  while (*p)
-	    {
-	      move (ypos, xpos);
-	      addch (ACS_VLINE);
-	      addch (' ');
-	      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
-		{
-		  attroff (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
-		  attron (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
-		}
-	      else
-		standout ();
-	      for (;*p && *p != NLCH; p++)
-		if (i < x - 4)
-		  {
-		    i++;
-		    ADDCH (*p);
-		  }
-	      if (USE_COLORS && pinentry->color_so != PINENTRY_COLOR_NONE)
-		{
-		  attroff (COLOR_PAIR (2) | (pinentry->color_so_bright ? A_BOLD : 0));
-		  attron (COLOR_PAIR (1) | (pinentry->color_fg_bright ? A_BOLD : 0));
-		}
-	      else
-		standend ();
-	      if (*p == '\n')
-		p++;
-	      i = 0;
-	      ypos++;
-	    }
-	  move (ypos, xpos);
-	  addch (ACS_VLINE);
-	  ypos++;
-	}
+      if (error || ok)
+        {
+          dialog->error_x = xpos;
+          dialog->error_y = ypos;
+          draw_error (dialog, &xpos, &ypos, -1);
+        }
 
       move (ypos, xpos);
       addch (ACS_VLINE);
@@ -566,6 +934,55 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
       move (ypos, xpos);
       addch (ACS_VLINE);
       ypos++;
+
+      if (repeat_passphrase)
+        {
+	  CH *p = repeat_passphrase;
+
+          move (ypos, xpos);
+          addch (ACS_VLINE);
+          addch (' ');
+
+          dialog->repeat_pin_y = ypos;
+          dialog->repeat_pin_x = xpos + 2;
+          dialog->repeat_pin_size = x - 4;
+	  i = STRLEN (p);
+	  if (i > x - 4 - MIN_PINENTRY_LENGTH)
+	    i = x - 4 - MIN_PINENTRY_LENGTH;
+	  dialog->repeat_pin_x += i + 1;
+          dialog->repeat_pin_size -= i + 1;
+	  while (i-- > 0)
+	    {
+	      ADDCH (*(p++));
+	    }
+	  addch (' ');
+          for (i = 0; i < dialog->repeat_pin_size; i++)
+            addch ('_');
+          ypos++;
+          move (ypos, xpos);
+          vline(0, 3);
+
+          dialog->quality_y = ypos + 1;
+          dialog->quality_x = xpos + 3;
+          dialog->quality_size = x - 6;
+          move (ypos, xpos + 2);
+          addch (ACS_ULCORNER);
+          hline (0, x - 6);
+          move (ypos, xpos + 2 + x - 5);
+          addch (ACS_URCORNER);
+          move (ypos + 1, xpos + 2);
+          vline (0, 1);
+          move (ypos + 1, xpos + 2 + x -5);
+          vline (0, 1);
+          move (ypos + 2, xpos + 2);
+          addch (ACS_LLCORNER);
+          hline (0, x - 6);
+          move (ypos + 2, xpos + 2 + x - 5);
+          addch (ACS_LRCORNER);
+          move (ypos + 2, xpos + 2 + x - 5);
+          move (dialog->quality_y, dialog->quality_x);
+          ypos += 3;
+        }
     }
   move (ypos, xpos);
   addch (ACS_VLINE);
@@ -610,10 +1027,11 @@ dialog_create (pinentry_t pinentry, dialog_t dialog)
  out:
   if (description)
     free (description);
-  if (error)
-    free (error);
   if (prompt)
     free (prompt);
+  if (repeat_passphrase)
+    free (repeat_passphrase);
+
   return err;
 }
 
@@ -644,8 +1062,8 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
       switch (diag->pos)
 	{
 	case DIALOG_POS_OK:
-	  move (diag->ok_y, diag->ok_x);
-	  addstr (diag->ok);
+          move (diag->ok_y, diag->ok_x);
+          addstr (diag->ok);
 	  break;
 	case DIALOG_POS_NOTOK:
           if (diag->notok)
@@ -671,13 +1089,22 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 	  move (diag->pin_y, diag->pin_x + diag->pin_loc);
 	  set_cursor_state (1);
 	  break;
+	case DIALOG_POS_REPEAT_PIN:
+	  move (diag->repeat_pin_y, diag->repeat_pin_x + diag->repeat_pin_loc);
+          if (diag->no_echo)
+            {
+              move (diag->repeat_pin_y, diag->repeat_pin_x);
+              addstr ("[no echo]");
+            }
+	  set_cursor_state (1);
+	  break;
 	case DIALOG_POS_OK:
 	  set_cursor_state (0);
-	  move (diag->ok_y, diag->ok_x);
-	  standout ();
-	  addstr (diag->ok);
-	  standend ();
-	  move (diag->ok_y, diag->ok_x);
+          move (diag->ok_y, diag->ok_x);
+          standout ();
+          addstr (diag->ok);
+          standend ();
+          move (diag->ok_y, diag->ok_x);
 	  break;
 	case DIALOG_POS_NOTOK:
           if (diag->notok)
@@ -714,9 +1141,36 @@ dialog_switch_pos (dialog_t diag, dialog_pos_t new_pos)
 static void
 dialog_input (dialog_t diag, int alt, int chr)
 {
-  int old_loc = diag->pin_loc;
+  int old_loc = diag->pos == DIALOG_POS_PIN ? diag->pin_loc
+    : diag->repeat_pin_loc;
+  int *pin_len;
+  int *pin_loc;
+  int *pin_size;
+  int *pin_x, *pin_y;
+  int *pin_max = &diag->pin_max;
+  char *pin;
+
   assert (diag->pinentry->pin);
-  assert (diag->pos == DIALOG_POS_PIN);
+  assert (diag->pos == DIALOG_POS_PIN || diag->pos == DIALOG_POS_REPEAT_PIN);
+
+  if (diag->pos == DIALOG_POS_PIN)
+    {
+      pin_len = &diag->pin_len;
+      pin_loc = &diag->pin_loc;
+      pin_size = &diag->pin_size;
+      pin_x = &diag->pin_x;
+      pin_y = &diag->pin_y;
+      pin = diag->pinentry->pin;
+    }
+  else
+    {
+      pin_len = &diag->repeat_pin_len;
+      pin_loc = &diag->repeat_pin_loc;
+      pin_size = &diag->repeat_pin_size;
+      pin_x = &diag->repeat_pin_x;
+      pin_y = &diag->repeat_pin_y;
+      pin = diag->repeat_pin;
+    }
 
   if (alt && chr == KEY_BACKSPACE)
     /* Remap alt-backspace to control-W.  */
@@ -730,21 +1184,21 @@ dialog_input (dialog_t diag, int alt, int chr)
       /* ASCII DEL.  What Mac OS X apparently emits when the "delete"
 	 (backspace) key is pressed.  */
     case 127:
-      if (diag->pin_len > 0)
+      if (*pin_len > 0)
 	{
-	  diag->pin_len--;
-	  diag->pin_loc--;
-	  if (diag->pin_loc == 0 && diag->pin_len > 0)
+	  (*pin_len)--;
+	  (*pin_loc)--;
+	  if (*pin_loc == 0 && *pin_len > 0)
 	    {
-	      diag->pin_loc = diag->pin_size - 5;
-	      if (diag->pin_loc > diag->pin_len)
-		diag->pin_loc = diag->pin_len;
+	      *pin_loc = *pin_size - 5;
+	      if (*pin_loc > *pin_len)
+		*pin_loc = *pin_len;
 	    }
 	}
       else if (!diag->got_input)
 	{
 	  diag->no_echo = 1;
-	  move (diag->pin_y, diag->pin_x);
+	  move (*pin_y, *pin_x);
 	  addstr ("[no echo]");
 	}
       break;
@@ -757,47 +1211,45 @@ dialog_input (dialog_t diag, int alt, int chr)
 
     case 'u' - 'a' + 1: /* control-u */
       /* Erase the whole line.  */
-      if (diag->pin_len > 0)
+      if (*pin_len > 0)
 	{
-	  diag->pin_len = 0;
-	  diag->pin_loc = 0;
+	  *pin_len = 0;
+	  *pin_loc = 0;
 	}
       break;
 
     case 'w' - 'a' + 1: /* control-w.  */
-      while (diag->pin_len > 0
-	     && diag->pinentry->pin[diag->pin_len - 1] == ' ')
+      while (*pin_len > 0 && pin[*pin_len - 1] == ' ')
 	{
-	  diag->pin_len --;
-	  diag->pin_loc --;
-	  if (diag->pin_loc < 0)
+	  (*pin_len)--;
+	  (*pin_loc)--;
+	  if (*pin_loc < 0)
 	    {
-	      diag->pin_loc += diag->pin_size;
-	      if (diag->pin_loc > diag->pin_len)
-		diag->pin_loc = diag->pin_len;
+	      *pin_loc += *pin_size;
+	      if (*pin_loc > *pin_len)
+		*pin_loc = *pin_len;
 	    }
 	}
-      while (diag->pin_len > 0
-	     && diag->pinentry->pin[diag->pin_len - 1] != ' ')
+      while (*pin_len > 0 && pin[*pin_len - 1] != ' ')
 	{
-	  diag->pin_len --;
-	  diag->pin_loc --;
-	  if (diag->pin_loc < 0)
+	  (*pin_len)--;
+	  (*pin_loc)--;
+	  if (*pin_loc < 0)
 	    {
-	      diag->pin_loc += diag->pin_size;
-	      if (diag->pin_loc > diag->pin_len)
-		diag->pin_loc = diag->pin_len;
+	      *pin_loc += *pin_size;
+	      if (*pin_loc > *pin_len)
+		*pin_loc = *pin_len;
 	    }
 	}
 
       break;
 
     default:
-      if (chr > 0 && chr < 256 && diag->pin_len < diag->pin_max)
+      if (chr > 0 && chr < 256 && *pin_len < *pin_max)
 	{
 	  /* Make sure there is enough room for this character and a
 	     following NUL byte.  */
-	  if (! pinentry_setbufferlen (diag->pinentry, diag->pin_len + 2))
+	  if (! pinentry_setbufferlen (diag->pinentry, *pin_len + 2))
 	    {
 	      /* Bail.  Here we use a simple approach.  It would be
                  better to have a pinentry_bug function.  */
@@ -805,14 +1257,40 @@ dialog_input (dialog_t diag, int alt, int chr)
               abort ();
 	    }
 
-	  diag->pinentry->pin[diag->pin_len] = (char) chr;
-	  diag->pin_len++;
-	  diag->pin_loc++;
-	  if (diag->pin_loc == diag->pin_size && diag->pin_len < diag->pin_max)
+          if (diag->pos == DIALOG_POS_REPEAT_PIN)
+            {
+              if (!*pin_len || *pin_len > diag->repeat_pin_len)
+                {
+                  char *newp = secmem_realloc (diag->repeat_pin, *pin_len + 2);
+
+                  if (newp)
+                    pin = diag->repeat_pin = newp;
+                  else
+                    {
+                      secmem_free (diag->pinentry->pin);
+                      diag->pinentry->pin = 0;
+                      diag->pinentry->pin_len = 0;
+                      secmem_free (diag->repeat_pin);
+                      diag->repeat_pin = NULL;
+                      *pin_len = 0;
+                      /* Bail.  Here we use a simple approach.  It would be
+                         better to have a pinentry_bug function.  */
+                      assert (!"setbufferlen failed");
+                      abort ();
+                    }
+                }
+            }
+          else
+            pin = diag->pinentry->pin;
+
+	  pin[*pin_len] = (char) chr;
+	  (*pin_len)++;
+	  (*pin_loc)++;
+	  if (*pin_loc == *pin_size && *pin_len < *pin_max)
 	    {
-	      diag->pin_loc = 5;
-	      if (diag->pin_loc < diag->pin_size - (diag->pin_max + 1 - diag->pin_len))
-		diag->pin_loc = diag->pin_size - (diag->pin_max + 1 - diag->pin_len);
+	      *pin_loc = 5;
+	      if (*pin_loc < *pin_size - (*pin_max + 1 - *pin_len))
+		*pin_loc = *pin_size - (*pin_max + 1 - *pin_len);
 	    }
 	}
       break;
@@ -822,19 +1300,49 @@ dialog_input (dialog_t diag, int alt, int chr)
 
   if (!diag->no_echo)
     {
-      if (old_loc < diag->pin_loc)
+      if (old_loc < *pin_loc)
 	{
-	  move (diag->pin_y, diag->pin_x + old_loc);
-	  while (old_loc++ < diag->pin_loc)
+	  move (*pin_y, *pin_x + old_loc);
+	  while (old_loc++ < *pin_loc)
 	    addch ('*');
 	}
-      else if (old_loc > diag->pin_loc)
+      else if (old_loc > *pin_loc)
 	{
-	  move (diag->pin_y, diag->pin_x + diag->pin_loc);
-	  while (old_loc-- > diag->pin_loc)
+	  move (*pin_y, *pin_x + *pin_loc);
+	  while (old_loc-- > *pin_loc)
 	    addch ('_');
 	}
-      move (diag->pin_y, diag->pin_x + diag->pin_loc);
+      move (*pin_y, *pin_x + *pin_loc);
+    }
+
+  if (pin)
+    pin[*pin_len] = 0;
+
+  if (diag->pinentry->repeat_passphrase && diag->pos == DIALOG_POS_PIN)
+    {
+      int n = pinentry_inq_quality(diag->pinentry, pin, *pin_len);
+
+      if (n >= 0)
+        {
+          char buf[16], *p = buf;
+          int r;
+
+          move(diag->quality_y, diag->quality_x);
+          hline(' ', diag->quality_size);
+          r = n*diag->quality_size/100;
+          attroff (COLOR_PAIR (1) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
+          attron (COLOR_PAIR (4) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
+          hline(ACS_BLOCK, r);
+          attroff (COLOR_PAIR (4) | (diag->pinentry->color_fg_bright ? A_BOLD : 0));
+          attron (COLOR_PAIR (1) | (diag->pinentry->color_qualitybar_bright ? A_BOLD : 0));
+          if (n >= 0)
+            {
+              snprintf (buf, sizeof(buf), "%i%%", n);
+              move(diag->quality_y, diag->quality_x+((diag->quality_size/2)-(strlen(buf)/2)));
+              for (; p && *p; p++)
+                addch(*p);
+            }
+        }
     }
 }
 
@@ -849,13 +1357,13 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   int done = 0;
   char *pin_utf8;
   int alt = 0;
-#ifndef HAVE_DOSISH_SYSTEM
-  int no_input = 1;
-#endif
-
 #ifdef HAVE_NCURSESW
   char *old_ctype = NULL;
+#endif
 
+  memset (&diag, 0, sizeof (struct dialog));
+
+#ifdef HAVE_NCURSESW
   if (pinentry->lc_ctype)
     {
       old_ctype = strdup (setlocale (LC_CTYPE, NULL));
@@ -873,6 +1381,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
         {
           pinentry->specific_err = gpg_error_from_syserror ();
           pinentry->specific_err_loc = "open_tty_for_read";
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
           return confirm_mode? 0 : -1;
         }
       ttyfo = fopen (tty_name, "w");
@@ -883,9 +1394,23 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  errno = err;
           pinentry->specific_err = gpg_error_from_syserror ();
           pinentry->specific_err_loc = "open_tty_for_write";
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
 	  return confirm_mode? 0 : -1;
 	}
       screen = newterm (tty_type, ttyfo, ttyfi);
+      if (!screen)
+        {
+          pinentry->specific_err = gpg_error (GPG_ERR_WINDOW_TOO_SMALL);
+          pinentry->specific_err_loc = "curses_init";
+          fclose (ttyfo);
+          fclose (ttyfi);
+#ifdef HAVE_NCURSESW
+          free (old_ctype);
+#endif
+          return confirm_mode? 0 : -1;
+        }
       set_term (screen);
     }
   else
@@ -897,6 +1422,9 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
               errno = ENOTTY;
               pinentry->specific_err = gpg_error_from_syserror ();
               pinentry->specific_err_loc = "isatty";
+#ifdef HAVE_NCURSESW
+              free (old_ctype);
+#endif
               return confirm_mode? 0 : -1;
             }
 	  init_screen = 1;
@@ -922,8 +1450,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
   if (has_colors ())
     {
       start_color ();
+
+      /* Ncurses has use_default_colors, an extentions to the curses
+         library, which allows use of -1 to select default color.  */
 #ifdef NCURSES_VERSION
       use_default_colors ();
+#else
+      /* With no extention, we need to specify color explicitly.  */
+      if (pinentry->color_fg == PINENTRY_COLOR_DEFAULT)
+        pinentry->color_fg = PINENTRY_COLOR_WHITE;
+      if (pinentry->color_bg == PINENTRY_COLOR_DEFAULT)
+        pinentry->color_bg = PINENTRY_COLOR_BLACK;
 #endif
 
       if (pinentry->color_so == PINENTRY_COLOR_DEFAULT)
@@ -931,11 +1468,25 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  pinentry->color_so = PINENTRY_COLOR_RED;
 	  pinentry->color_so_bright = 1;
 	}
-      if (COLOR_PAIRS >= 2)
+      if (pinentry->color_ok == PINENTRY_COLOR_DEFAULT)
+	{
+	  pinentry->color_ok = PINENTRY_COLOR_GREEN;
+	  pinentry->color_ok_bright = 1;
+	}
+      if (pinentry->color_qualitybar == PINENTRY_COLOR_DEFAULT)
+	{
+	  pinentry->color_qualitybar = PINENTRY_COLOR_CYAN;
+	  pinentry->color_qualitybar_bright = 0;
+	}
+      if (COLOR_PAIRS >= 4)
 	{
 	  init_pair (1, pinentry_color[pinentry->color_fg],
 		     pinentry_color[pinentry->color_bg]);
 	  init_pair (2, pinentry_color[pinentry->color_so],
+		     pinentry_color[pinentry->color_bg]);
+	  init_pair (3, pinentry_color[pinentry->color_ok],
+		     pinentry_color[pinentry->color_bg]);
+	  init_pair (4, pinentry_color[pinentry->color_qualitybar],
 		     pinentry_color[pinentry->color_bg]);
 
 	  bkgd (COLOR_PAIR (1));
@@ -977,10 +1528,16 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 
       c = wgetch (stdscr);     /* Refresh, accept single keystroke of input.  */
 #ifndef HAVE_DOSISH_SYSTEM
-      if (timed_out && no_input)
+      if (timed_out)
 	{
 	  done = -2;
           pinentry->specific_err = gpg_error (GPG_ERR_TIMEOUT);
+	  break;
+	}
+      else if (errno == EINTR)
+	{
+	  done = -2;
+          pinentry->specific_err = gpg_error (GPG_ERR_FULLY_CANCELED);
 	  break;
 	}
 #endif
@@ -1006,8 +1563,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	    {
 	    case DIALOG_POS_OK:
 	      if (!confirm_mode)
-		dialog_switch_pos (&diag, DIALOG_POS_PIN);
+                {
+                  if (diag.pinentry->repeat_passphrase)
+                    dialog_switch_pos (&diag, DIALOG_POS_REPEAT_PIN);
+                  else if (diag.pinentry->pin)
+                    dialog_switch_pos (&diag, DIALOG_POS_PIN);
+                }
 	      break;
+            case DIALOG_POS_REPEAT_PIN:
+              if (diag.pinentry->pin)
+		dialog_switch_pos (&diag, DIALOG_POS_PIN);
+              break;
 	    case DIALOG_POS_NOTOK:
 	      dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
@@ -1015,7 +1581,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	      if (diag.notok)
 		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
 	      else
-		dialog_switch_pos (&diag, DIALOG_POS_OK);
+                {
+                  if (!test_repeat (&diag))
+                    dialog_switch_pos (&diag, DIALOG_POS_REPEAT_PIN);
+                  else
+                    dialog_switch_pos (&diag, DIALOG_POS_OK);
+                }
 	      break;
 	    default:
 	      break;
@@ -1027,8 +1598,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  switch (diag.pos)
 	    {
 	    case DIALOG_POS_PIN:
-	      dialog_switch_pos (&diag, DIALOG_POS_OK);
+	      if (diag.pinentry->repeat_passphrase)
+                dialog_switch_pos (&diag, DIALOG_POS_REPEAT_PIN);
+              else
+                dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
+	    case DIALOG_POS_REPEAT_PIN:
+              if (test_repeat (&diag))
+                dialog_switch_pos (&diag, DIALOG_POS_OK);
+              else
+                dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
+              break;
 	    case DIALOG_POS_OK:
 	      if (diag.notok)
 		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
@@ -1047,8 +1627,17 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  switch (diag.pos)
 	    {
 	    case DIALOG_POS_PIN:
-	      dialog_switch_pos (&diag, DIALOG_POS_OK);
+	      if (diag.pinentry->repeat_passphrase)
+                dialog_switch_pos (&diag, DIALOG_POS_REPEAT_PIN);
+              else
+                dialog_switch_pos (&diag, DIALOG_POS_OK);
 	      break;
+	    case DIALOG_POS_REPEAT_PIN:
+              if (test_repeat (&diag))
+                dialog_switch_pos (&diag, DIALOG_POS_OK);
+              else
+                dialog_switch_pos (&diag, DIALOG_POS_CANCEL);
+              break;
 	    case DIALOG_POS_OK:
 	      if (diag.notok)
 		dialog_switch_pos (&diag, DIALOG_POS_NOTOK);
@@ -1077,7 +1666,10 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  switch (diag.pos)
 	    {
 	    case DIALOG_POS_PIN:
+	    case DIALOG_POS_REPEAT_PIN:
 	    case DIALOG_POS_OK:
+              if (!test_repeat (&diag))
+                break;
 	      done = 1;
 	      break;
 	    case DIALOG_POS_NOTOK:
@@ -1092,12 +1684,13 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  break;
 
 	default:
-	  if (diag.pos == DIALOG_POS_PIN)
-	    dialog_input (&diag, alt, c);
+	  if (diag.pos == DIALOG_POS_PIN || diag.pos == DIALOG_POS_REPEAT_PIN)
+            {
+              dialog_input (&diag, alt, c);
+              if (diag.pinentry->repeat_passphrase)
+                diag.pinentry->repeat_okay = test_repeat (&diag);
+            }
 	}
-#ifndef HAVE_DOSISH_SYSTEM
-      no_input = 0;
-#endif
       if (c != -1)
 	alt = 0;
     }
@@ -1146,6 +1739,12 @@ dialog_run (pinentry_t pinentry, const char *tty_name, const char *tty_type)
 	  pinentry->locale_err = 0;
 	}
     }
+
+  if (diag.repeat_pin)
+    secmem_free (diag.repeat_pin);
+
+  if (diag.error)
+    free (diag.error);
 
   if (done == -2)
     pinentry->canceled = 1;
@@ -1197,14 +1796,16 @@ curses_cmd_handler (pinentry_t pinentry)
   int rc;
 
 #ifndef HAVE_DOSISH_SYSTEM
+  struct sigaction sa;
+
+  memset (&sa, 0, sizeof(sa));
+  sa.sa_handler = catchsig;
+  sigaction (SIGINT, &sa, NULL);
+
   timed_out = 0;
 
   if (pinentry->timeout)
     {
-      struct sigaction sa;
-
-      memset (&sa, 0, sizeof(sa));
-      sa.sa_handler = catchsig;
       sigaction (SIGALRM, &sa, NULL);
       alarm (pinentry->timeout);
     }
