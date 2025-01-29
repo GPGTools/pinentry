@@ -29,7 +29,7 @@ min_automake_version="1.14"
 m4_define([mym4_package],[pinentry])
 m4_define([mym4_major], [1])
 m4_define([mym4_minor], [3])
-m4_define([mym4_micro], [2])
+m4_define([mym4_micro], [1])
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
@@ -840,34 +840,39 @@ else
     if test "$pinentry_qt5" = "yes"; then
       PINENTRY_DEFAULT=pinentry-qt5
     else
-     if test "$pinentry_macosx" = "yes"; then
-       PINENTRY_DEFAULT=pinentry-macosx
-     else
-      if test "$pinentry_gnome_3" = "yes"; then
-        PINENTRY_DEFAULT=pinentry-gnome3
+      if test "$pinentry_macosx" = "yes"; then
+        PINENTRY_DEFAULT=pinentry-macosx
       else
         if test "$pinentry_curses" = "yes"; then
           PINENTRY_DEFAULT=pinentry-curses
         else
-          if test "$pinentry_tty" = "yes"; then
-            PINENTRY_DEFAULT=pinentry-tty
+          if test "$pinentry_gnome_3" = "yes"; then
+            PINENTRY_DEFAULT=pinentry-gnome3
           else
-            if test "$pinentry_w32" = "yes"; then
-              PINENTRY_DEFAULT=pinentry-w32
+            if test "$pinentry_curses" = "yes"; then
+              PINENTRY_DEFAULT=pinentry-curses
             else
-              if test "$pinentry_fltk" = "yes"; then
-                PINENTRY_DEFAULT=pinentry-fltk
+              if test "$pinentry_tty" = "yes"; then
+                PINENTRY_DEFAULT=pinentry-tty
               else
-                if test "$pinentry_tqt" = "yes"; then
-                  PINENTRY_DEFAULT=pinentry-tqt
+                if test "$pinentry_w32" = "yes"; then
+                  PINENTRY_DEFAULT=pinentry-w32
                 else
-                  if test "$pinentry_efl" = "yes"; then
-                    PINENTRY_DEFAULT=pinentry-efl
+                  if test "$pinentry_fltk" = "yes"; then
+                    PINENTRY_DEFAULT=pinentry-fltk
                   else
-                    if test "$pinentry_qt4" = "yes"; then
-                      PINENTRY_DEFAULT=pinentry-qt4
+                    if test "$pinentry_tqt" = "yes"; then
+                      PINENTRY_DEFAULT=pinentry-tqt
                     else
-                      AC_MSG_ERROR([[No pinentry enabled.]])
+                      if test "$pinentry_efl" = "yes"; then
+                        PINENTRY_DEFAULT=pinentry-efl
+                      else
+                        if test "$pinentry_qt4" = "yes"; then
+                          PINENTRY_DEFAULT=pinentry-qt4
+                        else
+                          AC_MSG_ERROR([[No pinentry enabled.]])
+                        fi
+                      fi
                     fi
                   fi
                 fi
@@ -876,7 +881,6 @@ else
           fi
         fi
       fi
-	 fi
     fi
   fi
 fi
