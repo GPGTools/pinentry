@@ -226,6 +226,15 @@ if [ "$myhost" = "find-version" ]; then
     minor="$3"
     micro="$4"
 
+    if [ -f "macosx/Version.config" ]; then
+         . "macosx/Version.config"
+
+        if [ -n "$VERSION" ]; then
+            echo "$package-$VERSION:no:no:$VERSION:$VERSION::0000000:0:"
+            exit 0
+        fi
+    fi
+
     if [ -z "$package" -o -z "$major" -o -z "$minor" ]; then
       echo "usage: ./autogen.sh --find-version PACKAGE MAJOR MINOR [MICRO]" >&2
       exit 1
