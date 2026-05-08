@@ -24,7 +24,8 @@
 #import "PinentryMac.h"
 #import "KeychainSupport.h"
 #import "NSStringExtensions.h"
-
+#import <libproc.h>
+#import <sys/utsname.h>
 
 @implementation AppDelegate
 
@@ -227,6 +228,26 @@ static int mac_cmd_handler (pinentry_t pe) {
 		}
 		if (pe->title) {
 			pinentry.titleText = [NSString gpgStringWithCString:pe->title];
+		} else if (pe->owner_pid) {
+			struct utsname utsbuf;
+			BOOL isLocal = pe->owner_host &&
+			               uname(&utsbuf) == 0 &&
+			               strcmp(utsbuf.nodename, pe->owner_host) == 0;
+			NSString *ownerTitle = nil;
+			if (isLocal) {
+				char procpath[PROC_PIDPATHINFO_MAXSIZE];
+				if (proc_pidpath((pid_t)pe->owner_pid, procpath, sizeof(procpath)) > 0) {
+					const char *name = strrchr(procpath, '/');
+					name = name ? name + 1 : procpath;
+					ownerTitle = [NSString stringWithFormat:@"Pinentry Mac - %s [%lu]", name, pe->owner_pid];
+				}
+			}
+			if (!ownerTitle) {
+				ownerTitle = pe->owner_host
+					? [NSString stringWithFormat:@"Pinentry Mac - [%lu]@%s", pe->owner_pid, pe->owner_host]
+					: [NSString stringWithFormat:@"Pinentry Mac - [%lu]", pe->owner_pid];
+			}
+			pinentry.titleText = ownerTitle;
 		}
 		if (pe->timeout) {
 			pinentry.timeout = pe->timeout;
