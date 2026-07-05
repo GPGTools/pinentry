@@ -20,6 +20,7 @@
 */
 
 #import <Security/Security.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 #import "KeychainSupport.h"
 
 #define GPG_SERVICE_NAME "GnuPG"
@@ -58,19 +59,47 @@ BOOL storePassphraseInKeychain(NSString *fingerprint, NSString *passphrase, NSSt
 
 
 	if (encodedPassphrase) {
+		// SecItemUpdate cannot attach a kSecAttrAccessControl to an item that
+		// doesn't already have one, so delete any existing item (including
+		// ones stored by older versions with no access control at all) and
+		// re-add it below with biometry required.
+		status = SecItemCopyMatching(query, (CFTypeRef *)&itemRef);
+		if (status == errSecSuccess) {
+			SecKeychainItemDelete(itemRef);
+			CFRelease(itemRef);
+			itemRef = nil;
+		}
+
+		CFErrorRef accessControlError = NULL;
+		SecAccessControlRef accessControl = SecAccessControlCreateWithFlags(
+			kCFAllocatorDefault,
+			kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+			kSecAccessControlBiometryCurrentSet | kSecAccessControlOr | kSecAccessControlDevicePasscode,
+			&accessControlError);
+
+		if (!accessControl) {
+			if (accessControlError) {
+				CFRelease(accessControlError);
+			}
+			CFRelease(keychainRef);
+			return NO;
+		}
+
+		// kSecUseKeychain (a specific file-based keychain) cannot be combined
+		// with kSecAttrAccessControl - Security framework rejects it with
+		// errSecParam. Biometry-protected items always go to the default
+		// data-protection keychain instead.
 		NSDictionary *attributesDict = @{(NSString *)kSecClass: (NSString *)kSecClassGenericPassword,
 										 (NSString *)kSecAttrService: @GPG_SERVICE_NAME,
 										 (NSString *)kSecAttrAccount: fingerprint,
 										 (NSString *)kSecValueData: encodedPassphrase,
 										 (NSString *)kSecAttrLabel: label,
-										 (NSString *)kSecUseKeychain: (__bridge id)keychainRef};
+										 (NSString *)kSecAttrAccessControl: (__bridge id)accessControl};
 		CFDictionaryRef attributes = (__bridge CFDictionaryRef)attributesDict;
 
+		status = SecItemAdd(attributes, nil);
 
-		status = SecItemUpdate(query, attributes);
-		if (status == errSecItemNotFound) {
-			status = SecItemAdd(attributes, nil);
-		}
+		CFRelease(accessControl);
 	} else {
 		status = SecItemCopyMatching(query, (CFTypeRef *)&itemRef);
 		if (status == errSecSuccess) {
@@ -94,49 +123,52 @@ NSString *getPassphraseFromKeychain(NSString *fingerprint, BOOL *keychainUnusabl
 		return nil;
     }
 
+	// A fresh LAContext per retrieval forces macOS to evaluate biometry again
+	// for this fetch, rather than honoring any previously cached "always
+	// allow" grant on the keychain item.
+	//
+	// This has to be exactly one SecItemCopyMatching call: a biometry-
+	// protected item challenges on every call that touches it, so a second
+	// call (e.g. a separate existence check) means a second prompt. We also
+	// tried pre-authenticating via -evaluateAccessControl: with
+	// kSecUseAuthenticationUISkip on the follow-up call, since some non-Apple
+	// sources describe that as the way to chain calls under one prompt and
+	// customize the message - empirically, on this macOS version, it did not
+	// suppress the second challenge and regressed to two prompts, so we're
+	// intentionally not doing that. This single-call form is the one that's
+	// been verified end-to-end to produce exactly one Touch ID prompt.
+	LAContext *authContext = [[LAContext alloc] init];
+
 	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-								kSecClassGenericPassword, kSecClass,
-								@GPG_SERVICE_NAME, kSecAttrService,
-								fingerprint, kSecAttrAccount,
-								kCFBooleanFalse, kSecReturnData,
-								keychainRef, kSecUseKeychain,
-								nil];
-
-	int status1 = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, nil);
-
-
-
-	attributes = [NSDictionary dictionaryWithObjectsAndKeys:
 								kSecClassGenericPassword, kSecClass,
 								@GPG_SERVICE_NAME, kSecAttrService,
 								fingerprint, kSecAttrAccount,
 								kCFBooleanTrue, kSecReturnData,
 								keychainRef, kSecUseKeychain,
+								authContext, kSecUseAuthenticationContext,
 								nil];
 	CFTypeRef passphraseData = nil;
 
-	int status2 = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
+	int status = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
 
-	if (status1 == errSecSuccess) {
-		if (status2 == errSecAuthFailed) {
-			// The keychain is unusable because of the Apple bug radar://50789571
-			// Do not try to use the keychain in any form.
-			if (keychainUnusable) {
-				*keychainUnusable = YES;
-			}
-		} else if (status2 == errSecUserCanceled) {
-			// The user did not allow pinentry to use the keychain.
-			// Do not use the keychain, do prevent removing or overwriting of the correct passphrase.
-			if (keychainUnusable) {
-				*keychainUnusable = YES;
-			}
+	if (status == errSecAuthFailed) {
+		// The keychain is unusable because of the Apple bug radar://50789571
+		// Do not try to use the keychain in any form.
+		if (keychainUnusable) {
+			*keychainUnusable = YES;
+		}
+	} else if (status == errSecUserCanceled) {
+		// The user did not authenticate. Do not use the keychain, do
+		// prevent removing or overwriting of the correct passphrase.
+		if (keychainUnusable) {
+			*keychainUnusable = YES;
 		}
 	}
 
 	if (keychainRef) {
 		CFRelease(keychainRef);
 	}
-	if (status2 != 0) {
+	if (status != errSecSuccess) {
 		return nil;
 	}
 

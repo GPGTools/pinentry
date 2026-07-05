@@ -9,7 +9,7 @@ ncurses_include =
 libcurses =
 endif
 
-FRAMEWORKS = -framework Cocoa -framework Security
+FRAMEWORKS = -framework Cocoa -framework Security -framework LocalAuthentication
 AM_LDFLAGS = $(FRAMEWORKS) -Wl,-rpath,@executable_path/../Frameworks
 
 AM_OBJCFLAGS = $(COMMON_CFLAGS) $(ncurses_include) -I$(top_srcdir)/secmem -I$(top_srcdir)/pinentry -fobjc-arc
