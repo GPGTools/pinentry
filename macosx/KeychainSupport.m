@@ -57,19 +57,19 @@ BOOL storePassphraseInKeychain(NSString *fingerprint, NSString *passphrase, NSSt
 									   (NSString *)kSecUseKeychain: (__bridge id)keychainRef};
 	CFDictionaryRef query = (__bridge CFDictionaryRef)queryDict;
 
+	// Biometry-protected items always live in the default data-protection
+	// keychain (see the comment below on kSecUseKeychain), which isn't
+	// necessarily the same address space kSecUseKeychain searches - so a
+	// query scoped to keychainRef alone won't reliably find an item from a
+	// previous save, and a ref obtained from this unscoped query isn't
+	// compatible with the legacy SecKeychainItemDelete (it fails with
+	// errSecInvalidItemRef) - use SecItemDelete directly instead.
+	NSDictionary *defaultScopeQueryDict = @{(NSString *)kSecClass: (NSString *)kSecClassGenericPassword,
+									   (NSString *)kSecAttrService: @GPG_SERVICE_NAME,
+									   (NSString *)kSecAttrAccount: fingerprint};
+	CFDictionaryRef defaultScopeQuery = (__bridge CFDictionaryRef)defaultScopeQueryDict;
 
 	if (encodedPassphrase) {
-		// SecItemUpdate cannot attach a kSecAttrAccessControl to an item that
-		// doesn't already have one, so delete any existing item (including
-		// ones stored by older versions with no access control at all) and
-		// re-add it below with biometry required.
-		status = SecItemCopyMatching(query, (CFTypeRef *)&itemRef);
-		if (status == errSecSuccess) {
-			SecKeychainItemDelete(itemRef);
-			CFRelease(itemRef);
-			itemRef = nil;
-		}
-
 		CFErrorRef accessControlError = NULL;
 		SecAccessControlRef accessControl = SecAccessControlCreateWithFlags(
 			kCFAllocatorDefault,
@@ -97,7 +97,26 @@ BOOL storePassphraseInKeychain(NSString *fingerprint, NSString *passphrase, NSSt
 										 (NSString *)kSecAttrAccessControl: (__bridge id)accessControl};
 		CFDictionaryRef attributes = (__bridge CFDictionaryRef)attributesDict;
 
+		// Try adding first, optimistically - a brand new item (the common
+		// case) needs no prior authentication at all. Biometry-protected
+		// items can't be found by a kSecUseKeychain-scoped query (see
+		// defaultScopeQuery above), so only fall back to finding and
+		// deleting an existing item - which does require the user to
+		// authenticate, since it's touching an existing protected item -
+		// when SecItemAdd tells us one is actually in the way. This avoids
+		// costing a Touch ID prompt on every save when there's nothing to
+		// replace.
 		status = SecItemAdd(attributes, nil);
+		if (status == errSecDuplicateItem) {
+			status = SecItemCopyMatching(query, (CFTypeRef *)&itemRef);
+			if (status == errSecSuccess) {
+				SecKeychainItemDelete(itemRef);
+				CFRelease(itemRef);
+				itemRef = nil;
+			}
+			SecItemDelete(defaultScopeQuery);
+			status = SecItemAdd(attributes, nil);
+		}
 
 		CFRelease(accessControl);
 	} else {
@@ -105,6 +124,10 @@ BOOL storePassphraseInKeychain(NSString *fingerprint, NSString *passphrase, NSSt
 		if (status == errSecSuccess) {
 			status = SecKeychainItemDelete(itemRef);
 			CFRelease(itemRef);
+		}
+		OSStatus defaultScopeStatus = SecItemDelete(defaultScopeQuery);
+		if (status != errSecSuccess) {
+			status = defaultScopeStatus;
 		}
 	}
 
@@ -139,17 +162,29 @@ NSString *getPassphraseFromKeychain(NSString *fingerprint, BOOL *keychainUnusabl
 	// been verified end-to-end to produce exactly one Touch ID prompt.
 	LAContext *authContext = [[LAContext alloc] init];
 
-	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-								kSecClassGenericPassword, kSecClass,
-								@GPG_SERVICE_NAME, kSecAttrService,
-								fingerprint, kSecAttrAccount,
-								kCFBooleanTrue, kSecReturnData,
-								keychainRef, kSecUseKeychain,
-								authContext, kSecUseAuthenticationContext,
-								nil];
+	// Biometry-protected items always live in the default data-protection
+	// keychain regardless of a custom KeychainPath (see storePassphraseInKeychain),
+	// so look there first. This also avoids passing a possibly-nil keychainRef
+	// into a dictionaryWithObjectsAndKeys: varargs list, which would treat
+	// the nil as the list terminator and silently drop kSecUseAuthenticationContext
+	// (and everything after it) whenever no custom KeychainPath is set.
+	NSMutableDictionary *attributes = [@{(NSString *)kSecClass: (NSString *)kSecClassGenericPassword,
+								(NSString *)kSecAttrService: @GPG_SERVICE_NAME,
+								(NSString *)kSecAttrAccount: fingerprint,
+								(NSString *)kSecReturnData: @YES,
+								(NSString *)kSecUseAuthenticationContext: authContext} mutableCopy];
 	CFTypeRef passphraseData = nil;
 
 	int status = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
+
+	if (status == errSecItemNotFound && keychainRef) {
+		// Fall back to the explicit custom-KeychainPath keychain, for items
+		// stored there by older versions before biometry protection existed.
+		// A plain (non-ACL) item found here won't challenge for biometry, so
+		// this doesn't risk a second Touch ID prompt for the same item.
+		attributes[(NSString *)kSecUseKeychain] = (__bridge id)keychainRef;
+		status = SecItemCopyMatching((__bridge CFDictionaryRef)attributes, &passphraseData);
+	}
 
 	if (status == errSecAuthFailed) {
 		// The keychain is unusable because of the Apple bug radar://50789571
