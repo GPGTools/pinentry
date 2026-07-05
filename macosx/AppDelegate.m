@@ -118,7 +118,7 @@ NSDictionary *parseUserData(pinentry_t pe) {
 			[descriptionTemplate replaceOccurrencesOfString:@"%NAME" withString:name options:0 range:NSMakeRange(0, descriptionTemplate.length)];
 			[descriptionTemplate replaceOccurrencesOfString:@"%KEYID" withString:keyID options:0 range:NSMakeRange(0, descriptionTemplate.length)];
 
-			NSString *newDescription = [descriptionTemplate stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+			NSString *newDescription = [descriptionTemplate stringByRemovingPercentEncoding];
 			if (newDescription) {
 				description = newDescription;
 			}

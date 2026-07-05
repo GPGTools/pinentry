@@ -27,7 +27,7 @@
 @implementation ShortcutHandlingTextField
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event {
-    if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask) {
+    if (([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) {
         // The command key is the ONLY modifier key being pressed.
 
 		NSString *eventChars = event.charactersIgnoringModifiers;
@@ -49,7 +49,7 @@
 @implementation ShortcutHandlingSecureTextField
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event {
-    if ((event.modifierFlags & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask) {
+    if ((event.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) {
 		// The command key is the ONLY modifier key being pressed.
 
 		NSString *eventChars = event.charactersIgnoringModifiers;
