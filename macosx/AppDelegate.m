@@ -21,6 +21,7 @@
 
 #import "AppDelegate.h"
 #import "pinentry.h"
+#import <gpg-error.h>
 #import "PinentryMac.h"
 #import "KeychainSupport.h"
 #import "NSStringExtensions.h"
@@ -257,7 +258,13 @@ static int mac_cmd_handler (pinentry_t pe) {
 
 			if ([pinentry runModal] == 1) { // The user clicked OK.
 				NSString *pin = pinentry.pin ? pinentry.pin : @"";
-				const char *passphrase = pin.UTF8String;
+				const char *passphrase = NULL;
+				// Checked before the UTF-8 conversion so a refused secret is never copied.
+				if (pin.length > PINENTRY_MAX_PASSPHRASE_LENGTH) {
+					pe->specific_err = gpg_error(GPG_ERR_TOO_LARGE);
+				} else {
+					passphrase = pin.UTF8String;
+				}
 				if (passphrase) {
 					int len = strlen(passphrase);
 					pinentry_setbufferlen(pe, len + 1);

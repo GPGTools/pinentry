@@ -24,6 +24,7 @@
 # define WINVER 0x0403  /* Required for SendInput.  */
 #endif
 #include <windows.h>
+#include <gpg-error.h>
 
 #include "pinentry.h"
 
@@ -405,8 +406,18 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
 {
   char *s_utf8;
   wchar_t *w_buffer;
-  size_t w_buffer_size = 255;
+  size_t w_buffer_size = PINENTRY_MAX_PASSPHRASE_LENGTH;
   unsigned int nchar;
+
+  /* Refuse input that would not fit rather than let GetDlgItemTextW clip
+     it: a silently shortened seed phrase or password is worse than an
+     error. passphrase_ok stays 0, so the core reports specific_err. */
+  if (GetWindowTextLengthW (GetDlgItem (dlg, IDC_PINENT_TEXT))
+      > (int) w_buffer_size)
+    {
+      pe->specific_err = gpg_error (GPG_ERR_TOO_LARGE);
+      return;
+    }
 
   pe->locale_err = 1;
   w_buffer = secmem_malloc ((w_buffer_size + 1) * sizeof *w_buffer);

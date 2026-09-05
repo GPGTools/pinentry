@@ -305,6 +305,15 @@ button_clicked (GtkWidget *widget, gpointer data)
           pinentry->repeat_okay = 1;
         }
 
+      /* Refuse input above the shared limit, like the macOS and Windows
+         frontends.*/
+      if (g_utf8_strlen (s, -1) > PINENTRY_MAX_PASSPHRASE_LENGTH)
+        {
+          pinentry->specific_err = gpg_error (GPG_ERR_TOO_LARGE);
+          gtk_main_quit ();
+          return;
+        }
+
       passphrase_ok = 1;
       pinentry_setbufferlen (pinentry, strlen (s) + 1);
       if (pinentry->pin)

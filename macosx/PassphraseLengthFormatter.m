@@ -19,8 +19,6 @@
 
 #import "PassphraseLengthFormatter.h"
 
-#define MAX_PASSPHRASE_LENGTH 255
-
 @implementation PassphraseLengthFormatter
 
 - (NSString *)stringForObjectValue:(id)object {
@@ -41,16 +39,10 @@
 			  originalString:(NSString *)origString
 	   originalSelectedRange:(NSRange)origSelRange
 			errorDescription:(NSString **)error {
-    // Code found on http://stackoverflow.com/a/19635242 which seems to work properly and as expected.
-
-    NSString *proposedString = *partialStringPtr;
-	// The limit is bytes, not characters.
-	if ([proposedString lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= MAX_PASSPHRASE_LENGTH) {
-        return YES;
-	}
-
-    *partialStringPtr = [NSString stringWithString:[proposedString substringToIndex:MAX_PASSPHRASE_LENGTH]];
-    return NO;
+    // No limit at entry: an over-limit paste lands in the field and OK
+    // then fails with an explicit error (AppDelegate), the same behaviour
+    // as the Windows frontend, instead of being clipped here without a word.
+    return YES;
 }
 
 @end

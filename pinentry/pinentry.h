@@ -30,6 +30,12 @@ extern "C" {
 #endif
 #endif
 
+/* Longest input a passphrase field accepts, counted in UTF-16 code
+   units on macOS and Windows.  255 is what both frontends silently
+   clipped at before; input above it is now refused with
+   GPG_ERR_TOO_LARGE, so a shortened secret is never handed back.  */
+#define PINENTRY_MAX_PASSPHRASE_LENGTH 255
+
 typedef enum {
   PINENTRY_COLOR_NONE, PINENTRY_COLOR_DEFAULT,
   PINENTRY_COLOR_BLACK, PINENTRY_COLOR_RED,
