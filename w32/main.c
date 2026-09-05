@@ -413,7 +413,13 @@ ok_button_clicked (HWND dlg, pinentry_t pe)
   if (!w_buffer)
     return;
 
-  nchar = GetDlgItemTextW (dlg, IDC_PINENT_TEXT, w_buffer, w_buffer_size);
+  /* cchMax counts the terminating NUL.  Per the GetDlgItemTextW reference:
+     "If the length of the string, including the null character, exceeds
+     the limit, the string is truncated."  The buffer holds w_buffer_size
+     + 1, so pass that, or an input of exactly w_buffer_size characters
+     comes back one character short.
+     https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getdlgitemtextw  */
+  nchar = GetDlgItemTextW (dlg, IDC_PINENT_TEXT, w_buffer, w_buffer_size + 1);
   s_utf8 = wchar_to_utf8 (w_buffer, nchar, 1);
   secmem_free (w_buffer);
   if (s_utf8)
